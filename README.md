@@ -18,6 +18,7 @@ This addon extends the GregTech ecosystem with new chemically-oriented mechanics
 * Minecraft 1.20.1
 * Forge / NeoForge
 * GregTech CEu
+* Gregicality Rocketry
 * KubeJS
 
 ---
