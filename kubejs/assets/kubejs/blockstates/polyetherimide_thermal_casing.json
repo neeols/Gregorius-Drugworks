@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "kubejs:block/polyetherimide_thermal_casing"
+    }
+  }
+}
