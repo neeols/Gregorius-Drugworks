@@ -1,6 +1,6 @@
 # Gregorius Drugworks
 
-**Gregorius Drugworks** is a GregTech CEu addon introducing advanced psychoactive, neurochemical, and pharmacological systems designed for immersive progression and technical integration.
+**Gregorius Drugworks** is a GregTech Modern addon introducing advanced psychoactive, neurochemical, and pharmacological systems designed for immersive progression and technical integration.
 
 Built with a focus on modularity, balance, and Greg design philosophy, it expands the chemical and industrial landscape while remaining fully compatible with GregTech CEu environments.
 
