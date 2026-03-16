@@ -1,0 +1,11 @@
+{
+  "antidote_inject": {
+    "subtitle": "Injecting... [Gregorius Drugworks]",
+    "sounds": [
+      {
+        "name": "gregoriusdrugworkspersistence:antidote_inject",
+        "stream": false
+      }
+    ]
+  }
+}

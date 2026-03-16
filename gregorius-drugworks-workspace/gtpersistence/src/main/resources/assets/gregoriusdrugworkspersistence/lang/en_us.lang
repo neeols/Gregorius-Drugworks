@@ -1,0 +1,45 @@
+itemGroup.gregoriusdrugworkspersistence.main=Gregorius Drugworks
+
+item.gregoriusdrugworkspersistence.heatproof_alloy_mesh.name=Heatproof Alloy Mesh
+item.gregoriusdrugworkspersistence.fine_stainless_mesh.name=Fine Stainless Mesh
+item.gregoriusdrugworkspersistence.ceramic_filter.name=Ceramic Filter
+item.gregoriusdrugworkspersistence.carbon_nanotubes.name=Carbon Nanotubes
+item.gregoriusdrugworkspersistence.empty_glass_ampoule.name=Empty Glass Ampoule
+item.gregoriusdrugworkspersistence.kappa_reset_ampoule.name=Kappa Reset Ampoule
+item.gregoriusdrugworkspersistence.naloxone_autoinjector.name=Naloxone Autoinjector
+item.gregoriusdrugworkspersistence.flumazenil_ampoule.name=Flumazenil Ampoule
+item.gregoriusdrugworkspersistence.atropine_2pam_autoinjector.name=Atropine + 2-PAM Autoinjector
+item.gregoriusdrugworkspersistence.nac_infusion.name=N-Acetylcysteine Infusion
+item.gregoriusdrugworkspersistence.fomepizole_vial.name=Fomepizole Vial
+item.gregoriusdrugworkspersistence.hydroxocobalamin_kit.name=Hydroxocobalamin Kit
+item.gregoriusdrugworkspersistence.vitamin_k_ampoule.name=Vitamin K Ampoule
+item.gregoriusdrugworkspersistence.protamine_vial.name=Protamine Vial
+item.gregoriusdrugworkspersistence.glucagon_injector.name=Glucagon Injector
+item.gregoriusdrugworkspersistence.digoxin_fab.name=Digoxin-Fab Ampoule
+
+tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t1.name=Chemical Plant Pipe Casing (Tier 1)
+tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t2.name=Chemical Plant Pipe Casing (Tier 2)
+tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t3.name=Chemical Plant Pipe Casing (Tier 3)
+tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t4.name=Chemical Plant Pipe Casing (Tier 4)
+tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t5.name=Chemical Plant Pipe Casing (Tier 5)
+tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t6.name=Chemical Plant Pipe Casing (Tier 6)
+tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t7.name=Chemical Plant Pipe Casing (Tier 7)
+
+tile.gregoriusdrugworkspersistence.chemplant_machine_casing_t1.name=Chemical Plant Machine Casing (Tier 1)
+tile.gregoriusdrugworkspersistence.chemplant_machine_casing_t2.name=Chemical Plant Machine Casing (Tier 2)
+tile.gregoriusdrugworkspersistence.chemplant_machine_casing_t3.name=Chemical Plant Machine Casing (Tier 3)
+tile.gregoriusdrugworkspersistence.chemplant_machine_casing_t4.name=Chemical Plant Machine Casing (Tier 4)
+tile.gregoriusdrugworkspersistence.chemplant_machine_casing_t5.name=Chemical Plant Machine Casing (Tier 5)
+tile.gregoriusdrugworkspersistence.chemplant_machine_casing_t6.name=Chemical Plant Machine Casing (Tier 6)
+tile.gregoriusdrugworkspersistence.chemplant_machine_casing_t7.name=Chemical Plant Machine Casing (Tier 7)
+
+tile.gregoriusdrugworkspersistence.fluoropolymer_fractionation_casing.name=Fluoropolymer Fractionation Casing
+tile.gregoriusdrugworkspersistence.polyetherimide_thermal_casing.name=Polyetherimide Thermal Casing
+tile.gregoriusdrugworkspersistence.molecular_membrane_casing.name=Molecular Membrane Casing
+tile.gregoriusdrugworkspersistence.molecular_membrane_casing_active.name=Molecular Membrane Casing (Active)
+tile.gregoriusdrugworkspersistence.polysiloxane_vapor_control_casing.name=Polysiloxane Vapor Control Casing
+tile.gregoriusdrugworkspersistence.carbonized_reactor_casing.name=Carbonized Reactor Casing
+tile.gregoriusdrugworkspersistence.obsidian_forged_thermal_casing.name=Obsidian-Forged Thermal Casing
+tile.gregoriusdrugworkspersistence.obsidian_forged_thermal_casing_active.name=Obsidian-Forged Thermal Casing (Active)
+tile.gregoriusdrugworkspersistence.thermocrack_matrix_casing.name=Thermocrack Matrix Casing
+tile.gregoriusdrugworkspersistence.thermocrack_matrix_casing_active.name=Thermocrack Matrix Casing (Active)

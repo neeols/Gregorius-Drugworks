@@ -8,10 +8,12 @@ import gregtech.api.unification.material.event.MaterialEvent;
 import gregtech.api.unification.material.event.MaterialRegistryEvent;
 import gregtech.api.unification.material.event.PostMaterialEvent;
 import net.minecraft.block.Block;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.biome.Biome;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.RegistryEvent;
@@ -26,6 +28,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.registries.IForgeRegistry;
+
+import static net.minecraftforge.fml.common.registry.ForgeRegistries.ITEMS;
 
 public class CommonProxy {
 
@@ -44,8 +48,8 @@ public class CommonProxy {
 
         GregoriusDrugworksSounds.register();
         //GregoriusDrugworksRemappers.preInit();
-        GregoriusDrugworksRecipeMaps.preInit();
-        GregoriusDrugworksMetaTileEntities.preInit();
+        //GregoriusDrugworksRecipeMaps.preInit();
+        //GregoriusDrugworksMetaTileEntities.preInit();
 
         //DataFixerHandler.preInit();
         //FluidRegistryMixinHelper.preInit();
@@ -82,12 +86,12 @@ public class CommonProxy {
     public static void registerMaterials(MaterialEvent event) {
             //GregoriusDrugworksOrePrefix.init();
             //GregoriusDrugworksMaterialFlags.init();
-            GregoriusDrugworksMaterials.init();
+            //GregoriusDrugworksMaterials.init();
     }
 
     @SubscribeEvent
     public static void materialChanges(PostMaterialEvent event) {
-            GregoriusDrugworksMaterials.materialChanges();
+            //GregoriusDrugworksMaterials.materialChanges();
     }
 
     @SubscribeEvent

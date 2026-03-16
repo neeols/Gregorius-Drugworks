@@ -126,6 +126,17 @@ try {
 
     Write-Host "Copied to: $destination" -ForegroundColor Green
 
+    $commonJar = "C:\Users\azaza\.m2\repository\com\wurtzitane\gregoriusdrugworks\common\0.1.0\common-0.1.0.jar"
+
+    if (-not (Test-Path -LiteralPath $commonJar)) {
+        throw "Common jar not found: $commonJar"
+    }
+
+    Get-ChildItem -LiteralPath $modsDir -File -Filter "common-*.jar" -ErrorAction SilentlyContinue |
+            Remove-Item -Force
+
+    Copy-Item -LiteralPath $commonJar -Destination (Join-Path $modsDir "common-0.1.0.jar") -Force
+
     Step "Current mods folder"
     Get-ChildItem -LiteralPath $modsDir -File |
             Sort-Object LastWriteTime -Descending |
