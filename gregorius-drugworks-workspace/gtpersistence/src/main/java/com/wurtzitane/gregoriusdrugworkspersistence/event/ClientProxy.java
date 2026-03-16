@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.client.GregoriusDrugworksPillClientHooks;
 /*
  * Every texture is registered, in case something in that registry, not in that config, is enabled.
  * Nothing happens if each classes registries are empty.
@@ -25,7 +25,7 @@ public class ClientProxy {
     }
 
     public static void latePreInit() {
-
+        GregoriusDrugworksPillClientHooks.preInit();
     }
 
     public static void postInit() {

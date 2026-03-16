@@ -28,13 +28,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.registries.IForgeRegistry;
-
+import com.wurtzitane.gregoriusdrugworkspersistence.network.GregoriusDrugworksNetworkHandler;
 import static net.minecraftforge.fml.common.registry.ForgeRegistries.ITEMS;
 
 public class CommonProxy {
 
     public static void onConstruction() {
-        //GregoriusDrugworksNetworkHandler.onConstruction();
+        GregoriusDrugworksNetworkHandler.onConstruction();
     }
 
     public static void preInit() {

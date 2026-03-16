@@ -2,45 +2,31 @@ package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.util.GregoriusDrugworksUtil;
 import net.minecraft.util.SoundEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public final class GregoriusDrugworksSounds {
 
-    private static final List<SoundEvent> REGISTERED_SOUNDS = new ArrayList<>();
-    private static boolean registered = false;
-
     public static SoundEvent ANTIDOTE_INJECT;
+    public static SoundEvent PILL_GULP;
 
     private GregoriusDrugworksSounds() {
     }
 
     public static void register() {
-        if (registered) {
-            return;
-        }
-        registered = true;
-
-        ANTIDOTE_INJECT = create("antidote_inject");
-
-        for (SoundEvent soundEvent : REGISTERED_SOUNDS) {
-            if (!ForgeRegistries.SOUND_EVENTS.containsKey(soundEvent.getRegistryName())) {
-                ForgeRegistries.SOUND_EVENTS.register(soundEvent);
-            }
-        }
+        // kept for compatibility with your current preInit call
     }
 
-    public static List<SoundEvent> getRegisteredSounds() {
-        return Collections.unmodifiableList(REGISTERED_SOUNDS);
+    @SubscribeEvent
+    public static void registerSounds(RegistryEvent.Register<SoundEvent> event) {
+        ANTIDOTE_INJECT = register(event, "antidote_inject");
+        PILL_GULP = register(event, "pill_gulp");
     }
 
-    private static SoundEvent create(String name) {
+    private static SoundEvent register(RegistryEvent.Register<SoundEvent> event, String name) {
         SoundEvent soundEvent = new SoundEvent(GregoriusDrugworksUtil.makeName(name));
         soundEvent.setRegistryName(GregoriusDrugworksUtil.makeName(name));
-        REGISTERED_SOUNDS.add(soundEvent);
+        event.getRegistry().register(soundEvent);
         return soundEvent;
     }
 }

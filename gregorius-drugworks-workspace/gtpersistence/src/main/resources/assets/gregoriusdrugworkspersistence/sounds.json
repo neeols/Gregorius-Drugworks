@@ -7,5 +7,14 @@
         "stream": false
       }
     ]
+  },
+  "pill_gulp": {
+    "subtitle": "Swallowing... [Gregorius Drugworks]",
+    "sounds": [
+      {
+        "name": "gregoriusdrugworkspersistence:pill_gulp",
+        "stream": false
+      }
+    ]
   }
 }

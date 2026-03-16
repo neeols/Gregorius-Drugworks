@@ -13,6 +13,8 @@ import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.registries.IForgeRegistry;
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.ItemPillBase;
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.PillItemDefinition;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ public final class GregoriusDrugworksMetaItems {
     public static final List<Item> META_ITEMS = new ArrayList<>();
 
     public static Item EMPTY_GLASS_AMPOULE;
+    public static Item EMPTY_CAPSULE_PILL;
 
     public static Item NALOXONE_AUTOINJECTOR;
     public static Item FLUMAZENIL_AMPOULE;
@@ -39,6 +42,8 @@ public final class GregoriusDrugworksMetaItems {
     public static Item GLUCAGON_INJECTOR;
     public static Item DIGOXIN_FAB;
     public static Item KAPPA_RESET_AMPOULE;
+
+    public static Item SALVINORIN_A_PILL;
 
     public static void preInit() {
         META_ITEMS.clear();
@@ -56,6 +61,40 @@ public final class GregoriusDrugworksMetaItems {
         GLUCAGON_INJECTOR = createInjector("glucagon_injector", 16, EnumRarity.RARE, EnumAction.BOW);
         DIGOXIN_FAB = createInjector("digoxin_fab", 8, EnumRarity.EPIC, EnumAction.BOW);
         KAPPA_RESET_AMPOULE = createInjector("kappa_reset_ampoule", 16, EnumRarity.RARE, EnumAction.BOW);
+        SALVINORIN_A_PILL = createPill(
+                PillItemDefinition.builder("salvinorin_a_pill")
+                        .maxStackSize(16)
+                        .useDurationTicks(18)
+                        .arcHeight(1.15F)
+                        .launchForward(0.35F)
+                        .mouthOffsetY(-0.10F)
+                        .spinXPerTick(24.0F)
+                        .spinYPerTick(40.0F)
+                        .spinZPerTick(17.0F)
+                        .lockCamera(true)
+                        .tripHookEnabled(true)
+                        .rarity(EnumRarity.UNCOMMON)
+                        .finishSoundId(GregoriusDrugworksUtil.makeName("pill_gulp"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/items/salvinorin_a_pill.png"))
+                        .build()
+        );
+        EMPTY_CAPSULE_PILL = createPill(
+                PillItemDefinition.builder("empty_capsule_pill")
+                        .maxStackSize(16)
+                        .useDurationTicks(18)
+                        .arcHeight(1.15F)
+                        .launchForward(0.35F)
+                        .mouthOffsetY(-0.10F)
+                        .spinXPerTick(24.0F)
+                        .spinYPerTick(40.0F)
+                        .spinZPerTick(17.0F)
+                        .lockCamera(true)
+                        .tripHookEnabled(false)
+                        .rarity(EnumRarity.COMMON)
+                        .finishSoundId(GregoriusDrugworksUtil.makeName("pill_gulp"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/items/empty_capsule_pill.png"))
+                        .build()
+        );
     }
 
     public static void register(final IForgeRegistry<Item> registry) {
@@ -97,6 +136,12 @@ public final class GregoriusDrugworksMetaItems {
         item.setTranslationKey(Tags.MOD_ID + "." + name);
         item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
         item.setMaxStackSize(maxStackSize);
+        META_ITEMS.add(item);
+        return item;
+    }
+
+    private static Item createPill(PillItemDefinition definition) {
+        Item item = new ItemPillBase(definition);
         META_ITEMS.add(item);
         return item;
     }

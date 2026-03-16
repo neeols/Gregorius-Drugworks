@@ -2,11 +2,11 @@ package com.wurtzitane.gregoriusdrugworkspersistence.trip;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 @Mod.EventBusSubscriber
 public final class TripEvents {
@@ -30,25 +30,32 @@ public final class TripEvents {
 
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.player instanceof EntityPlayerMP player) {
-            TripHooks.onPlayerLogin(player);
+        if (event.player instanceof EntityPlayerMP) {
+            TripHooks.onPlayerLogin((EntityPlayerMP) event.player);
         }
     }
 
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.player instanceof EntityPlayerMP player) {
-            TripHooks.onPlayerLogout(player);
+        if (event.player instanceof EntityPlayerMP) {
+            TripHooks.onPlayerLogout((EntityPlayerMP) event.player);
         }
     }
 
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (!(event.getEntityPlayer() instanceof EntityPlayerMP player)) {
+        if (!(event.getEntityPlayer() instanceof EntityPlayerMP)) {
             return;
         }
 
-        if (player.getHeldItemMainhand().isEmpty() || player.getHeldItemMainhand().getItem().getRegistryName() == null) {
+        EntityPlayerMP player = (EntityPlayerMP) event.getEntityPlayer();
+
+        if (player.getHeldItemMainhand().isEmpty()
+                || player.getHeldItemMainhand().getItem().getRegistryName() == null) {
+            return;
+        }
+
+        if (player.getHeldItemMainhand().getItem() instanceof ITripUseDeferredItem) {
             return;
         }
 
