@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "gregoriusdrugworkspersistence:block/obsidian_forged_thermal_casing_active"
+  }
+}

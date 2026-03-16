@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "gregoriusdrugworkspersistence:block/chemplant_pipe_casing_t2_side",
+    "south": "gregoriusdrugworkspersistence:block/chemplant_pipe_casing_t2_side",
+    "east":  "gregoriusdrugworkspersistence:block/chemplant_pipe_casing_t2_side",
+    "west":  "gregoriusdrugworkspersistence:block/chemplant_pipe_casing_t2_side",
+    "up":    "gregoriusdrugworkspersistence:block/chemplant_pipe_casing_t2_top",
+    "down":  "gregoriusdrugworkspersistence:block/chemplant_pipe_casing_t2_bottom"
+  }
+}

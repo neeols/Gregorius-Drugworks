@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "gregoriusdrugworkspersistence:block/chemplant_machine_casing_t6"
+  }
+}

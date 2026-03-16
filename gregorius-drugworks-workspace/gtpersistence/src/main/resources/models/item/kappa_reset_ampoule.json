@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "gregoriusdrugworkspersistence:item/kappa_reset_ampoule"
+  }
+}

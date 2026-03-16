@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "gregoriusdrugworkspersistence:block/polysiloxane_vapor_control_casing"
+  }
+}
