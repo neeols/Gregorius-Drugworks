@@ -1,12 +1,13 @@
-package com.wurtzitane.gregoriusdrugworksmodern.trip;
+package com.wurtzitane.gregoriusdrugworkspersistence.trip;
 
 import com.wurtzitane.gregoriusdrugworks.common.trip.api.TripApiFacade;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.AntidoteDefinition;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.TripDefinition;
 
-public final class ModernTripRegistrar {
+public final class TripRegistrar {
 
-    private ModernTripRegistrar() {}
+    private TripRegistrar() {
+    }
 
     public static void clearAll() {
         TripApiFacade.clearAll();

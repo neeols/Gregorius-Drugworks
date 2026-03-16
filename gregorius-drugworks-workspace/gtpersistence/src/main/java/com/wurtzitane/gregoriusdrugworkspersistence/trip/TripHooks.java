@@ -5,16 +5,16 @@ import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
-public final class PersistenceTripHooks {
+public final class TripHooks {
 
     private static TripManager manager;
-    private static PersistenceTripRuntime runtime;
+    private static TripRuntime runtime;
 
-    private PersistenceTripHooks() {
+    private TripHooks() {
     }
 
     public static void attachServer(MinecraftServer server) {
-        runtime = new PersistenceTripRuntime(server);
+        runtime = new TripRuntime(server);
         manager = new TripManager(runtime, TripRegistrationApi.registry());
 
         // Intentionally disabled for now.
@@ -29,13 +29,13 @@ public final class PersistenceTripHooks {
 
     public static void onPlayerLogin(EntityPlayerMP player) {
         if (manager != null) {
-            manager.onPlayerLogin(new PersistenceTripRuntime.PersistenceTripPlayer(player));
+            manager.onPlayerLogin(new TripRuntime.PersistenceTripPlayer(player));
         }
     }
 
     public static void onPlayerLogout(EntityPlayerMP player) {
         if (manager != null) {
-            manager.onPlayerLogout(new PersistenceTripRuntime.PersistenceTripPlayer(player));
+            manager.onPlayerLogout(new TripRuntime.PersistenceTripPlayer(player));
         }
     }
 
@@ -43,7 +43,7 @@ public final class PersistenceTripHooks {
         if (manager == null) {
             return false;
         }
-        return manager.handleItemUse(new PersistenceTripRuntime.PersistenceTripPlayer(player), itemId);
+        return manager.handleItemUse(new TripRuntime.PersistenceTripPlayer(player), itemId);
     }
 
     public static TripManager getManager() {

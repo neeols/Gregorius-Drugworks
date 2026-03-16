@@ -17,17 +17,16 @@ import net.minecraftforge.registries.ForgeRegistries;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.EffectSpec;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.ParticleSpec;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.SoundSpec;
-import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime;
 
 import java.util.UUID;
 
-public final class ModernTripRuntime implements TripRuntime {
+public final class TripRuntime implements com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime {
 
     private static final String PERSISTENT_ROOT = "gregoriusdrugworks";
 
     private final MinecraftServer server;
 
-    public ModernTripRuntime(MinecraftServer server) {
+    public TripRuntime(MinecraftServer server) {
         this.server = server;
     }
 
@@ -37,7 +36,7 @@ public final class ModernTripRuntime implements TripRuntime {
     }
 
     @Override
-    public TripRuntime.TripPlayer resolvePlayer(UUID uuid, String username) {
+    public com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer resolvePlayer(UUID uuid, String username) {
         ServerPlayer byUuid = server.getPlayerList().getPlayer(uuid);
         if (byUuid != null) {
             return new ModernTripPlayer(byUuid);
@@ -53,42 +52,42 @@ public final class ModernTripRuntime implements TripRuntime {
     }
 
     @Override
-    public long getPersistentLong(TripRuntime.TripPlayer player, String key) {
+    public long getPersistentLong(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String key) {
         CompoundTag tag = getOrCreateTripData(((ModernTripPlayer) player).player());
         return tag.contains(key) ? tag.getLong(key) : 0L;
     }
 
     @Override
-    public void setPersistentLong(TripRuntime.TripPlayer player, String key, long value) {
+    public void setPersistentLong(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String key, long value) {
         CompoundTag tag = getOrCreateTripData(((ModernTripPlayer) player).player());
         tag.putLong(key, value);
     }
 
     @Override
-    public boolean getPersistentBoolean(TripRuntime.TripPlayer player, String key) {
+    public boolean getPersistentBoolean(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String key) {
         CompoundTag tag = getOrCreateTripData(((ModernTripPlayer) player).player());
         return tag.contains(key) && tag.getBoolean(key);
     }
 
     @Override
-    public void setPersistentBoolean(TripRuntime.TripPlayer player, String key, boolean value) {
+    public void setPersistentBoolean(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String key, boolean value) {
         CompoundTag tag = getOrCreateTripData(((ModernTripPlayer) player).player());
         tag.putBoolean(key, value);
     }
 
     @Override
-    public void removePersistentKey(TripRuntime.TripPlayer player, String key) {
+    public void removePersistentKey(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String key) {
         CompoundTag tag = getOrCreateTripData(((ModernTripPlayer) player).player());
         tag.remove(key);
     }
 
     @Override
-    public void sendMessage(TripRuntime.TripPlayer player, String message, String color) {
+    public void sendMessage(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String message, String color) {
         ((ModernTripPlayer) player).player().sendSystemMessage(Component.literal(message));
     }
 
     @Override
-    public void applyEffect(TripRuntime.TripPlayer player, EffectSpec effect) {
+    public void applyEffect(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, EffectSpec effect) {
         ServerPlayer serverPlayer = ((ModernTripPlayer) player).player();
 
         ResourceLocation id = ResourceLocation.tryParse(effect.getId());
@@ -113,7 +112,7 @@ public final class ModernTripRuntime implements TripRuntime {
     }
 
     @Override
-    public void clearEffect(TripRuntime.TripPlayer player, String effectId) {
+    public void clearEffect(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String effectId) {
         ServerPlayer serverPlayer = ((ModernTripPlayer) player).player();
 
         ResourceLocation id = ResourceLocation.tryParse(effectId);
@@ -129,7 +128,7 @@ public final class ModernTripRuntime implements TripRuntime {
     }
 
     @Override
-    public void spawnParticles(TripRuntime.TripPlayer player, ParticleSpec particle) {
+    public void spawnParticles(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, ParticleSpec particle) {
         ServerPlayer serverPlayer = ((ModernTripPlayer) player).player();
 
         ResourceLocation id = ResourceLocation.tryParse(particle.getId());
@@ -157,7 +156,7 @@ public final class ModernTripRuntime implements TripRuntime {
     }
 
     @Override
-    public void playSound(TripRuntime.TripPlayer player, SoundSpec sound) {
+    public void playSound(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, SoundSpec sound) {
         ServerPlayer serverPlayer = ((ModernTripPlayer) player).player();
 
         ResourceLocation id = ResourceLocation.tryParse(sound.getId());
@@ -182,7 +181,7 @@ public final class ModernTripRuntime implements TripRuntime {
     }
 
     @Override
-    public void consumeHeldItem(TripRuntime.TripPlayer player, int amount) {
+    public void consumeHeldItem(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, int amount) {
         ServerPlayer serverPlayer = ((ModernTripPlayer) player).player();
         ItemStack stack = serverPlayer.getMainHandItem();
         if (!stack.isEmpty()) {
@@ -203,7 +202,7 @@ public final class ModernTripRuntime implements TripRuntime {
         return persistent.getCompound(PERSISTENT_ROOT);
     }
 
-    public static final class ModernTripPlayer implements TripRuntime.TripPlayer {
+    public static final class ModernTripPlayer implements com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer {
 
         private final ServerPlayer player;
 

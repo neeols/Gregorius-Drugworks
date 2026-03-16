@@ -9,36 +9,36 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 @Mod.EventBusSubscriber
-public final class PersistenceTripEvents {
+public final class TripEvents {
 
     private static boolean attached = false;
 
-    private PersistenceTripEvents() {
+    private TripEvents() {
     }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (!attached && FMLCommonHandler.instance().getMinecraftServerInstance() != null) {
-            PersistenceTripHooks.attachServer(FMLCommonHandler.instance().getMinecraftServerInstance());
+            TripHooks.attachServer(FMLCommonHandler.instance().getMinecraftServerInstance());
             attached = true;
         }
 
         if (event.phase == TickEvent.Phase.END) {
-            PersistenceTripHooks.serverTick();
+            TripHooks.serverTick();
         }
     }
 
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.player instanceof EntityPlayerMP player) {
-            PersistenceTripHooks.onPlayerLogin(player);
+            TripHooks.onPlayerLogin(player);
         }
     }
 
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.player instanceof EntityPlayerMP player) {
-            PersistenceTripHooks.onPlayerLogout(player);
+            TripHooks.onPlayerLogout(player);
         }
     }
 
@@ -53,7 +53,7 @@ public final class PersistenceTripEvents {
         }
 
         String itemId = player.getHeldItemMainhand().getItem().getRegistryName().toString();
-        if (PersistenceTripHooks.onItemUse(player, itemId)) {
+        if (TripHooks.onItemUse(player, itemId)) {
             event.setCanceled(true);
         }
     }

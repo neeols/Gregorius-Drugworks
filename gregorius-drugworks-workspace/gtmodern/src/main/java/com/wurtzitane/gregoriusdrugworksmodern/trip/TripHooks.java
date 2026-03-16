@@ -6,15 +6,15 @@ import net.minecraft.server.level.ServerPlayer;
 import com.wurtzitane.gregoriusdrugworks.common.trip.api.TripRegistrationApi;
 import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripManager;
 
-public final class ModernTripHooks {
+public final class TripHooks {
 
     private static TripManager manager;
-    private static ModernTripRuntime runtime;
+    private static TripRuntime runtime;
 
-    private ModernTripHooks() {}
+    private TripHooks() {}
 
     public static void attachServer(MinecraftServer server) {
-        runtime = new ModernTripRuntime(server);
+        runtime = new TripRuntime(server);
         manager = new TripManager(runtime, TripRegistrationApi.registry());
 
         // Intentionally disabled for now.
@@ -29,13 +29,13 @@ public final class ModernTripHooks {
 
     public static void onPlayerLogin(ServerPlayer player) {
         if (manager != null) {
-            manager.onPlayerLogin(new ModernTripRuntime.ModernTripPlayer(player));
+            manager.onPlayerLogin(new TripRuntime.ModernTripPlayer(player));
         }
     }
 
     public static void onPlayerLogout(ServerPlayer player) {
         if (manager != null) {
-            manager.onPlayerLogout(new ModernTripRuntime.ModernTripPlayer(player));
+            manager.onPlayerLogout(new TripRuntime.ModernTripPlayer(player));
         }
     }
 
@@ -43,7 +43,7 @@ public final class ModernTripHooks {
         if (manager == null) {
             return false;
         }
-        return manager.handleItemUse(new ModernTripRuntime.ModernTripPlayer(player), itemId);
+        return manager.handleItemUse(new TripRuntime.ModernTripPlayer(player), itemId);
     }
 
     public static TripManager getManager() {

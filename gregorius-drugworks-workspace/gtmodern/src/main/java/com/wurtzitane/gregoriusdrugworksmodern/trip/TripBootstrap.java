@@ -1,8 +1,8 @@
 package com.wurtzitane.gregoriusdrugworksmodern.trip;
 
-public final class ModernTripBootstrap {
+public final class TripBootstrap {
 
-    private ModernTripBootstrap() {}
+    private TripBootstrap() {}
 
     public static void registerDefaults() {
         /*

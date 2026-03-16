@@ -14,19 +14,19 @@ import net.minecraftforge.registries.ForgeRegistries;
 import com.wurtzitane.gregoriusdrugworksmodern.Mod;
 
 @EventBusSubscriber(modid = Mod.MOD_ID, bus = EventBusSubscriber.Bus.FORGE)
-public final class ModernTripEvents {
+public final class TripEvents {
 
-    private ModernTripEvents() {}
+    private TripEvents() {}
 
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
-        ModernTripHooks.attachServer(event.getServer());
+        TripHooks.attachServer(event.getServer());
     }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            ModernTripHooks.serverTick();
+            TripHooks.serverTick();
         }
     }
 
@@ -37,7 +37,7 @@ public final class ModernTripEvents {
         }
 
         ServerPlayer player = (ServerPlayer) event.getEntity();
-        ModernTripHooks.onPlayerLogin(player);
+        TripHooks.onPlayerLogin(player);
     }
 
     @SubscribeEvent
@@ -47,7 +47,7 @@ public final class ModernTripEvents {
         }
 
         ServerPlayer player = (ServerPlayer) event.getEntity();
-        ModernTripHooks.onPlayerLogout(player);
+        TripHooks.onPlayerLogout(player);
     }
 
     @SubscribeEvent
@@ -67,7 +67,7 @@ public final class ModernTripEvents {
         }
 
         String itemId = itemKey.toString();
-        if (ModernTripHooks.onItemUse(player, itemId)) {
+        if (TripHooks.onItemUse(player, itemId)) {
             event.setCanceled(true);
         }
     }
