@@ -8,11 +8,47 @@
       }
     ]
   },
-  "pill_gulp": {
-    "subtitle": "Swallowing... [Gregorius Drugworks]",
+  "inhalation_start": {
+    "subtitle": "Preparing inhalation... [Gregorius Drugworks]",
     "sounds": [
       {
-        "name": "gregoriusdrugworkspersistence:pill_gulp",
+        "name": "gregoriusdrugworkspersistence:inhalation_start",
+        "stream": false
+      }
+    ]
+  },
+  "inhalation_inhale": {
+    "subtitle": "Inhaling vapour... [Gregorius Drugworks]",
+    "sounds": [
+      {
+        "name": "gregoriusdrugworkspersistence:inhalation_inhale",
+        "stream": false
+      }
+    ]
+  },
+  "inhalation_exhale": {
+    "subtitle": "Exhaling vapour... [Gregorius Drugworks]",
+    "sounds": [
+      {
+        "name": "gregoriusdrugworkspersistence:inhalation_exhale",
+        "stream": false
+      }
+    ]
+  },
+  "inhalation_finish": {
+    "subtitle": "Finished draw... [Gregorius Drugworks]",
+    "sounds": [
+      {
+        "name": "gregoriusdrugworkspersistence:inhalation_finish",
+        "stream": false
+      }
+    ]
+  },
+  "inhalation_exhausted": {
+    "subtitle": "Device exhausted... [Gregorius Drugworks]",
+    "sounds": [
+      {
+        "name": "gregoriusdrugworkspersistence:inhalation_exhausted",
         "stream": false
       }
     ]

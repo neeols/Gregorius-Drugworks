@@ -100,6 +100,17 @@ public final class TripRuntime implements com.wurtzitane.gregoriusdrugworks.comm
     }
 
     @Override
+    public void executeTriggerBundle(
+            com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player,
+            String triggerBundleId
+    ) {
+        com.wurtzitane.gregoriusdrugworkspersistence.trigger.TriggerBundleRuntimeExecutor.executeById(
+                ((PersistenceTripPlayer) player).player(),
+                triggerBundleId
+        );
+    }
+
+    @Override
     public void clearEffect(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String effectId) {
         EntityPlayerMP serverPlayer = ((PersistenceTripPlayer) player).player();
         Potion potion = Potion.getPotionFromResourceLocation(effectId);

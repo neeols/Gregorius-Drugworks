@@ -24,6 +24,7 @@ public final class TripStage {
         this.messageColor = builder.messageColor;
         this.effects = Collections.unmodifiableList(new ArrayList<EffectSpec>(builder.effects));
         this.particles = builder.particles;
+        this.triggerSpec = builder.triggerSpec == null ? TripStageTriggerSpec.NONE : builder.triggerSpec;
     }
 
     public int getAtSeconds() {
@@ -58,6 +59,12 @@ public final class TripStage {
         return particles;
     }
 
+    private final TripStageTriggerSpec triggerSpec;
+
+    public TripStageTriggerSpec getTriggerSpec() {
+        return triggerSpec;
+    }
+
     public static Builder builder(int atSeconds) {
         return new Builder(atSeconds);
     }
@@ -71,6 +78,7 @@ public final class TripStage {
         private String messageColor;
         private final List<EffectSpec> effects = new ArrayList<EffectSpec>();
         private ParticleSpec particles;
+        private TripStageTriggerSpec triggerSpec = TripStageTriggerSpec.NONE;
 
         private Builder(int atSeconds) {
             this.atSeconds = atSeconds;
@@ -104,6 +112,11 @@ public final class TripStage {
 
         public Builder particle(ParticleSpec particles) {
             this.particles = particles;
+            return this;
+        }
+
+        public Builder triggerSpec(TripStageTriggerSpec triggerSpec) {
+            this.triggerSpec = triggerSpec == null ? TripStageTriggerSpec.NONE : triggerSpec;
             return this;
         }
 

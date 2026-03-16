@@ -41,4 +41,8 @@ tile.gregoriusdrugworkspersistence.carbonized_reactor_casing.name=Carbonized Rea
 tile.gregoriusdrugworkspersistence.obsidian_forged_thermal_casing.name=Obsidian-Forged Thermal Casing
 tile.gregoriusdrugworkspersistence.thermocrack_matrix_casing.name=Thermocrack Matrix Casing
 
-item.gregoriusdrugworkspersistence.sample_capsule_pill.name=Sample Capsule Pill
+item.gregoriusdrugworkspersistence.empty_pill.name=Sample Capsule Pill
+item.gregoriusdrugworkspersistence.sample_aroma_tube.name=Sample Aroma Tube
+payload.gregoriusdrugworkspersistence.naloxone=Payload: Naloxone
+payload.gregoriusdrugworkspersistence.glucagon=Payload: Glucagon
+payload.gregoriusdrugworkspersistence.anomaly=Payload: Anomaly

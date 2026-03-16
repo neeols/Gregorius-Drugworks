@@ -22,6 +22,7 @@ public final class TripManager implements TripRuntimeApi {
     public static final String KEY_RUNNING_START = "trip_running_start_tick";
     public static final String KEY_RUNNING_UNTIL = "trip_running_until_tick";
     public static final String KEY_ACTIVE_SUBSTANCE_HASH = "trip_active_substance_hash";
+    public static final String KEY_ACTIVE_STAGE_INDEX = "trip_active_stage_index";
     public static final String KEY_STAGE_MSG_PREFIX = "trip_stage_msg_";
     public static final String KEY_STAGE_PART_PREFIX = "trip_stage_part_";
 
@@ -147,10 +148,14 @@ public final class TripManager implements TripRuntimeApi {
     @Override
     public void cancelTripNow(TripRuntime.TripPlayer player) {
         long activeHash = getActiveSubstanceHash(player);
+        long activeTripId = getActiveTripId(player);
         TripDefinition definition = registry.getTripByHash(activeHash);
+
+        fireCurrentStageExitIfNeeded(player, definition, activeTripId);
 
         clearTripWindow(player);
         clearActiveTripId(player);
+        clearActiveStageIndex(player);
         runtime.removePersistentKey(player, KEY_ACTIVE_SUBSTANCE_HASH);
 
         if (definition != null) {
@@ -213,17 +218,23 @@ public final class TripManager implements TripRuntimeApi {
         long tripId = nowTick + ThreadLocalRandom.current().nextInt(1_000_000);
         setActiveTripId(player, tripId);
         setActiveSubstance(player, definition.getItemId());
+        clearActiveStageIndex(player);
 
         clearEffectsList(player, definition.getEffectIds());
 
         List<TripStage> stages = definition.getStages();
         if (stages.isEmpty()) {
             dlog("[TRIP][RUN] no stages for item=" + definition.getItemId());
+            clearTripWindow(player);
+            clearActiveTripId(player);
+            clearActiveStageIndex(player);
+            runtime.removePersistentKey(player, KEY_ACTIVE_SUBSTANCE_HASH);
             return;
         }
 
         String username = player.getUsername();
         UUID uuid = player.getUuid();
+        String tripItemId = definition.getItemId();
 
         long startBase = nowTick;
         List<Long> starts = new ArrayList<Long>(stages.size());
@@ -245,7 +256,7 @@ public final class TripManager implements TripRuntimeApi {
         for (int i = 0; i < stages.size(); i++) {
             long stageStart = starts.get(i).longValue();
             long stageEnd = (i + 1 < stages.size()) ? starts.get(i + 1).longValue() : tripEndTick;
-            runStage(uuid, username, tripId, stages.get(i), i, stageStart, stageEnd);
+            runStage(uuid, username, tripId, tripItemId, stages.get(i), i, stageStart, stageEnd);
         }
 
         scheduleAbs(tripEndTick, () -> {
@@ -261,7 +272,16 @@ public final class TripManager implements TripRuntimeApi {
         });
     }
 
-    private void runStage(UUID playerUuid, String username, long tripId, TripStage stage, int stageIndex, long stageStartTick, long stageEndTick) {
+    private void runStage(
+            UUID playerUuid,
+            String username,
+            long tripId,
+            String tripItemId,
+            TripStage stage,
+            int stageIndex,
+            long stageStartTick,
+            long stageEndTick
+    ) {
         final int effectPeriod = clampInt(stage.getPeriodTicks(), 1, 1_000_000, 10);
         final int particlePeriod = clampInt(stage.getParticlesPeriodTicks(), 1, 1_000_000, 20);
         final int particleGap = stage.getParticlesMinGapTicks() > 0
@@ -272,13 +292,123 @@ public final class TripManager implements TripRuntimeApi {
                 " start=" + stageStartTick + " end=" + stageEndTick +
                 " effPeriod=" + effectPeriod + " partPeriod=" + particlePeriod);
 
-        scheduleAbs(stageStartTick, () -> stepEffects(playerUuid, username, tripId, stage, stageIndex, stageStartTick, stageEndTick, effectPeriod));
+        scheduleAbs(stageStartTick, () -> enterStage(playerUuid, username, tripId, tripItemId, stage, stageIndex));
+        scheduleAbs(stageStartTick, () -> stepEffects(playerUuid, username, tripId, tripItemId, stage, stageIndex, stageStartTick, stageEndTick, effectPeriod));
+
         if (stage.getParticles() != null) {
             scheduleAbs(stageStartTick, () -> stepParticles(playerUuid, username, tripId, stage, stageIndex, stageStartTick, stageEndTick, particlePeriod, particleGap));
         }
+
+        if (stage.getTriggerSpec() != null && !stage.getTriggerSpec().isEmpty() && stage.getTriggerSpec().hasOnTick()) {
+            scheduleAbs(stageStartTick, () -> stepStageTriggers(playerUuid, username, tripId, tripItemId, stage, stageIndex, stageEndTick));
+        }
+
+        scheduleAbs(stageEndTick, () -> exitStage(playerUuid, username, tripId, tripItemId, stage, stageIndex));
     }
 
-    private void stepEffects(UUID playerUuid, String username, long tripId, TripStage stage, int stageIndex, long stageStartTick, long stageEndTick, int effectPeriod) {
+    private void enterStage(
+            UUID playerUuid,
+            String username,
+            long tripId,
+            String tripItemId,
+            TripStage stage,
+            int stageIndex
+    ) {
+        TripRuntime.TripPlayer player = runtime.resolvePlayer(playerUuid, username);
+        if (player == null) {
+            dlogThrottled("enter_no_player_" + username, "[TRIP][STAGE][ENTER] resolvePlayer FAILED user=" + username + " uuid=" + playerUuid + " tick=" + nowTick);
+            return;
+        }
+
+        long currentTripId = getActiveTripId(player);
+        if (currentTripId != tripId) {
+            dlogThrottled("enter_token_mismatch_" + username, "[TRIP][STAGE][ENTER] token mismatch user=" + username + " have=" + currentTripId + " need=" + tripId + " tick=" + nowTick);
+            return;
+        }
+
+        setActiveStageIndex(player, stageIndex);
+        TripStageTriggerSupport.onStageEnter(runtime, player, tripItemId, stageIndex, stage.getTriggerSpec());
+
+        dlog("[TRIP][STAGE][ENTER] user=" + username + " stage=" + stageIndex + " tick=" + nowTick);
+    }
+
+    private void exitStage(
+            UUID playerUuid,
+            String username,
+            long tripId,
+            String tripItemId,
+            TripStage stage,
+            int stageIndex
+    ) {
+        TripRuntime.TripPlayer player = runtime.resolvePlayer(playerUuid, username);
+        if (player == null) {
+            dlogThrottled("exit_no_player_" + username, "[TRIP][STAGE][EXIT] resolvePlayer FAILED user=" + username + " uuid=" + playerUuid + " tick=" + nowTick);
+            return;
+        }
+
+        long currentTripId = getActiveTripId(player);
+        if (currentTripId != tripId) {
+            dlogThrottled("exit_token_mismatch_" + username, "[TRIP][STAGE][EXIT] token mismatch user=" + username + " have=" + currentTripId + " need=" + tripId + " tick=" + nowTick);
+            return;
+        }
+
+        long activeStageIndex = getActiveStageIndex(player);
+        if (activeStageIndex != (long) stageIndex) {
+            return;
+        }
+
+        TripStageTriggerSupport.onStageExit(runtime, player, tripItemId, stageIndex, stage.getTriggerSpec());
+        clearStageTransientState(player, tripId, tripItemId, stageIndex);
+        clearActiveStageIndex(player);
+
+        dlog("[TRIP][STAGE][EXIT] user=" + username + " stage=" + stageIndex + " tick=" + nowTick);
+    }
+
+    private void stepStageTriggers(
+            UUID playerUuid,
+            String username,
+            long tripId,
+            String tripItemId,
+            TripStage stage,
+            int stageIndex,
+            long stageEndTick
+    ) {
+        if (nowTick >= stageEndTick) {
+            return;
+        }
+
+        TripRuntime.TripPlayer player = runtime.resolvePlayer(playerUuid, username);
+        if (player == null) {
+            dlogThrottled("stage_trigger_no_player_" + username, "[TRIP][STAGE][TRIGGER] resolvePlayer FAILED user=" + username + " uuid=" + playerUuid + " tick=" + nowTick);
+            scheduleAbs(nowTick + 1L, () -> stepStageTriggers(playerUuid, username, tripId, tripItemId, stage, stageIndex, stageEndTick));
+            return;
+        }
+
+        long currentTripId = getActiveTripId(player);
+        if (currentTripId != tripId) {
+            dlogThrottled("stage_trigger_token_mismatch_" + username, "[TRIP][STAGE][TRIGGER] token mismatch user=" + username + " have=" + currentTripId + " need=" + tripId + " tick=" + nowTick);
+            return;
+        }
+
+        long activeStageIndex = getActiveStageIndex(player);
+        if (activeStageIndex == (long) stageIndex) {
+            TripStageTriggerSupport.onStageTick(runtime, player, tripItemId, stageIndex, stage.getTriggerSpec());
+        }
+
+        scheduleAbs(nowTick + 1L, () -> stepStageTriggers(playerUuid, username, tripId, tripItemId, stage, stageIndex, stageEndTick));
+    }
+
+    private void stepEffects(
+            UUID playerUuid,
+            String username,
+            long tripId,
+            String tripItemId,
+            TripStage stage,
+            int stageIndex,
+            long stageStartTick,
+            long stageEndTick,
+            int effectPeriod
+    ) {
         if (nowTick >= stageEndTick) {
             dlog("[TRIP][STAGE] effects done user=" + username + " stage=" + stageIndex + " tick=" + nowTick);
             return;
@@ -287,7 +417,7 @@ public final class TripManager implements TripRuntimeApi {
         TripRuntime.TripPlayer player = runtime.resolvePlayer(playerUuid, username);
         if (player == null) {
             dlogThrottled("no_player_eff_" + username, "[TRIP][STAGE][EFFECTS] resolvePlayer FAILED user=" + username + " uuid=" + playerUuid + " tick=" + nowTick);
-            scheduleAbs(nowTick + effectPeriod, () -> stepEffects(playerUuid, username, tripId, stage, stageIndex, stageStartTick, stageEndTick, effectPeriod));
+            scheduleAbs(nowTick + effectPeriod, () -> stepEffects(playerUuid, username, tripId, tripItemId, stage, stageIndex, stageStartTick, stageEndTick, effectPeriod));
             return;
         }
 
@@ -322,7 +452,7 @@ public final class TripManager implements TripRuntimeApi {
             runtime.applyEffect(player, effect);
         }
 
-        scheduleAbs(nowTick + effectPeriod, () -> stepEffects(playerUuid, username, tripId, stage, stageIndex, stageStartTick, stageEndTick, effectPeriod));
+        scheduleAbs(nowTick + effectPeriod, () -> stepEffects(playerUuid, username, tripId, tripItemId, stage, stageIndex, stageStartTick, stageEndTick, effectPeriod));
     }
 
     private void stepParticles(UUID playerUuid, String username, long tripId, TripStage stage, int stageIndex, long stageStartTick, long stageEndTick, int particlePeriod, int particleGap) {
@@ -394,6 +524,33 @@ public final class TripManager implements TripRuntimeApi {
         }
     }
 
+    private void fireCurrentStageExitIfNeeded(TripRuntime.TripPlayer player, TripDefinition definition, long activeTripId) {
+        if (player == null || definition == null || activeTripId <= 0L) {
+            return;
+        }
+
+        long activeStageIndexLong = getActiveStageIndex(player);
+        if (activeStageIndexLong < 0L || activeStageIndexLong > Integer.MAX_VALUE) {
+            return;
+        }
+
+        int activeStageIndex = (int) activeStageIndexLong;
+        List<TripStage> stages = definition.getStages();
+        if (activeStageIndex < 0 || activeStageIndex >= stages.size()) {
+            return;
+        }
+
+        TripStage stage = stages.get(activeStageIndex);
+        TripStageTriggerSupport.onStageExit(runtime, player, definition.getItemId(), activeStageIndex, stage.getTriggerSpec());
+        clearStageTransientState(player, activeTripId, definition.getItemId(), activeStageIndex);
+    }
+
+    private void clearStageTransientState(TripRuntime.TripPlayer player, long tripId, String tripItemId, int stageIndex) {
+        runtime.removePersistentKey(player, KEY_STAGE_MSG_PREFIX + tripId + "_" + stageIndex);
+        runtime.removePersistentKey(player, KEY_STAGE_PART_PREFIX + tripId + "_" + stageIndex);
+        TripStageTriggerSupport.clearStageState(runtime, player, tripItemId, stageIndex);
+    }
+
     private void scheduleAbs(long tick, Runnable task) {
         jobs.add(new ScheduledJob(tick, task));
     }
@@ -437,6 +594,19 @@ public final class TripManager implements TripRuntimeApi {
 
     private long getActiveSubstanceHash(TripRuntime.TripPlayer player) {
         return runtime.getPersistentLong(player, KEY_ACTIVE_SUBSTANCE_HASH);
+    }
+
+    private long getActiveStageIndex(TripRuntime.TripPlayer player) {
+        return runtime.getPersistentLong(player, KEY_ACTIVE_STAGE_INDEX);
+    }
+
+    private void setActiveStageIndex(TripRuntime.TripPlayer player, int stageIndex) {
+        runtime.setPersistentLong(player, KEY_ACTIVE_STAGE_INDEX, (long) stageIndex);
+    }
+
+    private void clearActiveStageIndex(TripRuntime.TripPlayer player) {
+        runtime.removePersistentKey(player, KEY_ACTIVE_STAGE_INDEX);
+        runtime.setPersistentLong(player, KEY_ACTIVE_STAGE_INDEX, -1L);
     }
 
     private int clampInt(int value, int min, int max, int fallback) {

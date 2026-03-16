@@ -1,9 +1,11 @@
 package com.wurtzitane.gregoriusdrugworkspersistence;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.command.GregoriusDrugworksCommands;
 import com.wurtzitane.gregoriusdrugworkspersistence.event.CommonProxy;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.*;
 
@@ -59,6 +61,11 @@ public class GTAddon {
     @EventHandler
     public void serverLoad(FMLServerStartingEvent event) {
         //event.registerServerCommand(new );
+    }
+
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent event) {
+        GregoriusDrugworksCommands.register(event);
     }
 
     @EventHandler

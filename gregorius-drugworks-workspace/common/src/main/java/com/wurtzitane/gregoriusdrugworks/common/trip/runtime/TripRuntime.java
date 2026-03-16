@@ -39,5 +39,7 @@ public interface TripRuntime {
 
     void consumeHeldItem(TripPlayer player, int amount);
 
+    void executeTriggerBundle(TripPlayer player, String triggerBundleId);
+
     void log(String message);
 }
