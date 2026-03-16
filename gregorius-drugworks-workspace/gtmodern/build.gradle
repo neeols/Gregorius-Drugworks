@@ -157,6 +157,8 @@ dependencies {
     // lombok
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    implementation "com.wurtzitane.gregoriusdrugworks:common:0.1.0"
 }
 
 // See com.example.examplemod.mixin.DummyMixin for information about mixins

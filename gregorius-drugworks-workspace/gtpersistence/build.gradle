@@ -14,7 +14,6 @@ plugins {
     id 'com.matthewprenger.cursegradle' version '1.4.0' apply false
     id 'com.modrinth.minotaur' version '2.+' apply false
     id 'org.jetbrains.changelog' version '2.5.0'
-    id 'scala'
 }
 
 apply from: 'gradle/scripts/helpers.gradle'
@@ -102,13 +101,10 @@ minecraft {
 }
 
 repositories {
+    mavenLocal()
     maven {
         name 'CleanroomMC Maven'
         url 'https://maven.cleanroommc.com'
-    }
-    maven {
-        name "outlandsReleases"
-        url "https://maven.outlands.top/releases"
     }
 }
 
@@ -148,8 +144,8 @@ dependencies {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
 
-    implementation "com.cleanroommc:scalar:1.0.0"
     compileOnly(rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022"))
+    implementation "com.wurtzitane.gregoriusdrugworks:common:0.1.0"
 }
 
 apply from: 'gradle/scripts/dependencies.gradle'
@@ -360,9 +356,43 @@ idea.project.settings {
     }
 }
 
-scala {
-    scalaVersion = '3.7.2'
+tasks.register("printJvmInfo") {
+    doLast {
+        println "java.version      = " + System.getProperty("java.version")
+        println "java.home         = " + System.getProperty("java.home")
+        println "java.vendor       = " + System.getProperty("java.vendor")
+        println "org.gradle.java.home = " + project.findProperty("org.gradle.java.home")
+    }
 }
+
+tasks.register('debugRunClientJvm') {
+    doLast {
+        def t = tasks.named('runClient').get()
+        println "[GDW] runClient task class = ${t.getClass().name}"
+        println "[GDW] has executable      = ${t.hasProperty('executable')}"
+        println "[GDW] has javaLauncher    = ${t.hasProperty('javaLauncher')}"
+
+        if (t.hasProperty('executable')) {
+            try {
+                println "[GDW] executable          = ${t.executable}"
+            } catch (Throwable e) {
+                println "[GDW] executable read failed: ${e.class.name}: ${e.message}"
+            }
+        }
+
+        if (t.hasProperty('javaLauncher')) {
+            try {
+                def jl = t.javaLauncher.orNull
+                println "[GDW] javaLauncher        = ${jl == null ? '<null>' : jl.metadata.installationPath.asFile}"
+                println "[GDW] javaLauncher ver    = ${jl == null ? '<null>' : jl.metadata.languageVersion}"
+            } catch (Throwable e) {
+                println "[GDW] javaLauncher read failed: ${e.class.name}: ${e.message}"
+            }
+        }
+    }
+}
+
+
 
 apply from: 'gradle/scripts/publishing.gradle'
 apply from: 'gradle/scripts/extra.gradle'

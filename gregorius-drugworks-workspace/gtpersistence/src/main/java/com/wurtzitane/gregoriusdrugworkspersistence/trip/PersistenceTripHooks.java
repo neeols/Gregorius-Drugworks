@@ -18,7 +18,6 @@ public final class PersistenceTripHooks {
         manager = new TripManager(runtime, TripRegistrationApi.registry());
 
         // Intentionally disabled for now.
-        // Register your trips later from Java, Scala, and/or GroovyScript bridge code.
         // PersistenceTripBootstrap.registerDefaults();
     }
 

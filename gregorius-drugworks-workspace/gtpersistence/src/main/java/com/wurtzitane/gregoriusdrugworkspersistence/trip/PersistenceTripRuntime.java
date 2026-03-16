@@ -5,17 +5,21 @@ import com.wurtzitane.gregoriusdrugworks.common.trip.model.ParticleSpec;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.SoundSpec;
 import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.text.TextComponentString;
 
 import java.util.UUID;
 
 public final class PersistenceTripRuntime implements TripRuntime {
+
+    private static final String PERSISTENT_ROOT = "gregoriusdrugworks";
 
     private final MinecraftServer server;
 
@@ -29,7 +33,7 @@ public final class PersistenceTripRuntime implements TripRuntime {
     }
 
     @Override
-    public TripPlayer resolvePlayer(UUID uuid, String username) {
+    public TripRuntime.TripPlayer resolvePlayer(UUID uuid, String username) {
         EntityPlayerMP byUuid = server.getPlayerList().getPlayerByUUID(uuid);
         if (byUuid != null) {
             return new PersistenceTripPlayer(byUuid);
@@ -44,42 +48,42 @@ public final class PersistenceTripRuntime implements TripRuntime {
     }
 
     @Override
-    public long getPersistentLong(TripPlayer player, String key) {
+    public long getPersistentLong(TripRuntime.TripPlayer player, String key) {
         NBTTagCompound tag = getOrCreateTripData(((PersistenceTripPlayer) player).player());
         return tag.hasKey(key) ? tag.getLong(key) : 0L;
     }
 
     @Override
-    public void setPersistentLong(TripPlayer player, String key, long value) {
+    public void setPersistentLong(TripRuntime.TripPlayer player, String key, long value) {
         NBTTagCompound tag = getOrCreateTripData(((PersistenceTripPlayer) player).player());
         tag.setLong(key, value);
     }
 
     @Override
-    public boolean getPersistentBoolean(TripPlayer player, String key) {
+    public boolean getPersistentBoolean(TripRuntime.TripPlayer player, String key) {
         NBTTagCompound tag = getOrCreateTripData(((PersistenceTripPlayer) player).player());
         return tag.hasKey(key) && tag.getBoolean(key);
     }
 
     @Override
-    public void setPersistentBoolean(TripPlayer player, String key, boolean value) {
+    public void setPersistentBoolean(TripRuntime.TripPlayer player, String key, boolean value) {
         NBTTagCompound tag = getOrCreateTripData(((PersistenceTripPlayer) player).player());
         tag.setBoolean(key, value);
     }
 
     @Override
-    public void removePersistentKey(TripPlayer player, String key) {
+    public void removePersistentKey(TripRuntime.TripPlayer player, String key) {
         NBTTagCompound tag = getOrCreateTripData(((PersistenceTripPlayer) player).player());
         tag.removeTag(key);
     }
 
     @Override
-    public void sendMessage(TripPlayer player, String message, String color) {
-        ((PersistenceTripPlayer) player).player().sendMessage(new net.minecraft.util.text.TextComponentString(message));
+    public void sendMessage(TripRuntime.TripPlayer player, String message, String color) {
+        ((PersistenceTripPlayer) player).player().sendMessage(new TextComponentString(message));
     }
 
     @Override
-    public void applyEffect(TripPlayer player, EffectSpec effect) {
+    public void applyEffect(TripRuntime.TripPlayer player, EffectSpec effect) {
         EntityPlayerMP serverPlayer = ((PersistenceTripPlayer) player).player();
         Potion potion = Potion.getPotionFromResourceLocation(effect.getId());
         if (potion == null) {
@@ -88,16 +92,16 @@ public final class PersistenceTripRuntime implements TripRuntime {
         }
 
         serverPlayer.addPotionEffect(new PotionEffect(
-            potion,
-            effect.getSeconds() * 20,
-            effect.getAmplifier(),
-            false,
-            !effect.isHideParticles()
+                potion,
+                effect.getSeconds() * 20,
+                effect.getAmplifier(),
+                false,
+                !effect.isHideParticles()
         ));
     }
 
     @Override
-    public void clearEffect(TripPlayer player, String effectId) {
+    public void clearEffect(TripRuntime.TripPlayer player, String effectId) {
         EntityPlayerMP serverPlayer = ((PersistenceTripPlayer) player).player();
         Potion potion = Potion.getPotionFromResourceLocation(effectId);
         if (potion != null) {
@@ -106,28 +110,34 @@ public final class PersistenceTripRuntime implements TripRuntime {
     }
 
     @Override
-    public void spawnParticles(TripPlayer player, ParticleSpec particle) {
-        // 1.12.2 particle spawning can be wired here later using world/server packet utilities.
+    public void spawnParticles(TripRuntime.TripPlayer player, ParticleSpec particle) {
+        // 1.12.2 particle spawning can be wired here later using packets/world helpers.
         log("[TRIP][PERSIST][PARTICLE] " + particle.getId());
     }
 
     @Override
-    public void playSound(TripPlayer player, SoundSpec sound) {
+    public void playSound(TripRuntime.TripPlayer player, SoundSpec sound) {
         EntityPlayerMP serverPlayer = ((PersistenceTripPlayer) player).player();
+        SoundEvent soundEvent = SoundEvent.REGISTRY.getObject(new ResourceLocation(sound.getId()));
+        if (soundEvent == null) {
+            log("[TRIP][PERSIST][SOUNDMISS] " + sound.getId());
+            return;
+        }
+
         serverPlayer.world.playSound(
-            null,
-            serverPlayer.posX,
-            serverPlayer.posY,
-            serverPlayer.posZ,
-            net.minecraft.util.SoundEvent.REGISTRY.getObject(new ResourceLocation(sound.getId())),
-            SoundCategory.PLAYERS,
-            sound.getVolume(),
-            sound.getPitch()
+                null,
+                serverPlayer.posX,
+                serverPlayer.posY,
+                serverPlayer.posZ,
+                soundEvent,
+                SoundCategory.PLAYERS,
+                sound.getVolume(),
+                sound.getPitch()
         );
     }
 
     @Override
-    public void consumeHeldItem(TripPlayer player, int amount) {
+    public void consumeHeldItem(TripRuntime.TripPlayer player, int amount) {
         EntityPlayerMP serverPlayer = ((PersistenceTripPlayer) player).player();
         ItemStack stack = serverPlayer.getHeldItemMainhand();
         if (!stack.isEmpty()) {
@@ -142,13 +152,13 @@ public final class PersistenceTripRuntime implements TripRuntime {
 
     private static NBTTagCompound getOrCreateTripData(EntityPlayerMP player) {
         NBTTagCompound persisted = player.getEntityData();
-        if (!persisted.hasKey("gregoriusdrugworks")) {
-            persisted.setTag("gregoriusdrugworks", new NBTTagCompound());
+        if (!persisted.hasKey(PERSISTENT_ROOT)) {
+            persisted.setTag(PERSISTENT_ROOT, new NBTTagCompound());
         }
-        return persisted.getCompoundTag("gregoriusdrugworks");
+        return persisted.getCompoundTag(PERSISTENT_ROOT);
     }
 
-    public static final class PersistenceTripPlayer implements TripPlayer {
+    public static final class PersistenceTripPlayer implements TripRuntime.TripPlayer {
         private final EntityPlayerMP player;
 
         public PersistenceTripPlayer(EntityPlayerMP player) {

@@ -1,6 +1,5 @@
-package com.example.examplemod;
+package com.wurtzitane.gregoriusdrugworksmodern;
 
-import com.gregtechceu.gtceu.api.addon.GTAddon;
 import com.gregtechceu.gtceu.api.addon.IGTAddon;
 import com.gregtechceu.gtceu.api.registry.registrate.GTRegistrate;
 
@@ -9,12 +8,12 @@ import net.minecraft.data.recipes.FinishedRecipe;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-@GTAddon
-public class ExampleGTAddon implements IGTAddon {
+@com.gregtechceu.gtceu.api.addon.GTAddon
+public class GTAddon implements IGTAddon {
 
     @Override
     public GTRegistrate getRegistrate() {
-        return ExampleMod.EXAMPLE_REGISTRATE;
+        return Mod.EXAMPLE_REGISTRATE;
     }
 
     @Override
@@ -22,7 +21,7 @@ public class ExampleGTAddon implements IGTAddon {
 
     @Override
     public String addonModId() {
-        return ExampleMod.MOD_ID;
+        return Mod.MOD_ID;
     }
 
     @Override

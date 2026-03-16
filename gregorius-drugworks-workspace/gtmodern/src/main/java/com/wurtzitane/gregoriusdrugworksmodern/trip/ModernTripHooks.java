@@ -1,24 +1,23 @@
 package com.wurtzitane.gregoriusdrugworksmodern.trip;
 
-import com.wurtzitane.gregoriusdrugworks.common.trip.api.TripRegistrationApi;
-import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+
+import com.wurtzitane.gregoriusdrugworks.common.trip.api.TripRegistrationApi;
+import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripManager;
 
 public final class ModernTripHooks {
 
     private static TripManager manager;
     private static ModernTripRuntime runtime;
 
-    private ModernTripHooks() {
-    }
+    private ModernTripHooks() {}
 
     public static void attachServer(MinecraftServer server) {
         runtime = new ModernTripRuntime(server);
         manager = new TripManager(runtime, TripRegistrationApi.registry());
 
         // Intentionally disabled for now.
-        // Register your trips later from Java and/or KubeJS bridge code.
         // ModernTripBootstrap.registerDefaults();
     }
 
