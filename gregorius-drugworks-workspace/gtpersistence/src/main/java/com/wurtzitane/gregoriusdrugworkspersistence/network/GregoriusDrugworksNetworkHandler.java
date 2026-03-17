@@ -54,7 +54,7 @@ public final class GregoriusDrugworksNetworkHandler {
     }
 
     public static void sendPillUseAnimation(EntityPlayerMP player, ItemPillBase pillItem, EnumHand hand, int sequenceId) {
-        PacketStartPillAnimation packet = new PacketStartPillAnimation(player.getEntityId(), hand, pillItem.getDefinition(), sequenceId);
+        PacketStartPillAnimation packet = new PacketStartPillAnimation(player.getEntityId(), hand, pillItem, sequenceId);
         CHANNEL.sendToAllAround(packet, new NetworkRegistry.TargetPoint(player.dimension, player.posX, player.posY, player.posZ, 64.0D));
         CHANNEL.sendTo(packet, player);
     }

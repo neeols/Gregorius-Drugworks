@@ -1,5 +1,6 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.network.packet;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.ItemPillBase;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.PillItemDefinition;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.client.GregoriusDrugworksPillClientHooks;
 import io.netty.buffer.ByteBuf;
@@ -28,9 +29,10 @@ public final class PacketStartPillAnimation implements IMessage {
     public PacketStartPillAnimation() {
     }
 
-    public PacketStartPillAnimation(int playerEntityId, EnumHand hand, PillItemDefinition definition, int sequenceId) {
+    public PacketStartPillAnimation(int playerEntityId, EnumHand hand, ItemPillBase pillItem, int sequenceId) {
+        PillItemDefinition definition = pillItem.getDefinition();
         this.playerEntityId = playerEntityId;
-        this.itemId = definition.getItemId();
+        this.itemId = pillItem.getRegistryName() == null ? definition.getItemId() : pillItem.getRegistryName().toString();
         this.handOrdinal = hand.ordinal();
         this.durationTicks = definition.getUseDurationTicks();
         this.arcHeight = definition.getArcHeight();

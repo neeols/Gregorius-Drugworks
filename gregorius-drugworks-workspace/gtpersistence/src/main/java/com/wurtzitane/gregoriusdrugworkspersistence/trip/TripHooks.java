@@ -1,6 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.trip;
 
 import com.wurtzitane.gregoriusdrugworks.common.trip.api.TripRegistrationApi;
+import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
 import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -14,11 +15,9 @@ public final class TripHooks {
     }
 
     public static void attachServer(MinecraftServer server) {
+        TripBootstrap.registerDefaults();
         runtime = new TripRuntime(server);
         manager = new TripManager(runtime, TripRegistrationApi.registry());
-
-        // Intentionally disabled for now.
-        TripBootstrap.registerDefaults();
     }
 
     public static void serverTick() {
@@ -43,7 +42,28 @@ public final class TripHooks {
         if (manager == null) {
             return false;
         }
-        return manager.handleItemUse(new TripRuntime.PersistenceTripPlayer(player), itemId);
+
+        String normalizedId = normalizeItemId(itemId);
+        TripRuntime.PersistenceTripPlayer tripPlayer = new TripRuntime.PersistenceTripPlayer(player);
+
+        if (manager.handleItemUse(tripPlayer, normalizedId)) {
+            return true;
+        }
+
+        TripBootstrap.registerDefaults();
+
+        if (!normalizedId.equals(itemId) && manager.handleItemUse(tripPlayer, itemId)) {
+            return true;
+        }
+
+        return manager.handleItemUse(tripPlayer, normalizedId);
+    }
+
+    private static String normalizeItemId(String itemId) {
+        if (itemId == null || itemId.isEmpty() || itemId.indexOf(':') >= 0) {
+            return itemId;
+        }
+        return Tags.MOD_ID + ":" + itemId;
     }
 
     public static TripManager getManager() {

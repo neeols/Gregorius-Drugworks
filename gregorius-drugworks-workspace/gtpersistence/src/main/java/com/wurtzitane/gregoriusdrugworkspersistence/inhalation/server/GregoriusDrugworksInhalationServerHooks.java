@@ -100,17 +100,43 @@ public final class GregoriusDrugworksInhalationServerHooks {
             double spread = spec.sampleSpread(ageTicks);
             double speed = spec.sampleSpeed(ageTicks);
 
+            emitDirectionalParticles(player, emission, picked, origin, count, spread, speed);
+        }
+    }
+
+    private static void emitDirectionalParticles(
+            EntityPlayerMP player,
+            ActiveLingeringEmission emission,
+            InhalationParticleSpec spec,
+            Vec3d origin,
+            int count,
+            double spread,
+            double speed
+    ) {
+        Vec3d look = player.getLookVec().normalize();
+        java.util.Random random = player.getRNG();
+        int particles = Math.max(1, count);
+
+        for (int i = 0; i < particles; i++) {
+            double ox = (random.nextDouble() - 0.5D) * spread;
+            double oy = (random.nextDouble() - 0.5D) * spread;
+            double oz = (random.nextDouble() - 0.5D) * spread;
+
+            double mx = emission.getDriftPerEmission().x + look.x * spec.getForwardBias() + random.nextGaussian() * speed * 0.20D;
+            double my = emission.getDriftPerEmission().y + spec.getUpwardBias() + random.nextGaussian() * speed * 0.12D;
+            double mz = emission.getDriftPerEmission().z + look.z * spec.getForwardBias() + random.nextGaussian() * speed * 0.20D;
+
             player.getServerWorld().spawnParticle(
-                    picked.getParticleType(),
+                    spec.getParticleType(),
                     true,
-                    origin.x,
-                    origin.y,
-                    origin.z,
-                    count,
-                    spread,
-                    spread,
-                    spread,
-                    speed
+                    origin.x + ox,
+                    origin.y + oy,
+                    origin.z + oz,
+                    0,
+                    mx,
+                    my,
+                    mz,
+                    1.0D
             );
         }
     }

@@ -124,12 +124,13 @@ public final class GregoriusDrugworksPillClientHooks {
             }
 
             EntityPlayer player = (EntityPlayer) entity;
-            PillItemDefinition definition = ItemPillBase.getDefinition(state.getItemId());
+            String definitionKey = resolveDefinitionKey(state.getItemId());
+            PillItemDefinition definition = ItemPillBase.getDefinition(definitionKey);
             if (definition == null) {
                 continue;
             }
 
-            Item item = Item.REGISTRY.getObject(new ResourceLocation(state.getItemId()));
+            Item item = resolveRenderedItem(state.getItemId());
             if (item == null) {
                 continue;
             }
@@ -186,6 +187,20 @@ public final class GregoriusDrugworksPillClientHooks {
             return current - maxStep;
         }
         return target;
+    }
+
+    private static Item resolveRenderedItem(String itemId) {
+        ResourceLocation location = itemId.indexOf(':') >= 0 ? new ResourceLocation(itemId) : new ResourceLocation("gregoriusdrugworkspersistence", itemId);
+        Item item = Item.REGISTRY.getObject(location);
+        if (item == null && itemId.indexOf(':') >= 0) {
+            item = Item.REGISTRY.getObject(new ResourceLocation(resolveDefinitionKey(itemId)));
+        }
+        return item;
+    }
+
+    private static String resolveDefinitionKey(String itemId) {
+        int separator = itemId.indexOf(':');
+        return separator >= 0 ? itemId.substring(separator + 1) : itemId;
     }
 
     private static float approachAngle(float current, float target, float maxStep) {

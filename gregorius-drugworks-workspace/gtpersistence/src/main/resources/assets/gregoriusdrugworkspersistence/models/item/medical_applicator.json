@@ -1,20 +1,11 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "gregoriusdrugworkspersistence:item/medical_applicator_blank"
-  },
+  "parent": "gregoriusdrugworkspersistence:item/medical_applicator_blank",
   "overrides": [
     {
       "predicate": {
         "loaded": 1.0
       },
       "model": "gregoriusdrugworkspersistence:item/medical_applicator_loaded"
-    },
-    {
-      "predicate": {
-        "loaded": 0.0
-      },
-      "model": "gregoriusdrugworkspersistence:item/medical_applicator_blank"
     }
   ]
 }

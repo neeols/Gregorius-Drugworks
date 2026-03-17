@@ -267,6 +267,7 @@ public final class GregoriusDrugworksMetaItems {
     private static Item createPill(PillItemDefinition definition) {
         Item item = new ItemPillBase(definition);
         META_ITEMS.add(item);
+        GregoriusDrugworksContentCatalogs.registerItem(item, ContentFamily.PILL, false);
         return item;
     }
 
