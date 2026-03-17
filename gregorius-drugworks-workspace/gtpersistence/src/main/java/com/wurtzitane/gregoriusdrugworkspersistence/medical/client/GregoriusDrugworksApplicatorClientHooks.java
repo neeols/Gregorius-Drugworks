@@ -1,16 +1,22 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.medical.client;
 
 import com.wurtzitane.gregoriusdrugworks.common.medical.ApplicatorUseProfile;
+import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
+import com.wurtzitane.gregoriusdrugworkspersistence.medical.GregoriusDrugworksApplicatorPayloads;
 import com.wurtzitane.gregoriusdrugworkspersistence.medical.GregoriusDrugworksMedicalApplicators;
 import com.wurtzitane.gregoriusdrugworkspersistence.network.packet.PacketCancelApplicatorAnimation;
 import com.wurtzitane.gregoriusdrugworkspersistence.network.packet.PacketStartApplicatorAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -25,7 +31,6 @@ import java.util.Map;
 public final class GregoriusDrugworksApplicatorClientHooks {
 
     private static final Map<Integer, ApplicatorApplicationState> ACTIVE = new HashMap<>();
-    private static final ModelHyposprayApplicator MODEL = new ModelHyposprayApplicator();
     private static boolean initialised = false;
 
     private GregoriusDrugworksApplicatorClientHooks() {
@@ -37,7 +42,11 @@ public final class GregoriusDrugworksApplicatorClientHooks {
         }
         initialised = true;
 
-        GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR.setTileEntityItemStackRenderer(ApplicatorItemStackRenderer.INSTANCE);
+        GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR.addPropertyOverride(
+                new ResourceLocation(Tags.MOD_ID, "loaded"),
+                (stack, world, entity) -> GregoriusDrugworksApplicatorPayloads.hasPayload(stack) ? 1.0F : 0.0F
+        );
+
         MinecraftForge.EVENT_BUS.register(new GregoriusDrugworksApplicatorClientHooks());
     }
 
@@ -130,9 +139,16 @@ public final class GregoriusDrugworksApplicatorClientHooks {
             }
 
             EntityPlayer player = (EntityPlayer) entity;
+            ItemStack renderStack = player.getHeldItem(state.getHand());
+            if (renderStack.isEmpty() || renderStack.getItem() != GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR) {
+                renderStack = new ItemStack(GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR);
+            }
+
             Vec3d pos = getApplicatorPosition(player, state, worldTime, partialTicks);
 
             GlStateManager.pushMatrix();
+            RenderHelper.enableStandardItemLighting();
+            GlStateManager.enableRescaleNormal();
             GlStateManager.translate(
                     pos.x - renderManager.viewerPosX,
                     pos.y - renderManager.viewerPosY,
@@ -140,13 +156,13 @@ public final class GregoriusDrugworksApplicatorClientHooks {
             );
 
             GlStateManager.rotate(90.0F, 0.0F, 1.0F, 0.0F);
-            GlStateManager.scale(0.36F, 0.36F, 0.36F);
+            GlStateManager.rotate(180.0F, 0.0F, 0.0F, 1.0F);
+            GlStateManager.scale(0.8F, 0.8F, 0.8F);
 
-            minecraft.getTextureManager().bindTexture(
-                    new net.minecraft.util.ResourceLocation("gregoriusdrugworkspersistence", "textures/item/medical_applicator_loaded.png")
-            );
-            MODEL.render(0.0625F);
+            minecraft.getRenderItem().renderItem(renderStack, ItemCameraTransforms.TransformType.FIXED);
 
+            GlStateManager.disableRescaleNormal();
+            RenderHelper.disableStandardItemLighting();
             GlStateManager.popMatrix();
         }
     }

@@ -93,22 +93,20 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
     @Override
     public ActionResult<ItemStack> onItemRightClick(@Nonnull World world, @Nonnull EntityPlayer player, @Nonnull EnumHand hand) {
         ItemStack held = player.getHeldItem(hand);
+
+        if (!player.capabilities.isCreativeMode && getUses(held) >= definition.getMaxUses()) {
+            if (!world.isRemote) {
+                playWorldSound(world, player, definition.getExhaustedSoundId());
+            }
+            return new ActionResult<>(EnumActionResult.FAIL, held);
+        }
+
         player.setActiveHand(hand);
 
         if (!world.isRemote && player instanceof EntityPlayerMP) {
             EntityPlayerMP serverPlayer = (EntityPlayerMP) player;
             int sequenceId = nextSequenceId(serverPlayer);
             resetSequenceData(held, sequenceId);
-
-            GregoriusDrugworksDebug.log(
-                    GdwDebugCategory.INHALATION,
-                    DebugFormatters.join(
-                            "[INHALE][START]",
-                            DebugFormatters.kv("player", serverPlayer.getName()),
-                            DebugFormatters.kv("item", definition.getItemId()),
-                            DebugFormatters.kv("sequence", sequenceId)
-                    )
-            );
 
             definition.getEffectHandler().onPhase(serverPlayer, held, definition, InhalationUsePhase.USE_START, false);
             GregoriusDrugworksNetworkHandler.sendInhalationStart(serverPlayer, this, hand, sequenceId);
@@ -229,9 +227,13 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
 
             if (!player.capabilities.isCreativeMode) {
                 stack.shrink(1);
+                if (stack.isEmpty() && player.getActiveHand() != null) {
+                    player.setHeldItem(player.getActiveHand(), ItemStack.EMPTY);
+                }
+                player.inventory.markDirty();
+                player.openContainer.detectAndSendChanges();
             }
         }
-
         GregoriusDrugworksDebug.log(
                 GdwDebugCategory.OUTPUTS,
                 DebugFormatters.join(

@@ -1,16 +1,19 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.pill.client;
 
-import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksMetaItems;
-import com.wurtzitane.gregoriusdrugworkspersistence.network.packet.PacketStartPillAnimation;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.ItemPillBase;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.PillItemDefinition;
+import com.wurtzitane.gregoriusdrugworkspersistence.network.packet.PacketStartPillAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -25,7 +28,6 @@ import java.util.Map;
 public final class GregoriusDrugworksPillClientHooks {
 
     private static final Map<Integer, PillAnimationState> ACTIVE = new HashMap<>();
-    private static final ModelCapsulePill MODEL = new ModelCapsulePill();
     private static boolean initialised = false;
 
     private GregoriusDrugworksPillClientHooks() {
@@ -37,16 +39,7 @@ public final class GregoriusDrugworksPillClientHooks {
         }
         initialised = true;
 
-        installItemRenderers();
         MinecraftForge.EVENT_BUS.register(new GregoriusDrugworksPillClientHooks());
-    }
-
-    private static void installItemRenderers() {
-        for (Item item : GregoriusDrugworksMetaItems.getMetaItems()) {
-            if (item instanceof ItemPillBase) {
-                item.setTileEntityItemStackRenderer(PillItemStackRenderer.INSTANCE);
-            }
-        }
     }
 
     public static void startAnimation(PacketStartPillAnimation message) {
@@ -136,11 +129,18 @@ public final class GregoriusDrugworksPillClientHooks {
                 continue;
             }
 
+            Item item = Item.REGISTRY.getObject(new ResourceLocation(state.getItemId()));
+            if (item == null) {
+                continue;
+            }
+
+            ItemStack renderStack = new ItemStack(item);
             Vec3d pillPos = state.getPillPosition(player, worldTime, partialTicks);
 
             GlStateManager.pushMatrix();
             GlStateManager.disableCull();
             GlStateManager.enableRescaleNormal();
+            RenderHelper.enableStandardItemLighting();
 
             GlStateManager.translate(
                     pillPos.x - renderManager.viewerPosX,
@@ -151,11 +151,11 @@ public final class GregoriusDrugworksPillClientHooks {
             GlStateManager.rotate(state.getRotationY(worldTime, partialTicks), 0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(state.getRotationX(worldTime, partialTicks), 1.0F, 0.0F, 0.0F);
             GlStateManager.rotate(state.getRotationZ(worldTime, partialTicks), 0.0F, 0.0F, 1.0F);
-            GlStateManager.scale(0.11F, 0.11F, 0.11F);
+            GlStateManager.scale(0.5F, 0.5F, 0.5F);
 
-            minecraft.getTextureManager().bindTexture(definition.getModelTexture());
-            MODEL.render(0.0625F);
+            minecraft.getRenderItem().renderItem(renderStack, ItemCameraTransforms.TransformType.FIXED);
 
+            RenderHelper.disableStandardItemLighting();
             GlStateManager.disableRescaleNormal();
             GlStateManager.enableCull();
             GlStateManager.popMatrix();

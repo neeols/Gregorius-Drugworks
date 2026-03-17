@@ -1,6 +1,5 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.inhalation.client;
 
-import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksMetaItems;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.InhalationDefinition;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.ItemInhalationConsumable;
 import com.wurtzitane.gregoriusdrugworkspersistence.network.packet.PacketCancelInhalationSequence;
@@ -9,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -32,12 +30,6 @@ public final class GregoriusDrugworksInhalationClientHooks {
             return;
         }
         initialised = true;
-
-        for (Item item : GregoriusDrugworksMetaItems.getMetaItems()) {
-            if (item instanceof ItemInhalationConsumable) {
-                item.setTileEntityItemStackRenderer(InhalationItemStackRenderer.INSTANCE);
-            }
-        }
 
         MinecraftForge.EVENT_BUS.register(new GregoriusDrugworksInhalationClientHooks());
     }

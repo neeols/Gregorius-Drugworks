@@ -125,6 +125,11 @@ public class ItemPillBase extends Item implements ITripUseDeferredItem {
 
             if (!player.capabilities.isCreativeMode && !tripHandled) {
                 stack.shrink(1);
+                if (stack.isEmpty() && player.getActiveHand() != null) {
+                    player.setHeldItem(player.getActiveHand(), ItemStack.EMPTY);
+                }
+                player.inventory.markDirty();
+                player.openContainer.detectAndSendChanges();
             }
         }
 
