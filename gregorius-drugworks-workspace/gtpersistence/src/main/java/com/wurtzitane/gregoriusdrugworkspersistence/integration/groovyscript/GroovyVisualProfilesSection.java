@@ -35,6 +35,14 @@ public final class GroovyVisualProfilesSection extends AbstractGroovySection {
         private float fovPulseAmount = 0.0F;
         private float fovPulseSpeed = 0.0F;
         private int particleDensity = 0;
+        private float vignetteStrength = 0.0F;
+        private float prismSeparation = 0.0F;
+        private float tunnelStrength = 0.0F;
+        private float ribbonIntensity = 0.0F;
+        private int ribbonDensity = 0;
+        private float scanlineStrength = 0.0F;
+        private float rollDrift = 0.0F;
+        private float afterimageStrength = 0.0F;
         private boolean localOnly = true;
         private String startSoundId = "";
 
@@ -112,6 +120,46 @@ public final class GroovyVisualProfilesSection extends AbstractGroovySection {
             return this;
         }
 
+        public Builder vignetteStrength(float value) {
+            this.vignetteStrength = value;
+            return this;
+        }
+
+        public Builder prismSeparation(float value) {
+            this.prismSeparation = value;
+            return this;
+        }
+
+        public Builder tunnelStrength(float value) {
+            this.tunnelStrength = value;
+            return this;
+        }
+
+        public Builder ribbonIntensity(float value) {
+            this.ribbonIntensity = value;
+            return this;
+        }
+
+        public Builder ribbonDensity(int value) {
+            this.ribbonDensity = value;
+            return this;
+        }
+
+        public Builder scanlineStrength(float value) {
+            this.scanlineStrength = value;
+            return this;
+        }
+
+        public Builder rollDrift(float value) {
+            this.rollDrift = value;
+            return this;
+        }
+
+        public Builder afterimageStrength(float value) {
+            this.afterimageStrength = value;
+            return this;
+        }
+
         public Builder localOnly(boolean value) {
             this.localOnly = value;
             return this;
@@ -139,6 +187,14 @@ public final class GroovyVisualProfilesSection extends AbstractGroovySection {
                     fovPulseAmount,
                     fovPulseSpeed,
                     particleDensity,
+                    vignetteStrength,
+                    prismSeparation,
+                    tunnelStrength,
+                    ribbonIntensity,
+                    ribbonDensity,
+                    scanlineStrength,
+                    rollDrift,
+                    afterimageStrength,
                     localOnly,
                     startSoundId
             );

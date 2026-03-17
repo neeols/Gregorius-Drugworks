@@ -33,71 +33,35 @@ public final class GregoriusDrugworksPayloadRegistry {
             return;
         }
         bootstrapped = true;
-
         register(
                 new PayloadDefinition(
-                        "gregoriusdrugworkspersistence:naloxone_payload",
-                        PayloadCategory.ANTIDOTE,
-                        PayloadCompatibility.APPLICATOR,
-                        "payload.gregoriusdrugworkspersistence.naloxone",
-                        1,
-                        PayloadChargePolicy.SINGLE_USE,
-                        EnumSet.noneOf(PayloadBehaviorFlag.class),
-                        null,
-                        null,
-                        0,
-                        "gregoriusdrugworkspersistence:naloxone_bundle"
-                ),
-                null
-        );
-
-        register(
-                new PayloadDefinition(
-                        "gregoriusdrugworkspersistence:flumazenil_payload",
-                        PayloadCategory.ANTIDOTE,
-                        PayloadCompatibility.APPLICATOR,
-                        "payload.gregoriusdrugworkspersistence.flumazenil",
-                        1,
-                        PayloadChargePolicy.SINGLE_USE,
-                        EnumSet.noneOf(PayloadBehaviorFlag.class),
-                        null,
-                        null,
-                        0,
-                        "gregoriusdrugworkspersistence:flumazenil_bundle"
-                ),
-                null
-        );
-
-        register(
-                new PayloadDefinition(
-                        "gregoriusdrugworkspersistence:glucagon_payload",
-                        PayloadCategory.DELIVERY_ITEM,
-                        PayloadCompatibility.APPLICATOR,
-                        "payload.gregoriusdrugworkspersistence.glucagon",
-                        1,
-                        PayloadChargePolicy.SINGLE_USE,
-                        EnumSet.noneOf(PayloadBehaviorFlag.class),
-                        null,
-                        null,
-                        0,
-                        "gregoriusdrugworkspersistence:glucagon_bundle"
-                ),
-                null
-        );
-
-        register(
-                new PayloadDefinition(
-                        "gregoriusdrugworkspersistence:anomaly_payload",
+                        "gregoriusdrugworkspersistence:salvinorin_a_payload",
                         PayloadCategory.STAGED_EFFECT,
                         PayloadCompatibility.APPLICATOR,
-                        "payload.gregoriusdrugworkspersistence.anomaly",
+                        "payload.gregoriusdrugworkspersistence.salvinorin_a",
                         1,
                         PayloadChargePolicy.SINGLE_USE,
                         EnumSet.noneOf(PayloadBehaviorFlag.class),
                         null,
                         null,
                         0,
-                        "gregoriusdrugworkspersistence:anomaly_bundle"
+                        "gregoriusdrugworkspersistence:salvinorin_a_bundle"
+                ),
+                null
+        );
+        register(
+                new PayloadDefinition(
+                        "gregoriusdrugworkspersistence:salvinorin_antidote_payload",
+                        PayloadCategory.ANTIDOTE,
+                        PayloadCompatibility.APPLICATOR,
+                        "payload.gregoriusdrugworkspersistence.salvinorin_antidote",
+                        1,
+                        PayloadChargePolicy.SINGLE_USE,
+                        EnumSet.noneOf(PayloadBehaviorFlag.class),
+                        null,
+                        null,
+                        0,
+                        "gregoriusdrugworkspersistence:salvinorin_antidote_bundle"
                 ),
                 null
         );

@@ -17,6 +17,14 @@ public final class VisualEffectProfile {
     private final float fovPulseAmount;
     private final float fovPulseSpeed;
     private final int particleDensity;
+    private final float vignetteStrength;
+    private final float prismSeparation;
+    private final float tunnelStrength;
+    private final float ribbonIntensity;
+    private final int ribbonDensity;
+    private final float scanlineStrength;
+    private final float rollDrift;
+    private final float afterimageStrength;
     private final boolean localOnly;
     private final String startSoundId;
 
@@ -39,6 +47,62 @@ public final class VisualEffectProfile {
             boolean localOnly,
             String startSoundId
     ) {
+        this(
+                id,
+                debugName,
+                colorMode,
+                tintArgb,
+                pulseSpeed,
+                pulseAmplitude,
+                flashFrequency,
+                flashIntensity,
+                yawDrift,
+                pitchDrift,
+                wobbleSpeed,
+                wobbleAmplitude,
+                fovPulseAmount,
+                fovPulseSpeed,
+                particleDensity,
+                0.0F,
+                0.0F,
+                0.0F,
+                0.0F,
+                0,
+                0.0F,
+                0.0F,
+                0.0F,
+                localOnly,
+                startSoundId
+        );
+    }
+
+    public VisualEffectProfile(
+            String id,
+            String debugName,
+            VisualColorMode colorMode,
+            int tintArgb,
+            float pulseSpeed,
+            float pulseAmplitude,
+            float flashFrequency,
+            float flashIntensity,
+            float yawDrift,
+            float pitchDrift,
+            float wobbleSpeed,
+            float wobbleAmplitude,
+            float fovPulseAmount,
+            float fovPulseSpeed,
+            int particleDensity,
+            float vignetteStrength,
+            float prismSeparation,
+            float tunnelStrength,
+            float ribbonIntensity,
+            int ribbonDensity,
+            float scanlineStrength,
+            float rollDrift,
+            float afterimageStrength,
+            boolean localOnly,
+            String startSoundId
+    ) {
         this.id = id;
         this.debugName = debugName;
         this.colorMode = colorMode;
@@ -54,6 +118,14 @@ public final class VisualEffectProfile {
         this.fovPulseAmount = fovPulseAmount;
         this.fovPulseSpeed = fovPulseSpeed;
         this.particleDensity = particleDensity;
+        this.vignetteStrength = vignetteStrength;
+        this.prismSeparation = prismSeparation;
+        this.tunnelStrength = tunnelStrength;
+        this.ribbonIntensity = ribbonIntensity;
+        this.ribbonDensity = ribbonDensity;
+        this.scanlineStrength = scanlineStrength;
+        this.rollDrift = rollDrift;
+        this.afterimageStrength = afterimageStrength;
         this.localOnly = localOnly;
         this.startSoundId = startSoundId;
     }
@@ -116,6 +188,38 @@ public final class VisualEffectProfile {
 
     public int getParticleDensity() {
         return particleDensity;
+    }
+
+    public float getVignetteStrength() {
+        return vignetteStrength;
+    }
+
+    public float getPrismSeparation() {
+        return prismSeparation;
+    }
+
+    public float getTunnelStrength() {
+        return tunnelStrength;
+    }
+
+    public float getRibbonIntensity() {
+        return ribbonIntensity;
+    }
+
+    public int getRibbonDensity() {
+        return ribbonDensity;
+    }
+
+    public float getScanlineStrength() {
+        return scanlineStrength;
+    }
+
+    public float getRollDrift() {
+        return rollDrift;
+    }
+
+    public float getAfterimageStrength() {
+        return afterimageStrength;
     }
 
     public boolean isLocalOnly() {

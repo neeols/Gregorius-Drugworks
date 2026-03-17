@@ -9,12 +9,18 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.WorldServer;
 
+import java.util.Locale;
 import java.util.UUID;
 
 public final class TripRuntime implements com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime {
@@ -79,7 +85,12 @@ public final class TripRuntime implements com.wurtzitane.gregoriusdrugworks.comm
 
     @Override
     public void sendMessage(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, String message, String color) {
-        ((PersistenceTripPlayer) player).player().sendMessage(new TextComponentString(message));
+        TextComponentString component = new TextComponentString(message);
+        TextFormatting formatting = resolveTextFormatting(color);
+        if (formatting != null) {
+            component.setStyle(new Style().setColor(formatting));
+        }
+        ((PersistenceTripPlayer) player).player().sendMessage(component);
     }
 
     @Override
@@ -122,8 +133,38 @@ public final class TripRuntime implements com.wurtzitane.gregoriusdrugworks.comm
 
     @Override
     public void spawnParticles(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, ParticleSpec particle) {
-        // 1.12.2 particle spawning can be wired here later using packets/world helpers.
-        log("[TRIP][PERSIST][PARTICLE] " + particle.getId());
+        EntityPlayerMP serverPlayer = ((PersistenceTripPlayer) player).player();
+        if (!(serverPlayer.world instanceof WorldServer)) {
+            return;
+        }
+
+        EnumParticleTypes particleType = resolveParticleType(particle.getId());
+        if (particleType == null) {
+            log("[TRIP][PERSIST][PARTICLEMISS] " + particle.getId());
+            return;
+        }
+
+        int count = clamp(particle.getCount(), 1, 160);
+        double spread = Math.max(0.01D, particle.getSpread());
+        double speed = Math.max(0.0D, particle.getSpeed());
+        Vec3d origin = new Vec3d(
+                serverPlayer.posX,
+                serverPlayer.posY + (serverPlayer.getEyeHeight() * 0.55D),
+                serverPlayer.posZ
+        );
+
+        ((WorldServer) serverPlayer.world).spawnParticle(
+                particleType,
+                true,
+                origin.x,
+                origin.y,
+                origin.z,
+                count,
+                spread,
+                spread * 0.75D,
+                spread,
+                speed
+        );
     }
 
     @Override
@@ -171,6 +212,71 @@ public final class TripRuntime implements com.wurtzitane.gregoriusdrugworks.comm
     @Override
     public void log(String message) {
         System.out.println(message);
+    }
+
+    private static TextFormatting resolveTextFormatting(String color) {
+        if (color == null || color.trim().isEmpty()) {
+            return null;
+        }
+
+        String normalized = color.trim()
+                .replace('-', '_')
+                .replace(' ', '_')
+                .toUpperCase(Locale.ROOT);
+
+        try {
+            return TextFormatting.valueOf(normalized);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
+    }
+
+    private static EnumParticleTypes resolveParticleType(String particleId) {
+        if (particleId == null || particleId.trim().isEmpty()) {
+            return null;
+        }
+
+        String raw = particleId.trim();
+        String path = raw.indexOf(':') >= 0 ? raw.substring(raw.indexOf(':') + 1) : raw;
+        EnumParticleTypes direct = EnumParticleTypes.getByName(path);
+        if (direct != null) {
+            return direct;
+        }
+
+        String normalizedInput = normalizeParticleKey(path);
+        if ("enchant".equals(normalizedInput)) {
+            normalizedInput = "enchantmenttable";
+        }
+
+        for (EnumParticleTypes particleType : EnumParticleTypes.values()) {
+            if (normalizeParticleKey(particleType.getParticleName()).equals(normalizedInput)
+                    || normalizeParticleKey(particleType.name()).equals(normalizedInput)) {
+                return particleType;
+            }
+        }
+
+        return null;
+    }
+
+    private static String normalizeParticleKey(String value) {
+        StringBuilder builder = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                builder.append(Character.toLowerCase(c));
+            }
+        }
+        return builder.toString();
+    }
+
+    private static int clamp(int value, int min, int max) {
+        if (value < min) {
+            return min;
+        }
+        if (value > max) {
+            return max;
+        }
+        return value;
     }
 
     private static NBTTagCompound getOrCreateTripData(EntityPlayerMP player) {

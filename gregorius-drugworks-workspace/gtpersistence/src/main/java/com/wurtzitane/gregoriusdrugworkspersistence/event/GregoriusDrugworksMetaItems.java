@@ -42,6 +42,7 @@ public final class GregoriusDrugworksMetaItems {
     public static Item ATROPINE_2PAM_AUTOINJECTOR;
     public static Item NAC_INFUSION;
     public static Item FOMEPIZOLE_VIAL;
+    public static Item SALVINORIN_A_VIAL;
     public static Item HYDROXOCOBALAMIN_KIT;
     public static Item VITAMIN_K_AMPOULE;
     public static Item PROTAMINE_VIAL;
@@ -67,6 +68,7 @@ public final class GregoriusDrugworksMetaItems {
         ATROPINE_2PAM_AUTOINJECTOR = createSourceVial("atropine_2pam_autoinjector", 8, EnumRarity.EPIC);
         NAC_INFUSION = createSourceVial("nac_infusion", 16, EnumRarity.UNCOMMON);
         FOMEPIZOLE_VIAL = createSourceVial("fomepizole_vial", 16, EnumRarity.RARE);
+        SALVINORIN_A_VIAL = createSourceVial("salvinorin_a_vial", 16, EnumRarity.RARE);
         HYDROXOCOBALAMIN_KIT = createSourceVial("hydroxocobalamin_kit", 8, EnumRarity.EPIC);
         VITAMIN_K_AMPOULE = createSourceVial("vitamin_k_ampoule", 16, EnumRarity.UNCOMMON);
         PROTAMINE_VIAL = createSourceVial("protamine_vial", 16, EnumRarity.UNCOMMON);

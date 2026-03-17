@@ -22,24 +22,8 @@ public final class GregoriusDrugworksPayloadSources {
         bootstrapped = true;
 
         register(new PayloadSourceDefinition(
-                "gregoriusdrugworkspersistence:naloxone_autoinjector",
-                "gregoriusdrugworkspersistence:naloxone_payload",
-                1,
-                true,
-                "gregoriusdrugworkspersistence:empty_glass_ampoule"
-        ));
-
-        register(new PayloadSourceDefinition(
-                "gregoriusdrugworkspersistence:flumazenil_ampoule",
-                "gregoriusdrugworkspersistence:flumazenil_payload",
-                1,
-                true,
-                "gregoriusdrugworkspersistence:empty_glass_ampoule"
-        ));
-
-        register(new PayloadSourceDefinition(
-                "gregoriusdrugworkspersistence:glucagon_injector",
-                "gregoriusdrugworkspersistence:glucagon_payload",
+                "gregoriusdrugworkspersistence:salvinorin_a_vial",
+                "gregoriusdrugworkspersistence:salvinorin_a_payload",
                 1,
                 true,
                 "gregoriusdrugworkspersistence:empty_glass_ampoule"
@@ -47,7 +31,7 @@ public final class GregoriusDrugworksPayloadSources {
 
         register(new PayloadSourceDefinition(
                 "gregoriusdrugworkspersistence:kappa_reset_ampoule",
-                "gregoriusdrugworkspersistence:anomaly_payload",
+                "gregoriusdrugworkspersistence:salvinorin_antidote_payload",
                 1,
                 true,
                 "gregoriusdrugworkspersistence:empty_glass_ampoule"

@@ -151,6 +151,14 @@ gdw.visualProfiles.builder('showcase_focus', 'Showcase Focus')
     .colorMode(VisualColorMode.PULSE)
     .tintArgb(0x55A7FFD8 as int)
     .pulseSpeed(0.12F)
+    .vignetteStrength(0.18F)
+    .prismSeparation(0.08F)
+    .tunnelStrength(0.12F)
+    .ribbonIntensity(0.10F)
+    .ribbonDensity(2)
+    .scanlineStrength(0.05F)
+    .rollDrift(0.03F)
+    .afterimageStrength(0.05F)
     .register()
 ```
 
@@ -169,8 +177,26 @@ Useful builder methods:
 - `fovPulseAmount(float)`
 - `fovPulseSpeed(float)`
 - `particleDensity(int)`
+- `vignetteStrength(float)`
+- `prismSeparation(float)`
+- `tunnelStrength(float)`
+- `ribbonIntensity(float)`
+- `ribbonDensity(int)`
+- `scanlineStrength(float)`
+- `rollDrift(float)`
+- `afterimageStrength(float)`
 - `localOnly(boolean)`
 - `startSoundId(String)`
+
+The new visual fields are all client-side tuning knobs. They let scripts describe stronger local overlays without adding extra network payload:
+
+- `vignetteStrength` darkens and tints the screen edges
+- `prismSeparation` adds offset color blooms / prism ghosts
+- `tunnelStrength` drives expanding ring and tunnel geometry
+- `ribbonIntensity` and `ribbonDensity` control moving band overlays
+- `scanlineStrength` controls animated scanline sweeps
+- `rollDrift` adds eased camera roll during the profile
+- `afterimageStrength` layers lingering ghost halos behind the main tint
 
 ### `mods.gdw.triggerBundles`
 
@@ -202,6 +228,7 @@ gdw.trips.registerTrip(
         .stage(
             gdw.trips.stage(0)
                 .message('The edges soften.', 'gray')
+                .triggerSpec(gdw.trips.stageEnter('showcase_focus_bundle'))
                 .effect(gdw.trips.effect('minecraft:speed', 6, 0, false))
                 .build()
         )
@@ -214,6 +241,10 @@ Main entry points:
 - `trip(itemId)`
 - `stage(atSeconds)`
 - `antidote(itemId)`
+- `triggerSpec()`
+- `stageEnter(triggerBundleId)`
+- `stageTick(triggerBundleId, intervalTicks)`
+- `stageExit(triggerBundleId)`
 - `effect(effectId, seconds, amplifier, hideParticles)`
 - `particle(particleId, count, spread, speed)`
 - `sound(soundId, volume, pitch)`
@@ -221,9 +252,25 @@ Main entry points:
 - `registerAntidote(AntidoteDefinition)`
 - `allowAntidoteForTrip(antidoteItemId, tripItemId)`
 
+Trip stages use the common Java builder, so you can wire stage trigger bundles directly through `TripStage.Builder.triggerSpec(...)`. The helpers above are just convenience constructors for the trigger spec:
+
+```groovy
+gdw.trips.stage(18)
+    .message('The room exhales with you.', 'aqua')
+    .triggerSpec(
+        gdw.trips.triggerSpec()
+            .onEnter('showcase_focus_bundle')
+            .onTick('showcase_focus_bundle', 80)
+            .build()
+    )
+    .build()
+```
+
 ### `mods.gdw.payloads`
 
 Registers delivery payload definitions. Applicators are the primary current use case, but the compatibility enum is broader and leaves room for additional delivery paths.
+
+For the built-in medical flow, think of payloads as abstract effects and payload sources as the real physical ingredients. A vial or ampoule becomes useful once it is mapped through `payloadSources` and loaded into an applicator stack.
 
 ```groovy
 gdw.payloads.builder(

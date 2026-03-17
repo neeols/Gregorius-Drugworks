@@ -6,6 +6,7 @@ import com.wurtzitane.gregoriusdrugworks.common.trip.model.ParticleSpec;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.SoundSpec;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.TripDefinition;
 import com.wurtzitane.gregoriusdrugworks.common.trip.model.TripStage;
+import com.wurtzitane.gregoriusdrugworks.common.trip.model.TripStageTriggerSpec;
 
 public final class GroovyTripsSection extends AbstractGroovySection {
 
@@ -23,6 +24,28 @@ public final class GroovyTripsSection extends AbstractGroovySection {
 
     public AntidoteDefinition.Builder antidote(String itemId) {
         return AntidoteDefinition.builder(itemId);
+    }
+
+    public TripStageTriggerSpec.Builder triggerSpec() {
+        return TripStageTriggerSpec.builder();
+    }
+
+    public TripStageTriggerSpec stageEnter(String triggerBundleId) {
+        return TripStageTriggerSpec.builder()
+                .onEnter(triggerBundleId)
+                .build();
+    }
+
+    public TripStageTriggerSpec stageTick(String triggerBundleId, int intervalTicks) {
+        return TripStageTriggerSpec.builder()
+                .onTick(triggerBundleId, intervalTicks)
+                .build();
+    }
+
+    public TripStageTriggerSpec stageExit(String triggerBundleId) {
+        return TripStageTriggerSpec.builder()
+                .onExit(triggerBundleId)
+                .build();
     }
 
     public EffectSpec effect(String effectId, int seconds, int amplifier, boolean hideParticles) {

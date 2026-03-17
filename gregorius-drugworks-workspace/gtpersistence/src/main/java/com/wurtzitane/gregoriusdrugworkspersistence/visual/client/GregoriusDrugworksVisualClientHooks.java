@@ -6,25 +6,35 @@ import com.wurtzitane.gregoriusdrugworkspersistence.network.packet.PacketStartVi
 import com.wurtzitane.gregoriusdrugworkspersistence.network.packet.PacketStopVisualEffect;
 import com.wurtzitane.gregoriusdrugworkspersistence.visual.GregoriusDrugworksVisualProfiles;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
+import net.minecraftforge.client.event.EntityViewRenderEvent.CameraSetup;
 import net.minecraftforge.client.event.EntityViewRenderEvent.FOVModifier;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-
-import javax.annotation.Nullable;
+import org.lwjgl.opengl.GL11;
 
 public final class GregoriusDrugworksVisualClientHooks {
 
+    private static final int RADIAL_SEGMENTS = 40;
+    private static final int RING_SEGMENTS = 48;
+
     private static ActiveVisualEffect ACTIVE;
     private static boolean initialised = false;
+
+    private static float smoothedYawOffset;
+    private static float smoothedPitchOffset;
+    private static float smoothedRollOffset;
+    private static float smoothedScreenOffsetX;
+    private static float smoothedScreenOffsetY;
 
     private GregoriusDrugworksVisualClientHooks() {
     }
@@ -77,21 +87,31 @@ public final class GregoriusDrugworksVisualClientHooks {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.world == null || mc.player == null) {
             ACTIVE = null;
-            return;
-        }
-
-        if (ACTIVE == null) {
+            hardResetSmoothing();
             return;
         }
 
         long worldTime = mc.world.getTotalWorldTime();
-        if (ACTIVE.isExpired(worldTime)) {
+        if (ACTIVE != null && ACTIVE.isExpired(worldTime)) {
             ACTIVE = null;
+        }
+
+        updateSmoothing(worldTime);
+
+        if (ACTIVE != null) {
+            spawnLocalParticles(mc, ACTIVE, worldTime);
+        }
+    }
+
+    @SubscribeEvent
+    public void onCameraSetup(CameraSetup event) {
+        if (!hasResidualCameraOffsets()) {
             return;
         }
 
-        applyCameraDrift(mc.player, ACTIVE, worldTime);
-        spawnLocalParticles(mc, ACTIVE, worldTime);
+        event.setYaw(event.getYaw() + smoothedYawOffset);
+        event.setPitch(event.getPitch() + smoothedPitchOffset);
+        event.setRoll(event.getRoll() + smoothedRollOffset);
     }
 
     @SubscribeEvent
@@ -107,7 +127,8 @@ public final class GregoriusDrugworksVisualClientHooks {
 
         VisualEffectProfile profile = ACTIVE.getProfile();
         float age = ACTIVE.age(mc.world.getTotalWorldTime(), 1.0F);
-        float wobble = (float) Math.sin(age * profile.getFovPulseSpeed()) * profile.getFovPulseAmount();
+        float envelope = computeEnvelope(ACTIVE.progress(mc.world.getTotalWorldTime(), 1.0F));
+        float wobble = (float) Math.sin(age * (0.025F + profile.getFovPulseSpeed())) * profile.getFovPulseAmount() * 9.0F * envelope;
         event.setFOV(event.getFOV() + wobble);
     }
 
@@ -124,27 +145,258 @@ public final class GregoriusDrugworksVisualClientHooks {
 
         VisualEffectProfile profile = ACTIVE.getProfile();
         float age = ACTIVE.age(mc.world.getTotalWorldTime(), event.getPartialTicks());
-        int color = computeTint(profile, age);
+        float progress = ACTIVE.progress(mc.world.getTotalWorldTime(), event.getPartialTicks());
+        float envelope = computeEnvelope(progress);
 
         ScaledResolution res = new ScaledResolution(mc);
+        float width = res.getScaledWidth();
+        float height = res.getScaledHeight();
+        float centerX = width * 0.5F + (smoothedScreenOffsetX * width * 0.08F);
+        float centerY = height * 0.5F + (smoothedScreenOffsetY * height * 0.08F);
+        int baseColor = computeTint(profile, age, envelope);
+        float[] baseRgb = computeRgb(profile, age);
+
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
-        Gui.drawRect(0, 0, res.getScaledWidth(), res.getScaledHeight(), color);
+        GlStateManager.disableAlpha();
+        GlStateManager.disableTexture2D();
+        GlStateManager.shadeModel(GL11.GL_SMOOTH);
+
+        GlStateManager.tryBlendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO
+        );
+        drawFullscreenQuad(0.0F, 0.0F, width, height, baseColor);
+        drawAfterimageEchoes(centerX, centerY, width, height, profile, age, envelope, baseRgb);
+        drawTunnelRings(centerX, centerY, width, height, profile, age, envelope, baseRgb);
+        drawVignette(centerX, centerY, width, height, profile, envelope, baseRgb);
+
+        GlStateManager.tryBlendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO
+        );
+        drawPrismGhosts(centerX, centerY, width, height, profile, age, envelope);
+        drawRibbonBands(width, height, profile, age, envelope);
+        drawScanlines(width, height, profile, age, envelope, baseRgb);
+
+        GlStateManager.shadeModel(GL11.GL_FLAT);
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableAlpha();
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
     }
 
-    private static void applyCameraDrift(EntityPlayerSP player, ActiveVisualEffect active, long worldTime) {
-        VisualEffectProfile profile = active.getProfile();
-        float age = active.age(worldTime, 1.0F);
+    private static void updateSmoothing(long worldTime) {
+        if (ACTIVE == null) {
+            smoothedYawOffset = approach(smoothedYawOffset, 0.0F, 0.18F);
+            smoothedPitchOffset = approach(smoothedPitchOffset, 0.0F, 0.18F);
+            smoothedRollOffset = approach(smoothedRollOffset, 0.0F, 0.18F);
+            smoothedScreenOffsetX = approach(smoothedScreenOffsetX, 0.0F, 0.18F);
+            smoothedScreenOffsetY = approach(smoothedScreenOffsetY, 0.0F, 0.18F);
+            return;
+        }
 
-        float yaw = (float) Math.sin(age * profile.getWobbleSpeed()) * profile.getYawDrift();
-        float pitch = (float) Math.cos(age * profile.getWobbleSpeed()) * profile.getPitchDrift();
+        VisualEffectProfile profile = ACTIVE.getProfile();
+        float age = ACTIVE.age(worldTime, 1.0F);
+        float envelope = computeEnvelope(ACTIVE.progress(worldTime, 1.0F));
 
-        player.rotationYaw += yaw;
-        player.rotationPitch += pitch;
-        player.prevRotationYaw = player.rotationYaw;
-        player.prevRotationPitch = player.rotationPitch;
+        float yawWave = (float) (Math.sin(age * (0.045F + profile.getWobbleSpeed() * 0.45F))
+                + (Math.sin(age * (0.023F + profile.getPulseSpeed() * 0.35F) + 1.2F) * 0.45F));
+        float pitchWave = (float) (Math.cos(age * (0.041F + profile.getWobbleSpeed() * 0.42F) + 0.8F)
+                + (Math.sin(age * (0.017F + profile.getFlashFrequency() * 0.50F) + 2.3F) * 0.35F));
+        float rollWave = (float) (Math.sin(age * (0.032F + profile.getWobbleSpeed() * 0.36F) + 0.6F)
+                + (Math.cos(age * (0.011F + profile.getPulseSpeed() * 0.28F)) * 0.50F));
+
+        float targetYaw = yawWave * profile.getYawDrift() * 7.5F * envelope;
+        float targetPitch = pitchWave * profile.getPitchDrift() * 6.0F * envelope;
+        float targetRoll = rollWave * (profile.getRollDrift() * 10.0F + profile.getPrismSeparation() * 1.6F) * envelope;
+
+        float targetScreenOffsetX = (float) Math.sin(age * (0.018F + profile.getWobbleSpeed() * 0.28F)) * profile.getWobbleAmplitude() * 4.0F * envelope;
+        float targetScreenOffsetY = (float) Math.cos(age * (0.015F + profile.getWobbleSpeed() * 0.25F) + 0.7F) * profile.getWobbleAmplitude() * 3.0F * envelope;
+
+        smoothedYawOffset = approach(smoothedYawOffset, targetYaw, 0.16F);
+        smoothedPitchOffset = approach(smoothedPitchOffset, targetPitch, 0.16F);
+        smoothedRollOffset = approach(smoothedRollOffset, targetRoll, 0.14F);
+        smoothedScreenOffsetX = approach(smoothedScreenOffsetX, targetScreenOffsetX, 0.16F);
+        smoothedScreenOffsetY = approach(smoothedScreenOffsetY, targetScreenOffsetY, 0.16F);
+    }
+
+    private static void drawPrismGhosts(
+            float centerX,
+            float centerY,
+            float width,
+            float height,
+            VisualEffectProfile profile,
+            float age,
+            float envelope
+    ) {
+        if (profile.getPrismSeparation() <= 0.0F) {
+            return;
+        }
+
+        float separation = profile.getPrismSeparation() * Math.min(width, height) * 0.20F;
+        int ghostCount = 3 + Math.min(2, Math.max(0, profile.getRibbonDensity() / 3));
+
+        for (int i = 0; i < ghostCount; i++) {
+            float lane = ghostCount == 1 ? 0.0F : ((i / (float) (ghostCount - 1)) * 2.0F) - 1.0F;
+            float orbit = age * 0.020F + (i * 0.95F);
+            float offsetX = lane * separation * 0.85F + (float) Math.sin(orbit) * separation * 0.35F;
+            float offsetY = (float) Math.cos(orbit * 0.8F) * separation * 0.18F;
+            float[] rgb = profile.getColorMode() == VisualColorMode.RAINBOW
+                    ? rainbowRgb(age * 0.60F + (i * 1.8F))
+                    : shiftRgb(computeRgb(profile, age), 0.12F * i);
+
+            int inner = colorArgb((int) (255.0F * envelope * (0.035F + profile.getPrismSeparation() * 0.14F)), rgb[0], rgb[1], rgb[2]);
+            drawRadialGlow(centerX + offsetX, centerY + offsetY, width * 0.44F, height * 0.34F, inner, 0x00000000, RADIAL_SEGMENTS);
+        }
+    }
+
+    private static void drawTunnelRings(
+            float centerX,
+            float centerY,
+            float width,
+            float height,
+            VisualEffectProfile profile,
+            float age,
+            float envelope,
+            float[] baseRgb
+    ) {
+        if (profile.getTunnelStrength() <= 0.0F) {
+            return;
+        }
+
+        float maxRadius = (float) Math.hypot(width, height) * 0.58F;
+        int ringCount = clampInt(2 + Math.round(profile.getTunnelStrength() * 7.0F), 2, 8);
+
+        for (int i = 0; i < ringCount; i++) {
+            float cycle = fract(age * (0.010F + profile.getPulseSpeed() * 0.030F) + (i * (1.0F / ringCount)));
+            float radius = 34.0F + cycle * (maxRadius - 34.0F);
+            float thickness = 8.0F + profile.getTunnelStrength() * 26.0F;
+            float ringAlpha = envelope * (0.04F + profile.getTunnelStrength() * 0.14F) * (1.0F - cycle);
+            float[] rgb = profile.getColorMode() == VisualColorMode.RAINBOW
+                    ? rainbowRgb(age * 0.55F + (i * 0.75F))
+                    : shiftRgb(baseRgb, i * 0.05F);
+
+            int inner = colorArgb((int) (ringAlpha * 255.0F), rgb[0], rgb[1], rgb[2]);
+            int outer = colorArgb(0, rgb[0], rgb[1], rgb[2]);
+            drawRing(centerX, centerY, radius, thickness, inner, outer, RING_SEGMENTS);
+        }
+    }
+
+    private static void drawRibbonBands(float width, float height, VisualEffectProfile profile, float age, float envelope) {
+        if (profile.getRibbonIntensity() <= 0.0F || profile.getRibbonDensity() <= 0) {
+            return;
+        }
+
+        int ribbonCount = clampInt(profile.getRibbonDensity(), 1, 10);
+        for (int i = 0; i < ribbonCount; i++) {
+            float yProgress = fract(age * (0.004F + profile.getPulseSpeed() * 0.010F) + (i * 0.173F));
+            float bandHeight = height * (0.05F + (profile.getRibbonIntensity() * 0.05F) + ((i % 3) * 0.012F));
+            float y = yProgress * (height + (bandHeight * 2.0F)) - bandHeight;
+            float skew = width * (0.08F + profile.getRibbonIntensity() * 0.12F) * (float) Math.sin(age * 0.022F + i);
+            float alpha = envelope * (0.02F + profile.getRibbonIntensity() * 0.09F) * (1.0F - Math.abs(0.5F - yProgress) * 1.35F);
+            float[] rgb = profile.getColorMode() == VisualColorMode.RAINBOW
+                    ? rainbowRgb(age * 0.80F + (i * 0.90F))
+                    : shiftRgb(computeRgb(profile, age), i * 0.04F);
+
+            int color = colorArgb((int) (clamp01(alpha) * 255.0F), rgb[0], rgb[1], rgb[2]);
+            drawQuad(
+                    -skew,
+                    y,
+                    width + skew * 0.25F,
+                    y,
+                    width + skew,
+                    y + bandHeight,
+                    skew * 0.25F,
+                    y + bandHeight,
+                    color,
+                    color,
+                    color,
+                    color
+            );
+        }
+    }
+
+    private static void drawScanlines(
+            float width,
+            float height,
+            VisualEffectProfile profile,
+            float age,
+            float envelope,
+            float[] baseRgb
+    ) {
+        if (profile.getScanlineStrength() <= 0.0F) {
+            return;
+        }
+
+        int step = clampInt(12 - Math.round(profile.getScanlineStrength() * 32.0F), 2, 12);
+        float travel = fract(age * (0.012F + profile.getFlashFrequency() * 0.04F));
+        float sweepY = travel * height;
+
+        for (int y = 0; y < height; y += step) {
+            float linePhase = fract((y / Math.max(1.0F, height)) + (age * 0.003F));
+            float alpha = envelope * (0.01F + profile.getScanlineStrength() * 0.06F) * (0.55F + 0.45F * (float) Math.sin(linePhase * Math.PI * 2.0F));
+            int color = colorArgb((int) (clamp01(alpha) * 255.0F), baseRgb[0], baseRgb[1], baseRgb[2]);
+            drawFullscreenQuad(0.0F, y, width, y + 1.0F, color);
+        }
+
+        int sweepColor = colorArgb((int) (envelope * profile.getScanlineStrength() * 62.0F), baseRgb[0], baseRgb[1], baseRgb[2]);
+        drawFullscreenQuad(0.0F, sweepY - 2.0F, width, sweepY + 2.0F, sweepColor);
+    }
+
+    private static void drawAfterimageEchoes(
+            float centerX,
+            float centerY,
+            float width,
+            float height,
+            VisualEffectProfile profile,
+            float age,
+            float envelope,
+            float[] baseRgb
+    ) {
+        if (profile.getAfterimageStrength() <= 0.0F) {
+            return;
+        }
+
+        int echoCount = clampInt(1 + Math.round(profile.getAfterimageStrength() * 10.0F), 1, 5);
+        float reach = profile.getAfterimageStrength() * Math.min(width, height) * 0.10F;
+
+        for (int i = 0; i < echoCount; i++) {
+            float orbit = age * 0.018F + (i * 1.4F);
+            float offsetX = (float) Math.sin(orbit) * reach * (0.6F + i * 0.18F);
+            float offsetY = (float) Math.cos(orbit * 0.86F) * reach * (0.4F + i * 0.14F);
+            float[] rgb = profile.getColorMode() == VisualColorMode.RAINBOW
+                    ? rainbowRgb(age * 0.45F + i)
+                    : shiftRgb(baseRgb, i * 0.03F);
+            int inner = colorArgb((int) (255.0F * envelope * (0.02F + profile.getAfterimageStrength() * 0.10F) * (1.0F - (i / (float) echoCount))), rgb[0], rgb[1], rgb[2]);
+            drawRadialGlow(centerX + offsetX, centerY + offsetY, width * 0.34F, height * 0.26F, inner, 0x00000000, RADIAL_SEGMENTS);
+        }
+    }
+
+    private static void drawVignette(
+            float centerX,
+            float centerY,
+            float width,
+            float height,
+            VisualEffectProfile profile,
+            float envelope,
+            float[] baseRgb
+    ) {
+        if (profile.getVignetteStrength() <= 0.0F) {
+            return;
+        }
+
+        int outerColor = colorArgb(
+                (int) (255.0F * envelope * (0.10F + profile.getVignetteStrength() * 0.28F)),
+                baseRgb[0] * 0.28F,
+                baseRgb[1] * 0.22F,
+                baseRgb[2] * 0.30F
+        );
+        drawRadialGlow(centerX, centerY, width * 0.82F, height * 0.82F, 0x00000000, outerColor, RADIAL_SEGMENTS);
     }
 
     private static void spawnLocalParticles(Minecraft mc, ActiveVisualEffect active, long worldTime) {
@@ -157,64 +409,244 @@ public final class GregoriusDrugworksVisualClientHooks {
             return;
         }
 
-        if (worldTime % 2L != 0L) {
+        long cadence = profile.getParticleDensity() >= 5 ? 1L : 2L;
+        if ((worldTime % cadence) != 0L) {
             return;
         }
 
-        for (int i = 0; i < profile.getParticleDensity(); i++) {
-            double ox = (mc.world.rand.nextDouble() - 0.5D) * 1.2D;
-            double oy = mc.world.rand.nextDouble() * 0.8D;
-            double oz = (mc.world.rand.nextDouble() - 0.5D) * 1.2D;
+        EnumParticleTypes particleType = chooseLocalParticle(profile, worldTime);
+        float age = active.age(worldTime, 1.0F);
+        float[] rgb = computeRgb(profile, age);
+        int bursts = Math.min(8, profile.getParticleDensity() + Math.max(0, profile.getRibbonDensity() / 2));
+        double orbitScale = 0.18D + profile.getTunnelStrength() * 0.35D;
 
-            float[] rgb = computeRgb(profile, active.age(worldTime, 1.0F));
+        for (int i = 0; i < bursts; i++) {
+            double angle = age * 0.08D + (i * (Math.PI * 0.65D));
+            double ox = Math.sin(angle) * orbitScale + ((mc.world.rand.nextDouble() - 0.5D) * 0.35D);
+            double oy = (mc.world.rand.nextDouble() - 0.5D) * 0.45D;
+            double oz = Math.cos(angle) * orbitScale + ((mc.world.rand.nextDouble() - 0.5D) * 0.35D);
+
+            if (particleType == EnumParticleTypes.SPELL_MOB_AMBIENT) {
+                mc.world.spawnParticle(
+                        particleType,
+                        mc.player.posX + ox,
+                        mc.player.posY + mc.player.getEyeHeight() - 0.08D + oy,
+                        mc.player.posZ + oz,
+                        rgb[0],
+                        rgb[1],
+                        rgb[2]
+                );
+                continue;
+            }
 
             mc.world.spawnParticle(
-                    EnumParticleTypes.SPELL_MOB_AMBIENT,
+                    particleType,
                     mc.player.posX + ox,
-                    mc.player.posY + mc.player.getEyeHeight() + oy,
+                    mc.player.posY + mc.player.getEyeHeight() - 0.08D + oy,
                     mc.player.posZ + oz,
-                    rgb[0],
-                    rgb[1],
-                    rgb[2]
+                    ox * 0.04D,
+                    0.008D + profile.getPulseAmplitude() * 0.02D,
+                    oz * 0.04D
             );
         }
     }
 
-    private static int computeTint(VisualEffectProfile profile, float age) {
+    private static EnumParticleTypes chooseLocalParticle(VisualEffectProfile profile, long worldTime) {
+        if (profile.getTunnelStrength() > 0.60F) {
+            return (worldTime & 1L) == 0L ? EnumParticleTypes.PORTAL : EnumParticleTypes.END_ROD;
+        }
+        if (profile.getAfterimageStrength() > 0.16F) {
+            return EnumParticleTypes.CLOUD;
+        }
+        if (profile.getColorMode() == VisualColorMode.RAINBOW) {
+            return EnumParticleTypes.SPELL_MOB_AMBIENT;
+        }
+        return EnumParticleTypes.SPELL_MOB_AMBIENT;
+    }
+
+    private static int computeTint(VisualEffectProfile profile, float age, float envelope) {
         int base = profile.getTintArgb();
         int alpha = (base >>> 24) & 0xFF;
-        int red = (base >>> 16) & 0xFF;
-        int green = (base >>> 8) & 0xFF;
-        int blue = base & 0xFF;
-
-        if (profile.getColorMode() == VisualColorMode.RAINBOW) {
-            float[] rgb = computeRgb(profile, age);
-            red = (int) (rgb[0] * 255.0F);
-            green = (int) (rgb[1] * 255.0F);
-            blue = (int) (rgb[2] * 255.0F);
-        }
-
+        float[] rgb = computeRgb(profile, age);
         float pulse = (float) ((Math.sin(age * profile.getPulseSpeed()) + 1.0D) * 0.5D);
-        float flash = (float) ((Math.sin(age * profile.getFlashFrequency()) + 1.0D) * 0.5D);
+        float flash = (float) ((Math.sin(age * (0.5F + profile.getFlashFrequency())) + 1.0D) * 0.5D);
+        float intensity = envelope * (0.25F + (pulse * profile.getPulseAmplitude()) + (flash * profile.getFlashIntensity()));
 
-        alpha = Math.min(255, Math.max(0, (int) (alpha * (0.25F + pulse * profile.getPulseAmplitude() + flash * profile.getFlashIntensity()))));
-
-        return (alpha << 24) | (red << 16) | (green << 8) | blue;
+        return colorArgb(
+                clampInt((int) (alpha * intensity), 0, 255),
+                rgb[0],
+                rgb[1],
+                rgb[2]
+        );
     }
 
     private static float[] computeRgb(VisualEffectProfile profile, float age) {
-        if (profile.getColorMode() != VisualColorMode.RAINBOW) {
-            int base = profile.getTintArgb();
+        int base = profile.getTintArgb();
+        float[] rgb = new float[] {
+                ((base >>> 16) & 0xFF) / 255.0F,
+                ((base >>> 8) & 0xFF) / 255.0F,
+                (base & 0xFF) / 255.0F
+        };
+
+        if (profile.getColorMode() == VisualColorMode.RAINBOW) {
+            return rainbowRgb(age * 0.55F);
+        }
+
+        if (profile.getColorMode() == VisualColorMode.PULSE) {
+            float mix = 0.20F + (float) ((Math.sin(age * (0.06F + profile.getPulseSpeed() * 0.50F)) + 1.0D) * 0.15D);
             return new float[] {
-                    ((base >>> 16) & 0xFF) / 255.0F,
-                    ((base >>> 8) & 0xFF) / 255.0F,
-                    (base & 0xFF) / 255.0F
+                    clamp01(rgb[0] + ((1.0F - rgb[0]) * mix)),
+                    clamp01(rgb[1] + ((1.0F - rgb[1]) * (mix * 0.75F))),
+                    clamp01(rgb[2] + ((1.0F - rgb[2]) * (mix * 0.55F)))
             };
         }
 
-        float r = (float) ((Math.sin(age * 0.08F) + 1.0D) * 0.5D);
-        float g = (float) ((Math.sin(age * 0.08F + 2.094D) + 1.0D) * 0.5D);
-        float b = (float) ((Math.sin(age * 0.08F + 4.188D) + 1.0D) * 0.5D);
+        return rgb;
+    }
+
+    private static float[] rainbowRgb(float phase) {
+        float r = (float) ((Math.sin(phase) + 1.0D) * 0.5D);
+        float g = (float) ((Math.sin(phase + 2.094D) + 1.0D) * 0.5D);
+        float b = (float) ((Math.sin(phase + 4.188D) + 1.0D) * 0.5D);
         return new float[] { r, g, b };
+    }
+
+    private static float[] shiftRgb(float[] rgb, float amount) {
+        return new float[] {
+                clamp01(rgb[0] + amount),
+                clamp01(rgb[1] + (amount * 0.7F)),
+                clamp01(rgb[2] + (amount * 0.9F))
+        };
+    }
+
+    private static float computeEnvelope(float progress) {
+        float fadeIn = smoothStep(clamp01(progress * 3.5F));
+        float fadeOut = smoothStep(clamp01((1.0F - progress) * 4.0F));
+        return fadeIn * fadeOut;
+    }
+
+    private static float smoothStep(float value) {
+        return value * value * (3.0F - (2.0F * value));
+    }
+
+    private static boolean hasResidualCameraOffsets() {
+        return Math.abs(smoothedYawOffset) > 0.001F
+                || Math.abs(smoothedPitchOffset) > 0.001F
+                || Math.abs(smoothedRollOffset) > 0.001F;
+    }
+
+    private static void hardResetSmoothing() {
+        smoothedYawOffset = 0.0F;
+        smoothedPitchOffset = 0.0F;
+        smoothedRollOffset = 0.0F;
+        smoothedScreenOffsetX = 0.0F;
+        smoothedScreenOffsetY = 0.0F;
+    }
+
+    private static float approach(float current, float target, float factor) {
+        return current + ((target - current) * factor);
+    }
+
+    private static float fract(float value) {
+        return value - (float) Math.floor(value);
+    }
+
+    private static float clamp01(float value) {
+        if (value < 0.0F) {
+            return 0.0F;
+        }
+        if (value > 1.0F) {
+            return 1.0F;
+        }
+        return value;
+    }
+
+    private static int clampInt(int value, int min, int max) {
+        if (value < min) {
+            return min;
+        }
+        if (value > max) {
+            return max;
+        }
+        return value;
+    }
+
+    private static int colorArgb(int alpha, float red, float green, float blue) {
+        return ((alpha & 0xFF) << 24)
+                | ((int) (clamp01(red) * 255.0F) << 16)
+                | ((int) (clamp01(green) * 255.0F) << 8)
+                | (int) (clamp01(blue) * 255.0F);
+    }
+
+    private static void drawFullscreenQuad(float left, float top, float right, float bottom, int color) {
+        drawQuad(left, top, right, top, right, bottom, left, bottom, color, color, color, color);
+    }
+
+    private static void drawQuad(
+            float x1,
+            float y1,
+            float x2,
+            float y2,
+            float x3,
+            float y3,
+            float x4,
+            float y4,
+            int c1,
+            int c2,
+            int c3,
+            int c4
+    ) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        putVertex(buffer, x1, y1, c1);
+        putVertex(buffer, x2, y2, c2);
+        putVertex(buffer, x3, y3, c3);
+        putVertex(buffer, x4, y4, c4);
+        tessellator.draw();
+    }
+
+    private static void drawRadialGlow(float centerX, float centerY, float radiusX, float radiusY, int innerColor, int outerColor, int segments) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION_COLOR);
+        putVertex(buffer, centerX, centerY, innerColor);
+
+        for (int i = 0; i <= segments; i++) {
+            double angle = (Math.PI * 2.0D * i) / segments;
+            float x = centerX + (float) Math.cos(angle) * radiusX;
+            float y = centerY + (float) Math.sin(angle) * radiusY;
+            putVertex(buffer, x, y, outerColor);
+        }
+
+        tessellator.draw();
+    }
+
+    private static void drawRing(float centerX, float centerY, float radius, float thickness, int innerColor, int outerColor, int segments) {
+        float innerRadius = Math.max(0.0F, radius - thickness);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_TRIANGLE_STRIP, DefaultVertexFormats.POSITION_COLOR);
+
+        for (int i = 0; i <= segments; i++) {
+            double angle = (Math.PI * 2.0D * i) / segments;
+            float cos = (float) Math.cos(angle);
+            float sin = (float) Math.sin(angle);
+            putVertex(buffer, centerX + cos * innerRadius, centerY + sin * innerRadius, innerColor);
+            putVertex(buffer, centerX + cos * radius, centerY + sin * radius, outerColor);
+        }
+
+        tessellator.draw();
+    }
+
+    private static void putVertex(BufferBuilder buffer, float x, float y, int color) {
+        buffer.pos(x, y, 0.0D)
+                .color(
+                        (color >>> 16) & 0xFF,
+                        (color >>> 8) & 0xFF,
+                        color & 0xFF,
+                        (color >>> 24) & 0xFF
+                )
+                .endVertex();
     }
 }

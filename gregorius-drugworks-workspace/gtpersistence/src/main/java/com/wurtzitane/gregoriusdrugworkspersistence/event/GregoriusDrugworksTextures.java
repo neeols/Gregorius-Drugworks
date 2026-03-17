@@ -49,6 +49,7 @@ public final class GregoriusDrugworksTextures {
             "atropine_2pam_autoinjector",
             "nac_infusion",
             "fomepizole_vial",
+            "salvinorin_a_vial",
             "hydroxocobalamin_kit",
             "vitamin_k_ampoule",
             "protamine_vial",
