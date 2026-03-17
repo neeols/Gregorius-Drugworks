@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -149,9 +150,21 @@ public final class TripRuntime implements com.wurtzitane.gregoriusdrugworks.comm
     @Override
     public void consumeHeldItem(com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripRuntime.TripPlayer player, int amount) {
         EntityPlayerMP serverPlayer = ((PersistenceTripPlayer) player).player();
-        ItemStack stack = serverPlayer.getHeldItemMainhand();
+        EnumHand hand = serverPlayer.isHandActive() ? serverPlayer.getActiveHand() : EnumHand.MAIN_HAND;
+        ItemStack stack = serverPlayer.getHeldItem(hand);
+
+        if (stack.isEmpty() && hand != EnumHand.MAIN_HAND) {
+            hand = EnumHand.MAIN_HAND;
+            stack = serverPlayer.getHeldItem(hand);
+        }
+
         if (!stack.isEmpty()) {
             stack.shrink(amount);
+            if (stack.isEmpty()) {
+                serverPlayer.setHeldItem(hand, ItemStack.EMPTY);
+            }
+            serverPlayer.inventory.markDirty();
+            serverPlayer.openContainer.detectAndSendChanges();
         }
     }
 

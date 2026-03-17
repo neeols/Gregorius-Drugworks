@@ -42,7 +42,7 @@ tile.gregoriusdrugworkspersistence.obsidian_forged_thermal_casing.name=Obsidian-
 tile.gregoriusdrugworkspersistence.thermocrack_matrix_casing.name=Thermocrack Matrix Casing
 
 item.gregoriusdrugworkspersistence.empty_capsule_pill.name=Empty Capsule Pill
-item.gregoriusdrugworkspersistence.sample_aroma_tube.name=Sample Aroma Tube
+item.gregoriusdrugworkspersistence.sample_vape.name=Sample Vape
 item.gregoriusdrugworkspersistence.medical_applicator.name=Medical Applicator
 item.gregoriusdrugworkspersistence.salvinorin_a_pill.name=Salvinorin A Pill
 payload.gregoriusdrugworkspersistence.naloxone=Payload: Naloxone
@@ -51,4 +51,4 @@ payload.gregoriusdrugworkspersistence.anomaly=Payload: Anomaly
 payload.gregoriusdrugworkspersistence.flumazenil=Payload: Flumazenil
 
 item.gregoriusdrugworkspersistence.used_paper_filter.name=Used Paper Filter
-item.gregoriusdrugworkspersistence.used_aroma_tube.name=Used Aroma Tube
+item.gregoriusdrugworkspersistence.used_vape.name=Used Vape

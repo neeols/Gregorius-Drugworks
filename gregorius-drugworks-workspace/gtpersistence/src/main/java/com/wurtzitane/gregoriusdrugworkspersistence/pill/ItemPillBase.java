@@ -85,11 +85,17 @@ public class ItemPillBase extends Item implements ITripUseDeferredItem {
     @Override
     public ActionResult<ItemStack> onItemRightClick(@Nonnull World world, @Nonnull EntityPlayer player, @Nonnull EnumHand hand) {
         ItemStack held = player.getHeldItem(hand);
-        player.setActiveHand(hand);
 
         if (!world.isRemote && player instanceof EntityPlayerMP) {
             EntityPlayerMP serverPlayer = (EntityPlayerMP) player;
+            if (TripHooks.isTripRunning(serverPlayer)) {
+                return new ActionResult<>(EnumActionResult.FAIL, held);
+            }
             int sequenceId = nextSequenceId(serverPlayer);
+            if (!PillUseTracker.beginUse(serverPlayer, held, hand, resolveTripItemId(), sequenceId, definition.getUseDurationTicks())) {
+                return new ActionResult<>(EnumActionResult.FAIL, held);
+            }
+            serverPlayer.getCooldownTracker().setCooldown(this, Math.max(1, definition.getUseDurationTicks()));
             GregoriusDrugworksNetworkHandler.sendPillUseAnimation(serverPlayer, this, hand, sequenceId);
         }
 
@@ -100,43 +106,82 @@ public class ItemPillBase extends Item implements ITripUseDeferredItem {
     @Override
     public ItemStack onItemUseFinish(@Nonnull ItemStack stack, @Nonnull World world, @Nonnull EntityLivingBase entityLiving) {
         if (!world.isRemote && entityLiving instanceof EntityPlayerMP) {
-            EntityPlayerMP player = (EntityPlayerMP) entityLiving;
-
-            SoundEvent finishSound = SoundEvent.REGISTRY.getObject(definition.getFinishSoundId());
-            if (finishSound != null) {
-                world.playSound(
-                        null,
-                        player.posX,
-                        player.posY,
-                        player.posZ,
-                        finishSound,
-                        SoundCategory.PLAYERS,
-                        1.0F,
-                        1.0F
-                );
-            }
-
-            boolean tripHandled = false;
-            if (definition.isTripHookEnabled() && getRegistryName() != null) {
-                tripHandled = TripHooks.onItemUse(player, getRegistryName().toString());
-            }
-
-            onPillConsumedServer(player, stack);
-
-            if (!player.capabilities.isCreativeMode && !tripHandled) {
-                stack.shrink(1);
-                if (stack.isEmpty() && player.getActiveHand() != null) {
-                    player.setHeldItem(player.getActiveHand(), ItemStack.EMPTY);
-                }
-                player.inventory.markDirty();
-                player.openContainer.detectAndSendChanges();
-            }
+            finishPendingUse((EntityPlayerMP) entityLiving, resolveUsedStack(entityLiving, stack));
         }
 
-        return stack;
+        return resolvePostUseStack(entityLiving, stack);
+    }
+
+    void finishPendingUse(EntityPlayerMP player, ItemStack stack) {
+        if (stack.isEmpty()) {
+            return;
+        }
+
+        PillUseTracker.clearUseData(stack);
+        playFinishSound(player);
+
+        if (definition.isTripHookEnabled()) {
+            TripHooks.onItemUse(player, resolveTripItemId());
+        }
+
+        onPillConsumedServer(player, stack);
+
+        if (!player.capabilities.isCreativeMode) {
+            stack.shrink(1);
+        }
+
+        player.inventory.markDirty();
+        player.openContainer.detectAndSendChanges();
     }
 
     protected void onPillConsumedServer(EntityPlayerMP player, ItemStack stack) {
         // Extension point for future pill-specific behaviour.
+    }
+
+    private String resolveTripItemId() {
+        return getRegistryName() != null ? getRegistryName().toString() : Tags.MOD_ID + ":" + definition.getItemId();
+    }
+
+    private void playFinishSound(EntityPlayerMP player) {
+        SoundEvent finishSound = SoundEvent.REGISTRY.getObject(definition.getFinishSoundId());
+        if (finishSound == null) {
+            return;
+        }
+
+        player.world.playSound(
+                null,
+                player.posX,
+                player.posY,
+                player.posZ,
+                finishSound,
+                SoundCategory.PLAYERS,
+                1.0F,
+                1.0F
+        );
+    }
+
+    private static ItemStack resolveUsedStack(EntityLivingBase entityLiving, ItemStack fallback) {
+        if (!(entityLiving instanceof EntityPlayer)) {
+            return fallback;
+        }
+        EntityPlayer player = (EntityPlayer) entityLiving;
+        EnumHand hand = player.getActiveHand();
+        if (hand == null) {
+            return fallback;
+        }
+        ItemStack held = player.getHeldItem(hand);
+        return held.isEmpty() ? fallback : held;
+    }
+
+    private static ItemStack resolvePostUseStack(EntityLivingBase entityLiving, ItemStack fallback) {
+        if (!(entityLiving instanceof EntityPlayer)) {
+            return fallback;
+        }
+        EntityPlayer player = (EntityPlayer) entityLiving;
+        EnumHand hand = player.getActiveHand();
+        if (hand == null) {
+            return fallback;
+        }
+        return player.getHeldItem(hand);
     }
 }

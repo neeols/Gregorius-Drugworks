@@ -1,5 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.integration.groovyscript.GregoriusDrugworksGroovyScriptClientBridge;
+import com.wurtzitane.gregoriusdrugworkspersistence.integration.groovyscript.GregoriusDrugworksGroovyScriptBridge;
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
 import com.wurtzitane.gregoriusdrugworkspersistence.util.GregoriusDrugworksUtil;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -21,7 +23,7 @@ public final class GregoriusDrugworksItems {
     public static Item CERAMIC_FILTER;
     public static Item CARBON_NANOTUBES;
     public static Item USED_PAPER_FILTER;
-    public static Item USED_AROMA_TUBE;
+    public static Item USED_VAPE;
     public static Item ASH_RESIDUE;
 
     private GregoriusDrugworksItems() {
@@ -43,7 +45,7 @@ public final class GregoriusDrugworksItems {
         CERAMIC_FILTER = createItem("ceramic_filter", 64);
         CARBON_NANOTUBES = createItem("carbon_nanotubes", 64);
         USED_PAPER_FILTER = createItem("used_paper_filter", 64);
-        USED_AROMA_TUBE = createItem("used_aroma_tube", 1);
+        USED_VAPE = createItem("used_vape", 1);
     }
 
     private static Item createItem(String name, int maxStackSize) {
@@ -65,6 +67,7 @@ public final class GregoriusDrugworksItems {
 
         GregoriusDrugworksBlocks.registerItemBlocks(registry);
         GregoriusDrugworksMetaItems.register(registry);
+        GregoriusDrugworksGroovyScriptBridge.registerItems(registry);
     }
 
     public static void registerModels() {
@@ -83,6 +86,7 @@ public final class GregoriusDrugworksItems {
 
         GregoriusDrugworksBlocks.registerModels();
         GregoriusDrugworksMetaItems.registerModels();
+        GregoriusDrugworksGroovyScriptClientBridge.registerModels();
     }
 
     public static List<Item> getRegisteredItems() {

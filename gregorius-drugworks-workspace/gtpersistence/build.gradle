@@ -145,6 +145,7 @@ dependencies {
     }
 
     compileOnly(rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022"))
+    compileOnly(rfg.deobf("curse.maven:groovyscript-687577:5120928"))
     implementation "com.wurtzitane.gregoriusdrugworks:common:0.1.0"
 }
 

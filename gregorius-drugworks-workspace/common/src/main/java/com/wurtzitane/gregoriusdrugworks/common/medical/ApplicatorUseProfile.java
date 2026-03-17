@@ -48,4 +48,17 @@ public final class ApplicatorUseProfile {
     public int getFinishTick() {
         return finishTick;
     }
+
+    public float getSegmentProgress(float elapsedTicks, int startInclusive, int endInclusive) {
+        if (endInclusive <= startInclusive) {
+            return 1.0F;
+        }
+        if (elapsedTicks <= startInclusive) {
+            return 0.0F;
+        }
+        if (elapsedTicks >= endInclusive) {
+            return 1.0F;
+        }
+        return (elapsedTicks - startInclusive) / (float) (endInclusive - startInclusive);
+    }
 }

@@ -6,8 +6,8 @@
     32
   ],
   "textures": {
-    "2": "gregoriusdrugworkspersistence:item/sample_aroma_tube",
-    "particle": "gregoriusdrugworkspersistence:item/sample_aroma_tube"
+    "2": "gregoriusdrugworkspersistence:item/sample_vape",
+    "particle": "gregoriusdrugworkspersistence:item/sample_vape"
   },
   "elements": [
     {

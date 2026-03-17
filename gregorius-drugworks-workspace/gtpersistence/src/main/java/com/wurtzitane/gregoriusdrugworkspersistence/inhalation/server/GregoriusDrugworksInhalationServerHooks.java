@@ -8,6 +8,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.debug.GregoriusDrugworksDebu
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.InhalationDefinition;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.InhalationLingeringSpec;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.InhalationParticleSpec;
+import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.InhalationParticleMotion;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec3d;
@@ -33,11 +34,11 @@ public final class GregoriusDrugworksInhalationServerHooks {
             return;
         }
 
-        Vec3d look = player.getLookVec().normalize();
+        Vec3d plumeDirection = InhalationParticleMotion.plumeDirection(player);
         Vec3d drift = new Vec3d(
-                look.x * spec.getForwardDrift(),
-                spec.getUpwardDrift(),
-                look.z * spec.getForwardDrift()
+                plumeDirection.x * spec.getForwardDrift(),
+                plumeDirection.y * spec.getForwardDrift() + spec.getUpwardDrift(),
+                plumeDirection.z * spec.getForwardDrift()
         );
 
         ActiveLingeringEmission emission = new ActiveLingeringEmission(
@@ -45,7 +46,8 @@ public final class GregoriusDrugworksInhalationServerHooks {
                 definition,
                 spec,
                 player.world.getTotalWorldTime(),
-                drift
+                drift,
+                plumeDirection
         );
 
         ACTIVE.put(player.getUniqueID(), emission);
@@ -113,18 +115,22 @@ public final class GregoriusDrugworksInhalationServerHooks {
             double spread,
             double speed
     ) {
-        Vec3d look = player.getLookVec().normalize();
         java.util.Random random = player.getRNG();
         int particles = Math.max(1, count);
+        Vec3d plumeDirection = emission.getLaunchDirection();
 
         for (int i = 0; i < particles; i++) {
             double ox = (random.nextDouble() - 0.5D) * spread;
-            double oy = (random.nextDouble() - 0.5D) * spread;
+            double oy = (random.nextDouble() - 0.25D) * spread;
             double oz = (random.nextDouble() - 0.5D) * spread;
 
-            double mx = emission.getDriftPerEmission().x + look.x * spec.getForwardBias() + random.nextGaussian() * speed * 0.20D;
-            double my = emission.getDriftPerEmission().y + spec.getUpwardBias() + random.nextGaussian() * speed * 0.12D;
-            double mz = emission.getDriftPerEmission().z + look.z * spec.getForwardBias() + random.nextGaussian() * speed * 0.20D;
+            double mx = emission.getDriftPerEmission().x + plumeDirection.x * spec.getForwardBias() + random.nextGaussian() * speed * 0.08D;
+            double my = emission.getDriftPerEmission().y
+                    + plumeDirection.y * spec.getForwardBias()
+                    + spec.getUpwardBias()
+                    + Math.abs(random.nextGaussian()) * speed * 0.05D;
+            double mz = emission.getDriftPerEmission().z + plumeDirection.z * spec.getForwardBias() + random.nextGaussian() * speed * 0.08D;
+            my = Math.max(0.02D, my);
 
             player.getServerWorld().spawnParticle(
                     spec.getParticleType(),
@@ -169,23 +175,21 @@ public final class GregoriusDrugworksInhalationServerHooks {
 
     private static Vec3d resolveOrigin(EntityPlayerMP player, ActiveLingeringEmission emission, int ageTicks) {
         InhalationLingeringSpec spec = emission.getSpec();
-        Vec3d look = player.getLookVec().normalize();
-        Vec3d eye = new Vec3d(
-                player.posX,
-                player.posY + player.getEyeHeight(),
-                player.posZ
-        );
+        Vec3d forward = new Vec3d(emission.getLaunchDirection().x, 0.0D, emission.getLaunchDirection().z).normalize();
+        if (forward.lengthSquared() < 1.0E-6D) {
+            forward = InhalationParticleMotion.horizontalForward(player);
+        }
 
         switch (spec.getOriginMode()) {
             case AT_MOUTH:
-                return eye.add(look.scale(0.10D)).add(0.0D, -0.10D, 0.0D);
+                return InhalationParticleMotion.mouthOrigin(player, 0.08D, -0.10D);
 
             case ATTACHED_PLAYER:
-                return eye.add(look.scale(0.28D)).add(0.0D, -0.03D, 0.0D);
+                return InhalationParticleMotion.mouthOrigin(player, 0.26D, -0.05D);
 
             case DETACHED_WORLD_CLOUD:
                 if (!emission.isDetached() && ageTicks >= spec.getAttachedTicks()) {
-                    Vec3d detachStart = eye.add(look.scale(0.35D)).add(0.0D, -0.02D, 0.0D);
+                    Vec3d detachStart = InhalationParticleMotion.mouthOrigin(player, 0.34D, -0.04D);
                     emission.detachAt(detachStart);
                 }
 
@@ -194,11 +198,11 @@ public final class GregoriusDrugworksInhalationServerHooks {
                     return emission.getDetachedPosition();
                 }
 
-                return eye.add(look.scale(0.22D)).add(0.0D, -0.04D, 0.0D);
+                return InhalationParticleMotion.mouthOrigin(player, 0.22D, -0.05D);
 
             case FRONT_OF_FACE:
             default:
-                return eye.add(look.scale(0.45D)).add(0.0D, -0.03D, 0.0D);
+                return InhalationParticleMotion.mouthOrigin(player, 0.42D, -0.05D);
         }
     }
 }

@@ -46,6 +46,10 @@ public final class GregoriusDrugworksVisualProfiles {
         );
     }
 
+    public static void register(VisualEffectProfile profile) {
+        CATALOG.register(profile);
+    }
+
     @Nullable
     public static VisualEffectProfile get(String id) {
         return CATALOG.get(id);

@@ -13,9 +13,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -42,20 +44,29 @@ public final class GregoriusDrugworksPillClientHooks {
         MinecraftForge.EVENT_BUS.register(new GregoriusDrugworksPillClientHooks());
     }
 
+    public static boolean hasActiveSequence(int entityId) {
+        return ACTIVE.containsKey(entityId);
+    }
+
     public static void startAnimation(PacketStartPillAnimation message) {
         Minecraft minecraft = Minecraft.getMinecraft();
         if (minecraft.world == null) {
             return;
         }
 
+        Entity entity = minecraft.world.getEntityByID(message.getPlayerEntityId());
+        if (!(entity instanceof EntityPlayer)) {
+            return;
+        }
+
         PillAnimationState existing = ACTIVE.get(message.getPlayerEntityId());
-        if (existing != null && existing.getSequenceId() > message.getSequenceId()) {
+        if (existing != null && existing.getSequenceId() >= message.getSequenceId()) {
             return;
         }
 
         ACTIVE.put(
                 message.getPlayerEntityId(),
-                new PillAnimationState(
+                PillAnimationState.capture(
                         message.getPlayerEntityId(),
                         message.getItemId(),
                         message.getHand(),
@@ -68,7 +79,8 @@ public final class GregoriusDrugworksPillClientHooks {
                         message.getSpinYPerTick(),
                         message.getSpinZPerTick(),
                         message.isLockCamera(),
-                        message.getSequenceId()
+                        message.getSequenceId(),
+                        (EntityPlayer) entity
                 )
         );
     }
@@ -100,10 +112,34 @@ public final class GregoriusDrugworksPillClientHooks {
 
             if (state.isLockCamera()
                     && entity == minecraft.player
-                    && minecraft.gameSettings.thirdPersonView == 0) {
+                    && minecraft.gameSettings.thirdPersonView == 0
+                    && !isLocalFirstPersonPlayer(minecraft, (EntityPlayer) entity)) {
                 applyCameraLock(minecraft.player, state, worldTime);
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onRenderSpecificHand(RenderSpecificHandEvent event) {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        if (minecraft.world == null || minecraft.player == null || minecraft.gameSettings.thirdPersonView != 0) {
+            return;
+        }
+
+        PillAnimationState state = ACTIVE.get(minecraft.player.getEntityId());
+        if (state == null || state.getHand() != event.getHand()) {
+            return;
+        }
+
+        ItemStack renderStack = !event.getItemStack().isEmpty()
+                ? event.getItemStack()
+                : createRenderStack(state.getItemId());
+        if (renderStack.isEmpty()) {
+            return;
+        }
+
+        event.setCanceled(true);
+        renderFirstPersonPill(minecraft, renderStack, state, event.getHand(), event.getPartialTicks());
     }
 
     @SubscribeEvent
@@ -124,6 +160,10 @@ public final class GregoriusDrugworksPillClientHooks {
             }
 
             EntityPlayer player = (EntityPlayer) entity;
+            if (isLocalFirstPersonPlayer(minecraft, player)) {
+                continue;
+            }
+
             String definitionKey = resolveDefinitionKey(state.getItemId());
             PillItemDefinition definition = ItemPillBase.getDefinition(definitionKey);
             if (definition == null) {
@@ -172,8 +212,8 @@ public final class GregoriusDrugworksPillClientHooks {
         float targetYaw = (float) (Math.toDegrees(Math.atan2(delta.z, delta.x)) - 90.0D);
         float targetPitch = (float) (-Math.toDegrees(Math.atan2(delta.y, horizontal)));
 
-        player.rotationYaw = approachAngle(player.rotationYaw, targetYaw, 12.0F);
-        player.rotationPitch = MathHelper.clamp(approach(player.rotationPitch, targetPitch, 10.0F), -89.9F, 89.9F);
+        player.rotationYaw = approachAngle(player.rotationYaw, targetYaw, 5.0F);
+        player.rotationPitch = MathHelper.clamp(approach(player.rotationPitch, targetPitch, 4.0F), -89.9F, 89.9F);
         player.prevRotationYaw = player.rotationYaw;
         player.prevRotationPitch = player.rotationPitch;
     }
@@ -198,6 +238,51 @@ public final class GregoriusDrugworksPillClientHooks {
         return item;
     }
 
+    private static ItemStack createRenderStack(String itemId) {
+        Item item = resolveRenderedItem(itemId);
+        return item == null ? ItemStack.EMPTY : new ItemStack(item);
+    }
+
+    private static void renderFirstPersonPill(Minecraft minecraft, ItemStack renderStack, PillAnimationState state, EnumHand hand, float partialTicks) {
+        long worldTime = minecraft.world.getTotalWorldTime();
+        float progress = state.getProgress(worldTime, partialTicks);
+        float handSign = hand == EnumHand.MAIN_HAND ? 1.0F : -1.0F;
+        Vec3d pos = getFirstPersonPillPosition(progress, handSign);
+
+        GlStateManager.pushMatrix();
+        GlStateManager.disableCull();
+        GlStateManager.enableRescaleNormal();
+        RenderHelper.enableStandardItemLighting();
+
+        GlStateManager.translate(pos.x, pos.y, pos.z);
+        GlStateManager.rotate(state.getRotationY(worldTime, partialTicks) * 0.35F, 0.0F, 1.0F, 0.0F);
+        GlStateManager.rotate(state.getRotationX(worldTime, partialTicks) * 0.22F + 12.0F, 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotate(state.getRotationZ(worldTime, partialTicks) * 0.18F - 18.0F * handSign, 0.0F, 0.0F, 1.0F);
+        GlStateManager.scale(0.34F, 0.34F, 0.34F);
+
+        minecraft.getRenderItem().renderItem(renderStack, ItemCameraTransforms.TransformType.FIXED);
+
+        RenderHelper.disableStandardItemLighting();
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.enableCull();
+        GlStateManager.popMatrix();
+    }
+
+    private static Vec3d getFirstPersonPillPosition(float progress, float handSign) {
+        Vec3d start = new Vec3d(0.34D * handSign, -0.22D, -0.92D);
+        Vec3d control = new Vec3d(0.18D * handSign, 0.10D, -0.70D);
+        Vec3d apex = new Vec3d(0.08D * handSign, 0.18D, -0.58D);
+        Vec3d mouth = new Vec3d(0.02D * handSign, -0.04D, -0.42D);
+
+        if (progress <= 0.58F) {
+            float launch = smooth(progress / 0.58F);
+            return quadraticBezier(start, control, apex, launch);
+        }
+
+        float settle = smooth((progress - 0.58F) / 0.42F);
+        return lerp(apex, mouth, settle);
+    }
+
     private static String resolveDefinitionKey(String itemId) {
         int separator = itemId.indexOf(':');
         return separator >= 0 ? itemId.substring(separator + 1) : itemId;
@@ -212,5 +297,29 @@ public final class GregoriusDrugworksPillClientHooks {
             delta = -maxStep;
         }
         return current + delta;
+    }
+
+    private static boolean isLocalFirstPersonPlayer(Minecraft minecraft, EntityPlayer player) {
+        return player == minecraft.player && minecraft.gameSettings.thirdPersonView == 0;
+    }
+
+    private static Vec3d quadraticBezier(Vec3d start, Vec3d control, Vec3d end, float t) {
+        double inverse = 1.0D - t;
+        return start.scale(inverse * inverse)
+                .add(control.scale(2.0D * inverse * t))
+                .add(end.scale(t * t));
+    }
+
+    private static Vec3d lerp(Vec3d start, Vec3d end, float progress) {
+        return new Vec3d(
+                start.x + (end.x - start.x) * progress,
+                start.y + (end.y - start.y) * progress,
+                start.z + (end.z - start.z) * progress
+        );
+    }
+
+    private static float smooth(float value) {
+        float clamped = MathHelper.clamp(value, 0.0F, 1.0F);
+        return clamped * clamped * (3.0F - 2.0F * clamped);
     }
 }

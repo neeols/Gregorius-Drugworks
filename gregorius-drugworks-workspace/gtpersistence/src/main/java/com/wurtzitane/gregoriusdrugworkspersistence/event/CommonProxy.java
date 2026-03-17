@@ -1,6 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
+import com.wurtzitane.gregoriusdrugworkspersistence.integration.groovyscript.GregoriusDrugworksGroovyScriptBridge;
 import com.wurtzitane.gregoriusdrugworkspersistence.medical.GregoriusDrugworksMedicalApplicators;
 import com.wurtzitane.gregoriusdrugworkspersistence.network.GregoriusDrugworksNetworkHandler;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadCarriers;
@@ -41,6 +42,7 @@ public class CommonProxy {
         GregoriusDrugworksPayloadCarriers.preInit();
         GregoriusDrugworksTriggerBundles.preInit();
         GregoriusDrugworksVisualProfiles.preInit();
+        GregoriusDrugworksGroovyScriptBridge.onCommonPreInit();
 
         GregoriusDrugworksSounds.register();
     }

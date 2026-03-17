@@ -21,6 +21,12 @@ public final class PillAnimationState {
     private final float spinZPerTick;
     private final boolean lockCamera;
     private final int sequenceId;
+    private final Vec3d anchorPlayerPos;
+    private final Vec3d anchorStart;
+    private final Vec3d anchorControl;
+    private final Vec3d anchorApex;
+    private final Vec3d anchorDescentAnchor;
+    private final Vec3d anchorMouth;
 
     public PillAnimationState(
             int playerEntityId,
@@ -35,7 +41,13 @@ public final class PillAnimationState {
             float spinYPerTick,
             float spinZPerTick,
             boolean lockCamera,
-            int sequenceId
+            int sequenceId,
+            Vec3d anchorPlayerPos,
+            Vec3d anchorStart,
+            Vec3d anchorControl,
+            Vec3d anchorApex,
+            Vec3d anchorDescentAnchor,
+            Vec3d anchorMouth
     ) {
         this.playerEntityId = playerEntityId;
         this.itemId = itemId;
@@ -50,53 +62,33 @@ public final class PillAnimationState {
         this.spinZPerTick = spinZPerTick;
         this.lockCamera = lockCamera;
         this.sequenceId = sequenceId;
+        this.anchorPlayerPos = anchorPlayerPos;
+        this.anchorStart = anchorStart;
+        this.anchorControl = anchorControl;
+        this.anchorApex = anchorApex;
+        this.anchorDescentAnchor = anchorDescentAnchor;
+        this.anchorMouth = anchorMouth;
     }
 
-    public int getPlayerEntityId() {
-        return playerEntityId;
-    }
-
-    public String getItemId() {
-        return itemId;
-    }
-
-    public boolean isLockCamera() {
-        return lockCamera;
-    }
-
-    public int getSequenceId() {
-        return sequenceId;
-    }
-
-    public boolean isExpired(long worldTime) {
-        return worldTime >= startTick + durationTicks;
-    }
-
-    public float getProgress(long worldTime, float partialTicks) {
-        float age = (worldTime - startTick) + partialTicks;
-        return MathHelper.clamp(age / (float) durationTicks, 0.0F, 1.0F);
-    }
-
-    public float getRotationX(long worldTime, float partialTicks) {
-        float age = (worldTime - startTick) + partialTicks;
-        return age * spinXPerTick;
-    }
-
-    public float getRotationY(long worldTime, float partialTicks) {
-        float age = (worldTime - startTick) + partialTicks;
-        return age * spinYPerTick;
-    }
-
-    public float getRotationZ(long worldTime, float partialTicks) {
-        float age = (worldTime - startTick) + partialTicks;
-        return age * spinZPerTick;
-    }
-
-    public Vec3d getPillPosition(EntityPlayer player, long worldTime, float partialTicks) {
-        float progress = getProgress(worldTime, partialTicks);
-
-        Vec3d eye = player.getPositionEyes(partialTicks);
-        Vec3d look = player.getLook(partialTicks).normalize();
+    public static PillAnimationState capture(
+            int playerEntityId,
+            String itemId,
+            EnumHand hand,
+            long startTick,
+            int durationTicks,
+            float arcHeight,
+            float launchForward,
+            float mouthOffsetY,
+            float spinXPerTick,
+            float spinYPerTick,
+            float spinZPerTick,
+            boolean lockCamera,
+            int sequenceId,
+            EntityPlayer player
+    ) {
+        Vec3d anchorPlayerPos = getInterpolatedPlayerPos(player, 1.0F);
+        Vec3d eye = player.getPositionEyes(1.0F);
+        Vec3d look = player.getLook(1.0F).normalize();
 
         Vec3d right = look.crossProduct(new Vec3d(0.0D, 1.0D, 0.0D));
         if (right.lengthSquared() < 1.0E-6D) {
@@ -135,6 +127,82 @@ public final class PillAnimationState {
 
         Vec3d descentAnchor = new Vec3d(mouth.x, mouth.y + (arcHeight * 0.45D), mouth.z);
 
+        return new PillAnimationState(
+                playerEntityId,
+                itemId,
+                hand,
+                startTick,
+                durationTicks,
+                arcHeight,
+                launchForward,
+                mouthOffsetY,
+                spinXPerTick,
+                spinYPerTick,
+                spinZPerTick,
+                lockCamera,
+                sequenceId,
+                anchorPlayerPos,
+                start,
+                control,
+                apex,
+                descentAnchor,
+                mouth
+        );
+    }
+
+    public int getPlayerEntityId() {
+        return playerEntityId;
+    }
+
+    public String getItemId() {
+        return itemId;
+    }
+
+    public EnumHand getHand() {
+        return hand;
+    }
+
+    public boolean isLockCamera() {
+        return lockCamera;
+    }
+
+    public int getSequenceId() {
+        return sequenceId;
+    }
+
+    public boolean isExpired(long worldTime) {
+        return worldTime >= startTick + durationTicks;
+    }
+
+    public float getProgress(long worldTime, float partialTicks) {
+        float age = (worldTime - startTick) + partialTicks;
+        return MathHelper.clamp(age / (float) durationTicks, 0.0F, 1.0F);
+    }
+
+    public float getRotationX(long worldTime, float partialTicks) {
+        float age = (worldTime - startTick) + partialTicks;
+        return age * spinXPerTick;
+    }
+
+    public float getRotationY(long worldTime, float partialTicks) {
+        float age = (worldTime - startTick) + partialTicks;
+        return age * spinYPerTick;
+    }
+
+    public float getRotationZ(long worldTime, float partialTicks) {
+        float age = (worldTime - startTick) + partialTicks;
+        return age * spinZPerTick;
+    }
+
+    public Vec3d getPillPosition(EntityPlayer player, long worldTime, float partialTicks) {
+        float progress = getProgress(worldTime, partialTicks);
+        Vec3d movementDelta = getInterpolatedPlayerPos(player, partialTicks).subtract(anchorPlayerPos);
+        Vec3d start = anchorStart.add(movementDelta);
+        Vec3d control = anchorControl.add(movementDelta);
+        Vec3d apex = anchorApex.add(movementDelta);
+        Vec3d descentAnchor = anchorDescentAnchor.add(movementDelta);
+        Vec3d mouth = anchorMouth.add(movementDelta);
+
         if (progress <= 0.55F) {
             float launchProgress = smooth(progress / 0.55F);
             return quadraticBezier(start, control, apex, launchProgress);
@@ -148,6 +216,14 @@ public final class PillAnimationState {
 
         float drop = smooth((descendProgress - 0.35F) / 0.65F);
         return lerp(descentAnchor, mouth, drop);
+    }
+
+    private static Vec3d getInterpolatedPlayerPos(EntityPlayer player, float partialTicks) {
+        return new Vec3d(
+                player.prevPosX + (player.posX - player.prevPosX) * partialTicks,
+                player.prevPosY + (player.posY - player.prevPosY) * partialTicks,
+                player.prevPosZ + (player.posZ - player.prevPosZ) * partialTicks
+        );
     }
 
     private static Vec3d quadraticBezier(Vec3d start, Vec3d control, Vec3d end, float t) {

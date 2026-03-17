@@ -82,7 +82,7 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
     @Nonnull
     @Override
     public EnumAction getItemUseAction(@Nonnull ItemStack stack) {
-        return EnumAction.BOW;
+        return definition.isUseCustomRenderer() ? EnumAction.NONE : EnumAction.BOW;
     }
 
     @Override
@@ -153,6 +153,21 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
             spawnParticleSpecs((WorldServer) player.world, player, definition.getInhaleParticles());
         }
 
+        if (elapsed >= definition.getInhaleStartTick()
+                && elapsed < definition.getInhaleEndTick()
+                && (elapsed - definition.getInhaleStartTick()) % 2 == 0) {
+            spawnParticleSpecs(
+                    (WorldServer) player.world,
+                    player,
+                    definition.getInhaleParticles(),
+                    0.35D,
+                    1.05D,
+                    0.03D,
+                    0.38D,
+                    -0.08D
+            );
+        }
+
         flags = getFlags(stack);
         if (elapsed >= definition.getInhaleEndTick() && (flags & FLAG_INHALE_COMPLETE) == 0) {
             setFlags(stack, flags | FLAG_INHALE_COMPLETE);
@@ -165,6 +180,19 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
             definition.getEffectHandler().onPhase(player, stack, definition, InhalationUsePhase.EXHALE_START, false);
             playWorldSound(player.world, player, definition.getExhaleSoundId());
             spawnParticleSpecs((WorldServer) player.world, player, definition.getExhaleParticles());
+        }
+
+        if (elapsed >= definition.getExhaleStartTick() && elapsed < definition.getExhaleEndTick()) {
+            spawnParticleSpecs(
+                    (WorldServer) player.world,
+                    player,
+                    definition.getExhaleParticles(),
+                    0.22D,
+                    1.10D,
+                    0.04D,
+                    0.44D,
+                    -0.06D
+            );
         }
     }
 
@@ -290,33 +318,51 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
     }
 
     private void spawnParticleSpecs(WorldServer world, EntityPlayerMP player, java.util.List<InhalationParticleSpec> specs) {
+        spawnParticleSpecs(world, player, specs, 1.0D, 1.0D, 0.0D, 0.34D, -0.10D);
+    }
+
+    private void spawnParticleSpecs(
+            WorldServer world,
+            EntityPlayerMP player,
+            java.util.List<InhalationParticleSpec> specs,
+            double countScale,
+            double forwardScale,
+            double upwardBoost,
+            double forwardDistance,
+            double verticalOffset
+    ) {
         if (specs == null || specs.isEmpty()) {
             return;
         }
 
-        Vec3d look = player.getLookVec().normalize();
-        double px = player.posX + look.x * 0.35D;
-        double py = player.posY + player.getEyeHeight() - 0.08D + look.y * 0.15D;
-        double pz = player.posZ + look.z * 0.35D;
+        Vec3d plumeDirection = InhalationParticleMotion.plumeDirection(player);
+        Vec3d origin = InhalationParticleMotion.mouthOrigin(player, forwardDistance, verticalOffset);
 
         java.util.Random random = player.getRNG();
 
         for (InhalationParticleSpec spec : specs) {
-            for (int i = 0; i < Math.max(1, spec.getCount()); i++) {
+            int emissionCount = Math.max(1, (int) Math.round(spec.getCount() * countScale));
+            for (int i = 0; i < emissionCount; i++) {
                 double ox = (random.nextDouble() - 0.5D) * spec.getSpreadX();
-                double oy = (random.nextDouble() - 0.5D) * spec.getSpreadY();
+                double oy = (random.nextDouble() - 0.25D) * spec.getSpreadY();
                 double oz = (random.nextDouble() - 0.5D) * spec.getSpreadZ();
 
-                double mx = look.x * spec.getForwardBias() + random.nextGaussian() * spec.getSpeed() * 0.15D;
-                double my = spec.getUpwardBias() + random.nextGaussian() * spec.getSpeed() * 0.10D;
-                double mz = look.z * spec.getForwardBias() + random.nextGaussian() * spec.getSpeed() * 0.15D;
+                double mx = plumeDirection.x * spec.getForwardBias() * forwardScale
+                        + random.nextGaussian() * spec.getSpeed() * 0.06D;
+                double my = plumeDirection.y * spec.getForwardBias() * forwardScale
+                        + spec.getUpwardBias()
+                        + upwardBoost
+                        + Math.abs(random.nextGaussian()) * spec.getSpeed() * 0.04D;
+                double mz = plumeDirection.z * spec.getForwardBias() * forwardScale
+                        + random.nextGaussian() * spec.getSpeed() * 0.06D;
+                my = Math.max(0.02D, my);
 
                 world.spawnParticle(
                         spec.getParticleType(),
                         true,
-                        px + ox,
-                        py + oy,
-                        pz + oz,
+                        origin.x + ox,
+                        origin.y + oy,
+                        origin.z + oz,
                         0,
                         mx,
                         my,
@@ -375,6 +421,12 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
     private void replaceSpentHeldStack(EntityPlayerMP player, EnumHand hand, ItemStack exhaustedStack) {
         java.util.Random random = player.getRNG();
         ItemStack handReplacement = ItemStack.EMPTY;
+
+        if (!exhaustedStack.isEmpty()) {
+            exhaustedStack.shrink(exhaustedStack.getCount());
+        }
+
+        player.setHeldItem(hand, ItemStack.EMPTY);
 
         for (InhalationRemainderSpec spec : definition.getExhaustedRemainders()) {
             if (random.nextFloat() > spec.getChance()) {

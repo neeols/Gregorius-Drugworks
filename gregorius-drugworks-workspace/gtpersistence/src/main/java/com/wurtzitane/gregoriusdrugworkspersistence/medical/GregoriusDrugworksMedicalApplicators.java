@@ -28,12 +28,12 @@ public final class GregoriusDrugworksMedicalApplicators {
         MEDICAL_APPLICATOR = new ItemMedicalApplicator(
                 "medical_applicator",
                 new ApplicatorUseProfile(
-                        18,
-                        5,
-                        6,
-                        10,
-                        14,
-                        18
+                        24,
+                        7,
+                        8,
+                        13,
+                        20,
+                        24
                 ),
                 false,
                 GregoriusDrugworksUtil.makeName("applicator_start"),

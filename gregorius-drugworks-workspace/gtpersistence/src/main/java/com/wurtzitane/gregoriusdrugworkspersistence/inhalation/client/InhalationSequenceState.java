@@ -45,6 +45,12 @@ public final class InhalationSequenceState {
     public int getPlayerEntityId() { return playerEntityId; }
     public String getItemId() { return itemId; }
     public EnumHand getHand() { return hand; }
+    public long getStartTick() { return startTick; }
+    public int getDurationTicks() { return durationTicks; }
+    public int getInhaleStartTick() { return inhaleStartTick; }
+    public int getInhaleEndTick() { return inhaleEndTick; }
+    public int getExhaleStartTick() { return exhaleStartTick; }
+    public int getExhaleEndTick() { return exhaleEndTick; }
     public boolean isLocalCameraNudge() { return localCameraNudge; }
     public int getSequenceId() { return sequenceId; }
 
@@ -63,5 +69,21 @@ public final class InhalationSequenceState {
         }
         float phase = (ticks - inhaleStartTick) / (float) Math.max(1, inhaleEndTick - inhaleStartTick);
         return glowMin + (glowMax - glowMin) * phase;
+    }
+
+    public float getSegmentProgress(long worldTime, float partialTicks, int startInclusive, int endInclusive) {
+        if (endInclusive <= startInclusive) {
+            return 1.0F;
+        }
+
+        float ticks = (worldTime - startTick) + partialTicks;
+        if (ticks <= startInclusive) {
+            return 0.0F;
+        }
+        if (ticks >= endInclusive) {
+            return 1.0F;
+        }
+
+        return (ticks - startInclusive) / (float) (endInclusive - startInclusive);
     }
 }

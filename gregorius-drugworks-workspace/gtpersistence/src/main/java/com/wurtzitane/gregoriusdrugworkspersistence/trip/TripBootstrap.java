@@ -20,7 +20,7 @@ public final class TripBootstrap {
 
         TripRegistrar.registerTrip(
                 TripDefinition.builder("gregoriusdrugworkspersistence:salvinorin_a_pill")
-                        .consumeOnUse(true)
+                        .consumeOnUse(false)
                         .consumeAmount(1)
                         .stage(
                                 TripStage.builder(0)

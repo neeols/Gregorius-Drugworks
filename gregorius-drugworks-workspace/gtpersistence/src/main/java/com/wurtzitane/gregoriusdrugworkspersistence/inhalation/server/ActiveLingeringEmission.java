@@ -13,6 +13,7 @@ public final class ActiveLingeringEmission {
     private final InhalationLingeringSpec spec;
     private final long startTick;
     private final Vec3d driftPerEmission;
+    private final Vec3d launchDirection;
     private boolean detached;
     private Vec3d detachedPosition;
 
@@ -21,13 +22,15 @@ public final class ActiveLingeringEmission {
             InhalationDefinition definition,
             InhalationLingeringSpec spec,
             long startTick,
-            Vec3d driftPerEmission
+            Vec3d driftPerEmission,
+            Vec3d launchDirection
     ) {
         this.playerUuid = playerUuid;
         this.definition = definition;
         this.spec = spec;
         this.startTick = startTick;
         this.driftPerEmission = driftPerEmission;
+        this.launchDirection = launchDirection;
     }
 
     public UUID getPlayerUuid() {
@@ -48,6 +51,10 @@ public final class ActiveLingeringEmission {
 
     public Vec3d getDriftPerEmission() {
         return driftPerEmission;
+    }
+
+    public Vec3d getLaunchDirection() {
+        return launchDirection;
     }
 
     public boolean isDetached() {

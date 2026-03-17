@@ -22,10 +22,9 @@ import com.wurtzitane.gregoriusdrugworkspersistence.pill.PillItemDefinition;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 
-import static com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksItems.USED_AROMA_TUBE;
+import static com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksItems.USED_VAPE;
 
 public final class GregoriusDrugworksMetaItems {
 
@@ -50,7 +49,7 @@ public final class GregoriusDrugworksMetaItems {
     public static Item DIGOXIN_FAB;
     public static Item KAPPA_RESET_AMPOULE;
 
-    public static Item SAMPLE_AROMA_TUBE;
+    public static Item SAMPLE_VAPE;
     public static Item SALVINORIN_A_PILL;
 
     public static void preInit() {
@@ -108,53 +107,75 @@ public final class GregoriusDrugworksMetaItems {
                         .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/empty_capsule_pill.png"))
                         .build()
         );
-        SAMPLE_AROMA_TUBE = createInhalation(
-                InhalationDefinition.builder("sample_aroma_tube")
+        SAMPLE_VAPE = createInhalation(
+                InhalationDefinition.builder("sample_vape")
                         .rarity(EnumRarity.UNCOMMON)
                         .maxUses(8)
-                        .totalUseTicks(24)
-                        .raiseTicks(4)
-                        .inhaleStartTick(4)
-                        .inhaleEndTick(12)
-                        .holdTicks(2)
-                        .exhaleStartTick(14)
-                        .exhaleEndTick(22)
-                        .finishTicks(24)
+                        .totalUseTicks(64)
+                        .raiseTicks(6)
+                        .inhaleStartTick(6)
+                        .inhaleEndTick(28)
+                        .holdTicks(8)
+                        .exhaleStartTick(30)
+                        .exhaleEndTick(56)
+                        .finishTicks(64)
                         .durabilityLossMode(DurabilityLossMode.FIXED)
                         .fixedLoss(1)
-                        .minimumCompletionRatio(0.55F)
+                        .minimumCompletionRatio(0.5F)
                         .consumeOnInterrupt(false)
-                        .cooldownTicks(5)
+                        .cooldownTicks(4)
                         .useCustomRenderer(true)
-                        .localCameraNudge(true)
-                        .glowRange(0.15F, 1.0F)
-                        .startSoundId(GregoriusDrugworksUtil.makeName("inhalation_start"))
-                        .inhaleSoundId(GregoriusDrugworksUtil.makeName("inhalation_inhale"))
-                        .exhaleSoundId(GregoriusDrugworksUtil.makeName("inhalation_exhale"))
-                        .finishSoundId(GregoriusDrugworksUtil.makeName("inhalation_finish"))
+                        .localCameraNudge(false)
+                        .glowRange(0.3F, 1.0F)
+                        .startSoundId(new ResourceLocation("minecraft", "block.fire.ambient"))
+                        .inhaleSoundId(null)
+                        .exhaleSoundId(null)
+                        .finishSoundId(new ResourceLocation("minecraft", "block.furnace.fire_crackle"))
                         .exhaustedSoundId(GregoriusDrugworksUtil.makeName("inhalation_exhausted"))
-                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/sample_aroma_tube.png"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/sample_vape.png"))
                         .addInhaleParticle(new InhalationParticleSpec(
                                 net.minecraft.util.EnumParticleTypes.CLOUD,
-                                2,
+                                1,
                                 0.01D,
                                 0.01D,
                                 0.01D,
                                 0.005D,
+                                0.08D,
                                 0.03D,
-                                0.01D,
                                 1
+                        ))
+                        .addInhaleParticle(new InhalationParticleSpec(
+                                net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL,
+                                2,
+                                0.015D,
+                                0.015D,
+                                0.015D,
+                                0.008D,
+                                0.22D,
+                                0.06D,
+                                2
                         ))
                         .addExhaleParticle(new InhalationParticleSpec(
                                 net.minecraft.util.EnumParticleTypes.CLOUD,
-                                8,
+                                3,
                                 0.05D,
                                 0.03D,
                                 0.05D,
                                 0.02D,
-                                0.12D,
-                                0.03D,
+                                0.20D,
+                                0.05D,
                                 1
+                        ))
+                        .addExhaleParticle(new InhalationParticleSpec(
+                                net.minecraft.util.EnumParticleTypes.SMOKE_NORMAL,
+                                5,
+                                0.04D,
+                                0.025D,
+                                0.04D,
+                                0.010D,
+                                0.38D,
+                                0.08D,
+                                2
                         ))
                         .lingeringSpec(
                                 InhalationLingeringSpec.builder()
@@ -166,10 +187,10 @@ public final class GregoriusDrugworksMetaItems {
                                         .finalCount(1)
                                         .initialSpread(0.03D)
                                         .finalSpread(0.11D)
-                                        .initialSpeed(0.015D)
-                                        .finalSpeed(0.004D)
-                                        .forwardDrift(0.008D)
-                                        .upwardDrift(0.018D)
+                                        .initialSpeed(0.010D)
+                                        .finalSpeed(0.003D)
+                                        .forwardDrift(0.020D)
+                                        .upwardDrift(0.040D)
                                         .originMode(com.wurtzitane.gregoriusdrugworks.common.inhalation.LingeringOriginMode.DETACHED_WORLD_CLOUD)
                                         .addParticle(new InhalationParticleSpec(
                                                 net.minecraft.util.EnumParticleTypes.CLOUD,
@@ -178,8 +199,8 @@ public final class GregoriusDrugworksMetaItems {
                                                 0.02D,
                                                 0.02D,
                                                 0.004D,
-                                                0.02D,
-                                                0.01D,
+                                                0.06D,
+                                                0.04D,
                                                 3
                                         ))
                                         .addParticle(new InhalationParticleSpec(
@@ -189,20 +210,23 @@ public final class GregoriusDrugworksMetaItems {
                                                 0.01D,
                                                 0.01D,
                                                 0.002D,
-                                                0.01D,
-                                                0.02D,
+                                                0.12D,
+                                                0.07D,
                                                 1
                                         ))
                                         .build()
                         )
                         .addExhaustedRemainder(new InhalationRemainderSpec(
-                                new ItemStack(USED_AROMA_TUBE),
+                                new ItemStack(USED_VAPE),
                                 1.0F,
                                 true
                         ))
-                        .effectHandler(new TripPackageInhalationEffectHandler(
-                                EnumSet.of(InhalationUsePhase.USE_FINISH)
-                        ))
+                        .effectHandler(ConfigurableInhalationEffectHandler.builder()
+                                .onPhase(
+                                        InhalationUsePhase.USE_FINISH,
+                                        InhalationPhaseAction.applyPotionEffect("minecraft:speed", 80, 0, false, true)
+                                )
+                                .build())
                         .build(),
                 true
         );

@@ -5,6 +5,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
 import com.wurtzitane.gregoriusdrugworks.common.trip.runtime.TripManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public final class TripHooks {
 
@@ -39,7 +40,7 @@ public final class TripHooks {
     }
 
     public static boolean onItemUse(EntityPlayerMP player, String itemId) {
-        if (manager == null) {
+        if (!ensureAttached(player != null ? player.getServer() : FMLCommonHandler.instance().getMinecraftServerInstance())) {
             return false;
         }
 
@@ -57,6 +58,27 @@ public final class TripHooks {
         }
 
         return manager.handleItemUse(tripPlayer, normalizedId);
+    }
+
+    public static boolean isTripRunning(EntityPlayerMP player) {
+        if (player == null) {
+            return false;
+        }
+        if (!ensureAttached(player.getServer())) {
+            return false;
+        }
+        return manager != null && manager.isTripRunning(new TripRuntime.PersistenceTripPlayer(player));
+    }
+
+    private static boolean ensureAttached(MinecraftServer server) {
+        if (manager != null) {
+            return true;
+        }
+        if (server == null) {
+            return false;
+        }
+        attachServer(server);
+        return manager != null;
     }
 
     private static String normalizeItemId(String itemId) {

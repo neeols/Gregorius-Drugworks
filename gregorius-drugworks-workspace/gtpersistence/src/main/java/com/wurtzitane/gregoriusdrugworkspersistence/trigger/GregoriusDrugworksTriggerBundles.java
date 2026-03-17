@@ -68,6 +68,10 @@ public final class GregoriusDrugworksTriggerBundles {
         ));
     }
 
+    public static void register(TriggerBundleDefinition definition) {
+        CATALOG.register(definition);
+    }
+
     @Nullable
     public static TriggerBundleDefinition get(String id) {
         return CATALOG.get(id);
