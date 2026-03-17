@@ -50,7 +50,6 @@ public final class GregoriusDrugworksBlocks {
     public static Block CARBONIZED_REACTOR_CASING;
     public static Block OBSIDIAN_FORGED_THERMAL_CASING;
     public static Block THERMOCRACK_MATRIX_CASING;
-    public static Block THERMOCRACK_MATRIX_CASING_ACTIVE;
 
     public static void preInit() {
         BLOCKS.clear();
@@ -80,7 +79,6 @@ public final class GregoriusDrugworksBlocks {
         CARBONIZED_REACTOR_CASING = createMetalBlock("carbonized_reactor_casing", 6.0F, 10.0F);
         OBSIDIAN_FORGED_THERMAL_CASING = createBasicBlock("obsidian_forged_thermal_casing", Material.ROCK, 8.0F, 20.0F, SoundType.STONE);
         THERMOCRACK_MATRIX_CASING = createMetalBlock("thermocrack_matrix_casing", 7.0F, 15.0F);
-        THERMOCRACK_MATRIX_CASING_ACTIVE = createMetalBlock("thermocrack_matrix_casing_active", 7.0F, 15.0F);
     }
 
     public static void register(final IForgeRegistry<Block> registry) {

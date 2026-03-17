@@ -261,24 +261,36 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
             return;
         }
 
-        Vec3d look = player.getLookVec();
+        Vec3d look = player.getLookVec().normalize();
         double px = player.posX + look.x * 0.35D;
         double py = player.posY + player.getEyeHeight() - 0.08D + look.y * 0.15D;
         double pz = player.posZ + look.z * 0.35D;
 
+        java.util.Random random = player.getRNG();
+
         for (InhalationParticleSpec spec : specs) {
-            world.spawnParticle(
-                    spec.getParticleType(),
-                    true,
-                    px,
-                    py,
-                    pz,
-                    spec.getCount(),
-                    spec.getSpreadX() + look.x * spec.getForwardBias(),
-                    spec.getSpreadY() + spec.getUpwardBias(),
-                    spec.getSpreadZ() + look.z * spec.getForwardBias(),
-                    spec.getSpeed()
-            );
+            for (int i = 0; i < Math.max(1, spec.getCount()); i++) {
+                double ox = (random.nextDouble() - 0.5D) * spec.getSpreadX();
+                double oy = (random.nextDouble() - 0.5D) * spec.getSpreadY();
+                double oz = (random.nextDouble() - 0.5D) * spec.getSpreadZ();
+
+                double mx = look.x * spec.getForwardBias() + random.nextGaussian() * spec.getSpeed() * 0.15D;
+                double my = spec.getUpwardBias() + random.nextGaussian() * spec.getSpeed() * 0.10D;
+                double mz = look.z * spec.getForwardBias() + random.nextGaussian() * spec.getSpeed() * 0.15D;
+
+                world.spawnParticle(
+                        spec.getParticleType(),
+                        true,
+                        px + ox,
+                        py + oy,
+                        pz + oz,
+                        0,
+                        mx,
+                        my,
+                        mz,
+                        1.0D
+                );
+            }
         }
     }
 

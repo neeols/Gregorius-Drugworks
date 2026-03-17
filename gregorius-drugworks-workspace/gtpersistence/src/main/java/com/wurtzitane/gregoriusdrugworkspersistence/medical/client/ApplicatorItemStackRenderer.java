@@ -28,7 +28,7 @@ public final class ApplicatorItemStackRenderer extends TileEntityItemStackRender
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
         GlStateManager.rotate(30.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
-        GlStateManager.scale(0.09F, 0.09F, 0.09F);
+        GlStateManager.scale(0.36F, 0.36F, 0.36F);
         MODEL.render(0.0625F);
         GlStateManager.popMatrix();
     }

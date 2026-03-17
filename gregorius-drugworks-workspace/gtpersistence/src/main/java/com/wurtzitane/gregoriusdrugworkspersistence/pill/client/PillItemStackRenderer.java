@@ -33,7 +33,7 @@ public final class PillItemStackRenderer extends TileEntityItemStackRenderer {
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
         GlStateManager.rotate(35.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
-        GlStateManager.scale(0.11F, 0.11F, 0.11F);
+        GlStateManager.scale(0.24F, 0.24F, 0.24F);
 
         MODEL.render(0.0625F);
 

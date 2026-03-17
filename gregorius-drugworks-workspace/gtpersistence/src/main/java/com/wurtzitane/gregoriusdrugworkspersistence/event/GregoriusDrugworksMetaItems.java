@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
+import static com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksItems.USED_FILTER;
+
 public final class GregoriusDrugworksMetaItems {
 
     private GregoriusDrugworksMetaItems() {
@@ -61,17 +63,17 @@ public final class GregoriusDrugworksMetaItems {
 
         EMPTY_GLASS_AMPOULE = createBasicItem("empty_glass_ampoule", 64);
 
-        NALOXONE_AUTOINJECTOR = createInjector("naloxone_autoinjector", 16, EnumRarity.RARE, EnumAction.BOW);
-        FLUMAZENIL_AMPOULE = createInjector("flumazenil_ampoule", 16, EnumRarity.RARE, EnumAction.BOW);
-        ATROPINE_2PAM_AUTOINJECTOR = createInjector("atropine_2pam_autoinjector", 8, EnumRarity.EPIC, EnumAction.BOW);
-        NAC_INFUSION = createInjector("nac_infusion", 16, EnumRarity.UNCOMMON, EnumAction.DRINK);
-        FOMEPIZOLE_VIAL = createInjector("fomepizole_vial", 16, EnumRarity.RARE, EnumAction.BOW);
-        HYDROXOCOBALAMIN_KIT = createInjector("hydroxocobalamin_kit", 8, EnumRarity.EPIC, EnumAction.BOW);
-        VITAMIN_K_AMPOULE = createInjector("vitamin_k_ampoule", 16, EnumRarity.UNCOMMON, EnumAction.BOW);
-        PROTAMINE_VIAL = createInjector("protamine_vial", 16, EnumRarity.UNCOMMON, EnumAction.BOW);
-        GLUCAGON_INJECTOR = createInjector("glucagon_injector", 16, EnumRarity.RARE, EnumAction.BOW);
-        DIGOXIN_FAB = createInjector("digoxin_fab", 8, EnumRarity.EPIC, EnumAction.BOW);
-        KAPPA_RESET_AMPOULE = createInjector("kappa_reset_ampoule", 16, EnumRarity.RARE, EnumAction.BOW);
+        NALOXONE_AUTOINJECTOR = createSourceVial("naloxone_autoinjector", 16, EnumRarity.RARE);
+        FLUMAZENIL_AMPOULE = createSourceVial("flumazenil_ampoule", 16, EnumRarity.RARE);
+        ATROPINE_2PAM_AUTOINJECTOR = createSourceVial("atropine_2pam_autoinjector", 8, EnumRarity.EPIC);
+        NAC_INFUSION = createSourceVial("nac_infusion", 16, EnumRarity.UNCOMMON);
+        FOMEPIZOLE_VIAL = createSourceVial("fomepizole_vial", 16, EnumRarity.RARE);
+        HYDROXOCOBALAMIN_KIT = createSourceVial("hydroxocobalamin_kit", 8, EnumRarity.EPIC);
+        VITAMIN_K_AMPOULE = createSourceVial("vitamin_k_ampoule", 16, EnumRarity.UNCOMMON);
+        PROTAMINE_VIAL = createSourceVial("protamine_vial", 16, EnumRarity.UNCOMMON);
+        GLUCAGON_INJECTOR = createSourceVial("glucagon_injector", 16, EnumRarity.RARE);
+        DIGOXIN_FAB = createSourceVial("digoxin_fab", 8, EnumRarity.EPIC);
+        KAPPA_RESET_AMPOULE = createSourceVial("kappa_reset_ampoule", 16, EnumRarity.RARE);
         SALVINORIN_A_PILL = createPill(
                 PillItemDefinition.builder("salvinorin_a_pill")
                         .maxStackSize(16)
@@ -193,6 +195,11 @@ public final class GregoriusDrugworksMetaItems {
                                         ))
                                         .build()
                         )
+                        .addExhaustedRemainder(new InhalationRemainderSpec(
+                                new ItemStack(USED_FILTER),
+                                1.0F,
+                                true
+                        ))
                         .effectHandler(new TripPackageInhalationEffectHandler(
                                 EnumSet.of(InhalationUsePhase.USE_FINISH)
                         ))
@@ -235,8 +242,20 @@ public final class GregoriusDrugworksMetaItems {
         return item;
     }
 
-    private static Item createInjector(final String name, final int maxStackSize, final EnumRarity rarity, final EnumAction action) {
-        final GregoriusDrugworksInjectorItem item = new GregoriusDrugworksInjectorItem(rarity, action);
+    private static Item createSourceVial(final String name, final int maxStackSize, final EnumRarity rarity) {
+        final Item item = new Item() {
+            @Nonnull
+            @Override
+            public EnumRarity getRarity(@Nonnull ItemStack stack) {
+                return rarity;
+            }
+
+            @Override
+            public boolean hasEffect(@Nonnull ItemStack stack) {
+                return rarity == EnumRarity.RARE || rarity == EnumRarity.EPIC;
+            }
+        };
+
         item.setRegistryName(GregoriusDrugworksUtil.makeName(name));
         item.setTranslationKey(Tags.MOD_ID + "." + name);
         item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);

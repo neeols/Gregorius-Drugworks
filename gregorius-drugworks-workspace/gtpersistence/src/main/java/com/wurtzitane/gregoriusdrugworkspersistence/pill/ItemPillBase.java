@@ -116,13 +116,14 @@ public class ItemPillBase extends Item implements ITripUseDeferredItem {
                 );
             }
 
+            boolean tripHandled = false;
             if (definition.isTripHookEnabled() && getRegistryName() != null) {
-                TripHooks.onItemUse(player, getRegistryName().toString());
+                tripHandled = TripHooks.onItemUse(player, getRegistryName().toString());
             }
 
             onPillConsumedServer(player, stack);
 
-            if (!player.capabilities.isCreativeMode) {
+            if (!player.capabilities.isCreativeMode && !tripHandled) {
                 stack.shrink(1);
             }
         }

@@ -18,7 +18,7 @@ public final class TripHooks {
         manager = new TripManager(runtime, TripRegistrationApi.registry());
 
         // Intentionally disabled for now.
-        // PersistenceTripBootstrap.registerDefaults();
+        TripBootstrap.registerDefaults();
     }
 
     public static void serverTick() {
