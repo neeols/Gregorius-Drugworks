@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import static com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksItems.USED_FILTER;
+import static com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksItems.USED_AROMA_TUBE;
 
 public final class GregoriusDrugworksMetaItems {
 
@@ -196,7 +196,7 @@ public final class GregoriusDrugworksMetaItems {
                                         .build()
                         )
                         .addExhaustedRemainder(new InhalationRemainderSpec(
-                                new ItemStack(USED_FILTER),
+                                new ItemStack(USED_AROMA_TUBE),
                                 1.0F,
                                 true
                         ))

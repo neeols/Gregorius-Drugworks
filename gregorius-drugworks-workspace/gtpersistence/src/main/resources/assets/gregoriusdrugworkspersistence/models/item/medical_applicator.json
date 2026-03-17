@@ -3,7 +3,7 @@
   "overrides": [
     {
       "predicate": {
-        "loaded": 1.0
+        "gregoriusdrugworkspersistence:loaded": 1.0
       },
       "model": "gregoriusdrugworkspersistence:item/medical_applicator_loaded"
     }

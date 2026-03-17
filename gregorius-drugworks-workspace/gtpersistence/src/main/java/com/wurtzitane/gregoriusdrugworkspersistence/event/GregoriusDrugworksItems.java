@@ -20,7 +20,8 @@ public final class GregoriusDrugworksItems {
     public static Item FINE_STAINLESS_MESH;
     public static Item CERAMIC_FILTER;
     public static Item CARBON_NANOTUBES;
-    public static Item USED_FILTER;
+    public static Item USED_PAPER_FILTER;
+    public static Item USED_AROMA_TUBE;
     public static Item ASH_RESIDUE;
 
     private GregoriusDrugworksItems() {
@@ -41,7 +42,8 @@ public final class GregoriusDrugworksItems {
         FINE_STAINLESS_MESH = createItem("fine_stainless_mesh", 64);
         CERAMIC_FILTER = createItem("ceramic_filter", 64);
         CARBON_NANOTUBES = createItem("carbon_nanotubes", 64);
-        USED_FILTER = createItem("used_filter", 64);
+        USED_PAPER_FILTER = createItem("used_paper_filter", 64);
+        USED_AROMA_TUBE = createItem("used_aroma_tube", 1);
     }
 
     private static Item createItem(String name, int maxStackSize) {

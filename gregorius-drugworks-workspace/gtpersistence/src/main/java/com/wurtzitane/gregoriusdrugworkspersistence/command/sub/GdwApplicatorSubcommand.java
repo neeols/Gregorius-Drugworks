@@ -43,7 +43,7 @@ public final class GdwApplicatorSubcommand implements GdwDevSubcommand {
                 CommandUtil.send(
                         sender,
                         def.getId()
-                                + " | category=" + def.getCategory().name().toLowerCase()
+                                + " | category=" + describeCategory(def)
                                 + " | compatibility=" + def.getCompatibility().name().toLowerCase()
                                 + " | charges=" + def.getDefaultCharges()
                                 + " | triggerBundle=" + def.getTriggerBundleId()
@@ -125,6 +125,18 @@ public final class GdwApplicatorSubcommand implements GdwDevSubcommand {
         }
 
         throw new CommandException(getUsage());
+    }
+
+    private static String describeCategory(PayloadDefinition def) {
+        if (def.getCategory() == com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCategory.STAGED_EFFECT) {
+            return "psychedelic";
+        }
+        if (def.getCategory() == com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCategory.COSMETIC
+                && ((def.getTriggerBundleId() != null && !def.getTriggerBundleId().isEmpty())
+                || (def.getVisualProfileId() != null && !def.getVisualProfileId().isEmpty()))) {
+            return "psychedelic";
+        }
+        return def.getCategory().name().toLowerCase();
     }
 
     @Override

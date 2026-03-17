@@ -130,7 +130,7 @@ public class ItemMedicalApplicator extends Item implements ITripUseDeferredItem 
 
         tooltip.add("§7Loaded applicator");
         tooltip.add("§7Payload: §f" + definition.getId());
-        tooltip.add("§7Category: §f" + definition.getCategory().name().toLowerCase());
+        tooltip.add("§7Category: §f" + describePayloadCategory(definition));
         tooltip.add("§7Charges: §f" + payload.getCharges() + "/" + payload.getMaxCharges());
 
         if (definition.getTriggerBundleId() != null && !definition.getTriggerBundleId().isEmpty()) {
@@ -188,7 +188,7 @@ public class ItemMedicalApplicator extends Item implements ITripUseDeferredItem 
             GregoriusDrugworksNetworkHandler.sendApplicatorCancel(player, stack, false);
         }
 
-        clearUseData(stack);
+        clearTransientUseData(stack);
     }
 
     @Nonnull
@@ -198,9 +198,35 @@ public class ItemMedicalApplicator extends Item implements ITripUseDeferredItem 
             EntityPlayerMP player = (EntityPlayerMP) entityLiving;
             completeUse(player, stack);
             GregoriusDrugworksNetworkHandler.sendApplicatorCancel(player, stack, true);
-            clearUseData(stack);
+            clearTransientUseData(stack);
         }
-        return stack;
+        return resolvePostUseStack(entityLiving, stack);
+    }
+
+    private static String describePayloadCategory(PayloadDefinition definition) {
+        PayloadCategory category = definition.getCategory();
+        if (category == PayloadCategory.STAGED_EFFECT) {
+            return "Psychedelic";
+        }
+        if (category == PayloadCategory.COSMETIC
+                && ((definition.getTriggerBundleId() != null && !definition.getTriggerBundleId().isEmpty())
+                || (definition.getVisualProfileId() != null && !definition.getVisualProfileId().isEmpty()))) {
+            return "Psychedelic";
+        }
+        String raw = category.name().toLowerCase().replace('_', ' ');
+        return Character.toUpperCase(raw.charAt(0)) + raw.substring(1);
+    }
+
+    private static ItemStack resolvePostUseStack(EntityLivingBase entityLiving, ItemStack fallback) {
+        if (!(entityLiving instanceof EntityPlayer)) {
+            return fallback;
+        }
+        EntityPlayer player = (EntityPlayer) entityLiving;
+        EnumHand hand = player.getActiveHand();
+        if (hand == null) {
+            return fallback;
+        }
+        return player.getHeldItem(hand);
     }
 
     private void completeUse(EntityPlayerMP player, ItemStack applicatorStack) {
@@ -247,10 +273,13 @@ public class ItemMedicalApplicator extends Item implements ITripUseDeferredItem 
         root.setBoolean(COMPLETED_KEY, false);
     }
 
-    private static void clearUseData(ItemStack stack) {
-        if (stack.hasTagCompound()) {
-            stack.getTagCompound().removeTag(USE_ROOT);
+    private static void clearTransientUseData(ItemStack stack) {
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null || !tag.hasKey(USE_ROOT)) {
+            return;
         }
+        NBTTagCompound root = tag.getCompoundTag(USE_ROOT);
+        root.removeTag(SEQUENCE_ID_KEY);
     }
 
     private static NBTTagCompound getOrCreateUseRoot(ItemStack stack) {

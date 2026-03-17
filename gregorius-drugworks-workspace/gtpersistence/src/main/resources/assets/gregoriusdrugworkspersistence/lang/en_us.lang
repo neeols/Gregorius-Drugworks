@@ -50,4 +50,5 @@ payload.gregoriusdrugworkspersistence.glucagon=Payload: Glucagon
 payload.gregoriusdrugworkspersistence.anomaly=Payload: Anomaly
 payload.gregoriusdrugworkspersistence.flumazenil=Payload: Flumazenil
 
-item.gregoriusdrugworkspersistence.used_filter.name=Used Filter
+item.gregoriusdrugworkspersistence.used_paper_filter.name=Used Paper Filter
+item.gregoriusdrugworkspersistence.used_aroma_tube.name=Used Aroma Tube

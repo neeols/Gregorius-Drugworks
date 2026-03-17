@@ -114,11 +114,11 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
         ItemStack held = player.getHeldItem(hand);
 
         if (!player.capabilities.isCreativeMode && getUses(held) >= definition.getMaxUses()) {
-            if (!world.isRemote) {
-                expireExhaustedStack((EntityPlayerMP) player, hand, held);
+            if (!world.isRemote && player instanceof EntityPlayerMP) {
                 playWorldSound(world, player, definition.getExhaustedSoundId());
+                replaceSpentHeldStack((EntityPlayerMP) player, hand, held);
             }
-            return new ActionResult<>(EnumActionResult.FAIL, held);
+            return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(hand));
         }
 
         player.setActiveHand(hand);
@@ -197,7 +197,7 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
             GregoriusDrugworksNetworkHandler.sendInhalationCancel(player, stack, false);
         }
 
-        clearSequenceData(stack);
+        clearTransientSequenceData(stack);
     }
 
     @Nonnull
@@ -207,9 +207,21 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
             EntityPlayerMP player = (EntityPlayerMP) entityLiving;
             finishUseServer(player, stack);
             GregoriusDrugworksNetworkHandler.sendInhalationCancel(player, stack, true);
-            clearSequenceData(stack);
+            clearTransientSequenceData(stack);
         }
-        return stack;
+        return resolvePostUseStack(entityLiving, stack);
+    }
+
+    private static ItemStack resolvePostUseStack(EntityLivingBase entityLiving, ItemStack fallback) {
+        if (!(entityLiving instanceof EntityPlayer)) {
+            return fallback;
+        }
+        EntityPlayer player = (EntityPlayer) entityLiving;
+        EnumHand hand = player.getActiveHand();
+        if (hand == null) {
+            return fallback;
+        }
+        return player.getHeldItem(hand);
     }
 
     private void finishUseServer(EntityPlayerMP player, ItemStack stack) {
@@ -221,7 +233,7 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
 
         int currentUses = getUses(stack);
         if (!player.capabilities.isCreativeMode && currentUses >= definition.getMaxUses()) {
-            expireExhaustedStack(player, readTrackedHand(stack), stack);
+            replaceSpentHeldStack(player, readTrackedHand(stack), stack);
             return;
         }
         int loss = resolveDurabilityLoss(currentUses, player.getRNG());
@@ -247,10 +259,10 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
         if (exhausted) {
             definition.getEffectHandler().onPhase(player, stack, definition, InhalationUsePhase.EXHAUSTION_ONLY, true);
             playWorldSound(player.world, player, definition.getExhaustedSoundId());
-            GregoriusDrugworksInventoryUtil.grantRemainders(player, definition.getExhaustedRemainders());
-
-            if (!player.capabilities.isCreativeMode) {
-                expireExhaustedStack(player, readTrackedHand(stack), stack);
+            if (player.capabilities.isCreativeMode) {
+                GregoriusDrugworksInventoryUtil.grantRemainders(player, definition.getExhaustedRemainders());
+            } else {
+                replaceSpentHeldStack(player, readTrackedHand(stack), stack);
             }
         }
         GregoriusDrugworksDebug.log(
@@ -341,14 +353,13 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
         tag.setInteger(NBT_HAND, hand.ordinal());
     }
 
-    private static void clearSequenceData(ItemStack stack) {
+    private static void clearTransientSequenceData(ItemStack stack) {
         NBTTagCompound tag = stack.getTagCompound();
         if (tag == null) {
             return;
         }
         tag.removeTag(NBT_SEQUENCE);
         tag.removeTag(NBT_FLAGS);
-        tag.removeTag(NBT_COMPLETED);
         tag.removeTag(NBT_HAND);
     }
 
@@ -361,11 +372,25 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
         return ordinal >= 0 && ordinal < EnumHand.values().length ? EnumHand.values()[ordinal] : EnumHand.MAIN_HAND;
     }
 
-    private static void expireExhaustedStack(EntityPlayerMP player, EnumHand hand, ItemStack stack) {
-        stack.shrink(1);
-        if (stack.isEmpty()) {
-            player.setHeldItem(hand, ItemStack.EMPTY);
+    private void replaceSpentHeldStack(EntityPlayerMP player, EnumHand hand, ItemStack exhaustedStack) {
+        java.util.Random random = player.getRNG();
+        ItemStack handReplacement = ItemStack.EMPTY;
+
+        for (InhalationRemainderSpec spec : definition.getExhaustedRemainders()) {
+            if (random.nextFloat() > spec.getChance()) {
+                continue;
+            }
+
+            ItemStack generated = spec.createStackCopy();
+            if (handReplacement.isEmpty() && !generated.isEmpty() && spec.getChance() >= 1.0F) {
+                handReplacement = generated;
+                continue;
+            }
+
+            GregoriusDrugworksInventoryUtil.giveOrDrop(player, generated, spec.isDropIfInventoryFull());
         }
+
+        player.setHeldItem(hand, handReplacement);
         player.inventory.markDirty();
         player.openContainer.detectAndSendChanges();
     }

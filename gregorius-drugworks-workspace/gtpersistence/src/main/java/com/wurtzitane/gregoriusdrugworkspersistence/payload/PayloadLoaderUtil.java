@@ -128,10 +128,22 @@ public final class PayloadLoaderUtil {
         PayloadDefinition definition = resolved.getDefinition();
         return "payload="
                 + definition.getId()
-                + " | category=" + definition.getCategory().name().toLowerCase()
+                + " | category=" + describeCategory(definition)
                 + " | charges=" + resolved.getCharges() + "/" + resolved.getMaxCharges()
                 + " | compatibility=" + definition.getCompatibility().name().toLowerCase()
                 + " | triggerBundle=" + (definition.getTriggerBundleId() == null ? "<legacy>" : definition.getTriggerBundleId());
+    }
+
+    private static String describeCategory(PayloadDefinition definition) {
+        if (definition.getCategory() == com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCategory.STAGED_EFFECT) {
+            return "psychedelic";
+        }
+        if (definition.getCategory() == com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCategory.COSMETIC
+                && ((definition.getTriggerBundleId() != null && !definition.getTriggerBundleId().isEmpty())
+                || (definition.getVisualProfileId() != null && !definition.getVisualProfileId().isEmpty()))) {
+            return "psychedelic";
+        }
+        return definition.getCategory().name().toLowerCase();
     }
 
     private static NBTTagCompound getOrCreateRoot(ItemStack carrierStack) {

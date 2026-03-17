@@ -88,7 +88,7 @@ public final class GregoriusDrugworksPayloadRegistry {
         register(
                 new PayloadDefinition(
                         "gregoriusdrugworkspersistence:anomaly_payload",
-                        PayloadCategory.COSMETIC,
+                        PayloadCategory.STAGED_EFFECT,
                         PayloadCompatibility.APPLICATOR,
                         "payload.gregoriusdrugworkspersistence.anomaly",
                         1,
