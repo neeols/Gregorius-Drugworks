@@ -86,7 +86,7 @@ public final class GregoriusDrugworksMetaItems {
                         .tripHookEnabled(true)
                         .rarity(EnumRarity.UNCOMMON)
                         .finishSoundId(GregoriusDrugworksUtil.makeName("pill_gulp"))
-                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/items/salvinorin_a_pill.png"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/salvinorin_a_pill.png"))
                         .build()
         );
         EMPTY_CAPSULE_PILL = createPill(
@@ -103,7 +103,7 @@ public final class GregoriusDrugworksMetaItems {
                         .tripHookEnabled(false)
                         .rarity(EnumRarity.COMMON)
                         .finishSoundId(GregoriusDrugworksUtil.makeName("pill_gulp"))
-                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/items/empty_capsule_pill.png"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/empty_capsule_pill.png"))
                         .build()
         );
         SAMPLE_AROMA_TUBE = createInhalation(
@@ -131,7 +131,7 @@ public final class GregoriusDrugworksMetaItems {
                         .exhaleSoundId(GregoriusDrugworksUtil.makeName("inhalation_exhale"))
                         .finishSoundId(GregoriusDrugworksUtil.makeName("inhalation_finish"))
                         .exhaustedSoundId(GregoriusDrugworksUtil.makeName("inhalation_exhausted"))
-                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/items/sample_aroma_tube.png"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/sample_aroma_tube.png"))
                         .addInhaleParticle(new InhalationParticleSpec(
                                 net.minecraft.util.EnumParticleTypes.CLOUD,
                                 2,

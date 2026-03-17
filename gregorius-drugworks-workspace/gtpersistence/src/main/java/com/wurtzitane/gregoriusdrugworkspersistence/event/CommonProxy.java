@@ -41,7 +41,6 @@ public class CommonProxy {
         GregoriusDrugworksPayloadCarriers.preInit();
         GregoriusDrugworksTriggerBundles.preInit();
         GregoriusDrugworksVisualProfiles.preInit();
-        GregoriusDrugworksTriggerBundles.preInit();
 
         GregoriusDrugworksSounds.register();
     }

@@ -3,9 +3,12 @@ package com.wurtzitane.gregoriusdrugworkspersistence.event;
 import com.wurtzitane.gregoriusdrugworkspersistence.util.GregoriusDrugworksUtil;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public final class GregoriusDrugworksSounds {
+
+    private static boolean registered = false;
 
     public static SoundEvent ANTIDOTE_INJECT;
     public static SoundEvent PILL_GULP;
@@ -24,6 +27,11 @@ public final class GregoriusDrugworksSounds {
     }
 
     public static void register() {
+        if (registered) {
+            return;
+        }
+        registered = true;
+        MinecraftForge.EVENT_BUS.register(new GregoriusDrugworksSounds());
     }
 
     @SubscribeEvent

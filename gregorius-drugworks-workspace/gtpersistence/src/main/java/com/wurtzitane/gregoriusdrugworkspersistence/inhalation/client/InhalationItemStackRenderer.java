@@ -28,7 +28,7 @@ public final class InhalationItemStackRenderer extends TileEntityItemStackRender
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
         GlStateManager.rotate(30.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
-        GlStateManager.scale(0.12F, 0.12F, 0.12F);
+        GlStateManager.scale(0.16F, 0.16F, 0.16F);
         MODEL.render(0.0625F);
         GlStateManager.popMatrix();
     }

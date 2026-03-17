@@ -12,8 +12,8 @@ public final class ApplicatorItemStackRenderer extends TileEntityItemStackRender
     public static final ApplicatorItemStackRenderer INSTANCE = new ApplicatorItemStackRenderer();
 
     private static final ModelHyposprayApplicator MODEL = new ModelHyposprayApplicator();
-    private static final ResourceLocation EMPTY_TEXTURE = new ResourceLocation("gregoriusdrugworkspersistence", "textures/items/medical_applicator_empty.png");
-    private static final ResourceLocation LOADED_TEXTURE = new ResourceLocation("gregoriusdrugworkspersistence", "textures/items/medical_applicator_loaded.png");
+    private static final ResourceLocation EMPTY_TEXTURE = new ResourceLocation("gregoriusdrugworkspersistence", "textures/item/medical_applicator_empty.png");
+    private static final ResourceLocation LOADED_TEXTURE = new ResourceLocation("gregoriusdrugworkspersistence", "textures/item/medical_applicator_loaded.png");
 
     private ApplicatorItemStackRenderer() {
     }
@@ -28,7 +28,7 @@ public final class ApplicatorItemStackRenderer extends TileEntityItemStackRender
         GlStateManager.translate(0.5F, 0.5F, 0.5F);
         GlStateManager.rotate(30.0F, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(45.0F, 0.0F, 1.0F, 0.0F);
-        GlStateManager.scale(0.12F, 0.12F, 0.12F);
+        GlStateManager.scale(0.09F, 0.09F, 0.09F);
         MODEL.render(0.0625F);
         GlStateManager.popMatrix();
     }

@@ -140,10 +140,10 @@ public final class GregoriusDrugworksApplicatorClientHooks {
             );
 
             GlStateManager.rotate(90.0F, 0.0F, 1.0F, 0.0F);
-            GlStateManager.scale(0.10F, 0.10F, 0.10F);
+            GlStateManager.scale(0.085F, 0.085F, 0.085F);
 
             minecraft.getTextureManager().bindTexture(
-                    new net.minecraft.util.ResourceLocation("gregoriusdrugworkspersistence", "textures/items/medical_applicator_loaded.png")
+                    new net.minecraft.util.ResourceLocation("gregoriusdrugworkspersistence", "textures/item/medical_applicator_loaded.png")
             );
             MODEL.render(0.0625F);
 
