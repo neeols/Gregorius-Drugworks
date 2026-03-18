@@ -106,6 +106,10 @@ repositories {
         name 'CleanroomMC Maven'
         url 'https://maven.cleanroommc.com'
     }
+    maven {
+        name 'BlameJared Maven'
+        url 'https://maven.blamejared.com'
+    }
 }
 
 dependencies {
@@ -146,6 +150,7 @@ dependencies {
 
     compileOnly(rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5519022"))
     compileOnly(rfg.deobf("curse.maven:groovyscript-687577:5120928"))
+    compileOnly("mezz.jei:jei_1.12.2:4.16.1.302")
     implementation "com.wurtzitane.gregoriusdrugworks:common:0.1.0"
 }
 
@@ -224,6 +229,10 @@ jar {
     }
     // Add all embedded dependencies into the jar
     from(provider{ configurations.embed.collect {it.isDirectory() ? it : zipTree(it)} })
+}
+
+tasks.named('jar').configure {
+    finalizedBy 'reobfJar'
 }
 
 idea {

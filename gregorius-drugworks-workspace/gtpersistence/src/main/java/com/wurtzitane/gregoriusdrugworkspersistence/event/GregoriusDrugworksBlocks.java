@@ -2,12 +2,16 @@ package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
 import com.wurtzitane.gregoriusdrugworkspersistence.util.GregoriusDrugworksUtil;
+import gregtech.api.block.VariantActiveBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -19,9 +23,6 @@ import java.util.List;
 import java.util.Objects;
 
 public final class GregoriusDrugworksBlocks {
-
-    private GregoriusDrugworksBlocks() {
-    }
 
     public static final List<Block> BLOCKS = new ArrayList<>();
     public static final List<ItemBlock> ITEM_BLOCKS = new ArrayList<>();
@@ -51,6 +52,9 @@ public final class GregoriusDrugworksBlocks {
     public static Block OBSIDIAN_FORGED_THERMAL_CASING;
     public static Block THERMOCRACK_MATRIX_CASING;
 
+    private GregoriusDrugworksBlocks() {
+    }
+
     public static void preInit() {
         BLOCKS.clear();
         ITEM_BLOCKS.clear();
@@ -73,21 +77,22 @@ public final class GregoriusDrugworksBlocks {
 
         FLUOROPOLYMER_FRACTIONATION_CASING = createMetalBlock("fluoropolymer_fractionation_casing", 5.0F, 8.0F);
         POLYETHERIMIDE_THERMAL_CASING = createMetalBlock("polyetherimide_thermal_casing", 5.0F, 8.0F);
-        MOLECULAR_MEMBRANE_CASING = createMetalBlock("molecular_membrane_casing", 4.0F, 7.0F);
+        MOLECULAR_MEMBRANE_CASING = createActiveMetalBlock("molecular_membrane_casing", 4.0F, 7.0F);
         POLYSILOXANE_VAPOR_CONTROL_CASING = createMetalBlock("polysiloxane_vapor_control_casing", 5.0F, 8.0F);
 
         CARBONIZED_REACTOR_CASING = createMetalBlock("carbonized_reactor_casing", 6.0F, 10.0F);
-        OBSIDIAN_FORGED_THERMAL_CASING = createBasicBlock("obsidian_forged_thermal_casing", Material.ROCK, 8.0F, 20.0F, SoundType.STONE);
-        THERMOCRACK_MATRIX_CASING = createMetalBlock("thermocrack_matrix_casing", 7.0F, 15.0F);
+        OBSIDIAN_FORGED_THERMAL_CASING = createActiveBlock("obsidian_forged_thermal_casing", Material.ROCK, 8.0F, 20.0F,
+                SoundType.STONE);
+        THERMOCRACK_MATRIX_CASING = createActiveMetalBlock("thermocrack_matrix_casing", 7.0F, 15.0F);
     }
 
-    public static void register(final IForgeRegistry<Block> registry) {
+    public static void register(IForgeRegistry<Block> registry) {
         for (Block block : BLOCKS) {
             registry.register(block);
         }
     }
 
-    public static void registerItemBlocks(final IForgeRegistry<Item> registry) {
+    public static void registerItemBlocks(IForgeRegistry<Item> registry) {
         for (ItemBlock itemBlock : ITEM_BLOCKS) {
             registry.register(itemBlock);
         }
@@ -95,9 +100,14 @@ public final class GregoriusDrugworksBlocks {
 
     public static void registerModels() {
         for (ItemBlock itemBlock : ITEM_BLOCKS) {
-            final ResourceLocationHolder holder = new ResourceLocationHolder(itemBlock.getRegistryName());
+            Block block = itemBlock.getBlock();
+            if (block instanceof GregoriusDrugworksActiveCasingBlock) {
+                ((GregoriusDrugworksActiveCasingBlock) block).onModelRegister();
+                continue;
+            }
+            ResourceLocation registryName = requireRegistryName(itemBlock);
             ModelLoader.setCustomModelResourceLocation(itemBlock, 0,
-                    new ModelResourceLocation(holder.registryName, "inventory"));
+                    new ModelResourceLocation(registryName, "inventory"));
         }
     }
 
@@ -109,33 +119,75 @@ public final class GregoriusDrugworksBlocks {
         return Collections.unmodifiableList(ITEM_BLOCKS);
     }
 
-    private static Block createMetalBlock(final String name, final float hardness, final float resistance) {
+    public static IBlockState getDefaultState(Block block) {
+        if (block == null) {
+            throw new IllegalStateException("Requested default state for a null block");
+        }
+        return block.getDefaultState();
+    }
+
+    private static Block createMetalBlock(String name, float hardness, float resistance) {
         return createBasicBlock(name, Material.IRON, hardness, resistance, SoundType.METAL);
     }
 
-    private static Block createBasicBlock(final String name, final Material material, final float hardness, final float resistance, final SoundType soundType) {
-        final GregoriusDrugworksBlock block = new GregoriusDrugworksBlock(material, hardness, resistance, soundType);
-        block.setRegistryName(GregoriusDrugworksUtil.makeName(name));
-        block.setTranslationKey(Tags.MOD_ID + "." + name);
-        block.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
+    private static Block createActiveMetalBlock(String name, float hardness, float resistance) {
+        return createActiveBlock(name, Material.IRON, hardness, resistance, SoundType.METAL);
+    }
 
-        BLOCKS.add(block);
-
-        final ItemBlock itemBlock = new ItemBlock(block);
-        itemBlock.setRegistryName(Objects.requireNonNull(block.getRegistryName()));
-        ITEM_BLOCKS.add(itemBlock);
-
+    private static Block createBasicBlock(String name,
+                                          Material material,
+                                          float hardness,
+                                          float resistance,
+                                          SoundType soundType) {
+        GregoriusDrugworksBlock block = new GregoriusDrugworksBlock(material, hardness, resistance, soundType);
+        configureBlock(block, name);
+        registerBlockWithItem(block, new ItemBlock(block));
         return block;
     }
 
-    private static final class GregoriusDrugworksBlock extends Block {
+    private static Block createActiveBlock(String name,
+                                           Material material,
+                                           float hardness,
+                                           float resistance,
+                                           SoundType soundType) {
+        GregoriusDrugworksActiveCasingBlock block =
+                new GregoriusDrugworksActiveCasingBlock(name, material, hardness, resistance, soundType);
+        configureBlock(block, name);
+        registerBlockWithItem(block, new ItemBlock(block));
+        return block;
+    }
 
-        private GregoriusDrugworksBlock(final Material material, final float hardness, final float resistance, final SoundType soundType) {
+    private static void configureBlock(Block block, String name) {
+        block.setRegistryName(GregoriusDrugworksUtil.makeName(name));
+        block.setTranslationKey(Tags.MOD_ID + "." + name);
+        block.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
+    }
+
+    private static void registerBlockWithItem(Block block, ItemBlock itemBlock) {
+        BLOCKS.add(block);
+        itemBlock.setRegistryName(Objects.requireNonNull(block.getRegistryName()));
+        ITEM_BLOCKS.add(itemBlock);
+    }
+
+    private static ResourceLocation requireRegistryName(Item item) {
+        ResourceLocation registryName = item.getRegistryName();
+        if (registryName == null) {
+            throw new IllegalStateException("Registry name was null during model registration for " + item);
+        }
+        return registryName;
+    }
+
+    private static class GregoriusDrugworksBlock extends Block {
+
+        private GregoriusDrugworksBlock(Material material,
+                                        float hardness,
+                                        float resistance,
+                                        SoundType soundType) {
             super(material);
-            this.setHardness(hardness);
-            this.setResistance(resistance);
-            this.setHarvestLevel("pickaxe", 1);
-            this.setSoundType(soundType);
+            setHardness(hardness);
+            setResistance(resistance);
+            setHarvestLevel("pickaxe", 1);
+            setSoundType(soundType);
         }
 
         @Nonnull
@@ -145,11 +197,37 @@ public final class GregoriusDrugworksBlocks {
         }
     }
 
-    private record ResourceLocationHolder(ResourceLocation registryName) {
-        private ResourceLocationHolder {
-            if (registryName == null) {
-                throw new IllegalStateException("Registry name was null during model registration");
-            }
+    private static final class GregoriusDrugworksActiveCasingBlock extends VariantActiveBlock<ActiveCasingVariant> {
+
+        private GregoriusDrugworksActiveCasingBlock(String name,
+                                                    Material material,
+                                                    float hardness,
+                                                    float resistance,
+                                                    SoundType soundType) {
+            super(material);
+            setHardness(hardness);
+            setResistance(resistance);
+            setHarvestLevel("pickaxe", 1);
+            setSoundType(soundType);
+            setDefaultState(getState(ActiveCasingVariant.NORMAL));
+            setTranslationKey(Tags.MOD_ID + "." + name);
+            setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
         }
+    }
+
+    private enum ActiveCasingVariant implements IStringSerializable {
+        NORMAL("normal");
+
+        private final String name;
+
+        ActiveCasingVariant(String name) {
+            this.name = name;
         }
+
+        @Nonnull
+        @Override
+        public String getName() {
+            return name;
+        }
+    }
 }

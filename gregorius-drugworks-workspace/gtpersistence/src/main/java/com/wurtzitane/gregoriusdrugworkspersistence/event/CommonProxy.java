@@ -7,12 +7,12 @@ import com.wurtzitane.gregoriusdrugworkspersistence.network.GregoriusDrugworksNe
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadCarriers;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadRegistry;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadSources;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeHandler;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.RecipeLoadMedicalApplicator;
 import com.wurtzitane.gregoriusdrugworkspersistence.trigger.GregoriusDrugworksTriggerBundles;
 import com.wurtzitane.gregoriusdrugworkspersistence.visual.GregoriusDrugworksVisualProfiles;
-import gregtech.api.GregTechAPI;
 import gregtech.api.unification.material.event.MaterialEvent;
-import gregtech.api.unification.material.event.MaterialRegistryEvent;
 import gregtech.api.unification.material.event.PostMaterialEvent;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -36,6 +36,7 @@ public class CommonProxy {
         GregoriusDrugworksFluids.preInit();
         GregoriusDrugworksMetaItems.preInit();
         GregoriusDrugworksMetaBlocks.preInit();
+        GregoriusDrugworksMetaTileEntities.preInit();
         GregoriusDrugworksMedicalApplicators.preInit();
         GregoriusDrugworksPayloadRegistry.preInit();
         GregoriusDrugworksPayloadSources.preInit();
@@ -68,21 +69,17 @@ public class CommonProxy {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void registerMaterials(MaterialEvent event) {
-        //GregoriusDrugworksMaterials.init();
+        GregoriusDrugworksMaterials.init();
     }
 
     @SubscribeEvent
     public static void materialChanges(PostMaterialEvent event) {
-        //GregoriusDrugworksMaterials.materialChanges();
-    }
-
-    @SubscribeEvent
-    public static void createMaterialRegistry(MaterialRegistryEvent event) {
-        GregTechAPI.materialManager.createRegistry(Tags.MOD_ID);
+        GregoriusDrugworksMaterials.materialChanges();
     }
 
     @SubscribeEvent
     public static void registerRecipes(RegistryEvent.Register<IRecipe> event) {
         event.getRegistry().register(new RecipeLoadMedicalApplicator());
+        GregoriusDrugworksRecipeHandler.init();
     }
 }

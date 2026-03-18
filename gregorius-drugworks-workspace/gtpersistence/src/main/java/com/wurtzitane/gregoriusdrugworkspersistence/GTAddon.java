@@ -15,7 +15,12 @@ import org.apache.logging.log4j.Logger;
 import com.wurtzitane.gregoriusdrugworkspersistence.util.GregoriusDrugworksUtil;
 import com.wurtzitane.gregoriusdrugworkspersistence.event.ClientProxy;
 
-@net.minecraftforge.fml.common.Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION)
+@Mod(
+        modid = Tags.MOD_ID,
+        name = Tags.MOD_NAME,
+        version = Tags.VERSION,
+        dependencies = "required-after:gregtech@[2.8.10-beta,);after:groovyscript"
+)
 public class GTAddon {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_ID);

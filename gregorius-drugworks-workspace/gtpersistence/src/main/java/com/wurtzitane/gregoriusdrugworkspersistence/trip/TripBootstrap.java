@@ -52,7 +52,7 @@ public final class TripBootstrap {
                         10,
                         20,
                         26,
-                        "Come-up... green static starts breathing through the room.",
+                        "Come-up... the world starts bending.",
                         "light_purple",
                         particle("minecraft:portal", 90, 0.72D, 0.05D),
                         onEnter("gregoriusdrugworkspersistence:salvinorin_a_onset_bundle"),
@@ -64,13 +64,13 @@ public final class TripBootstrap {
                         10,
                         16,
                         22,
-                        "Veil-lift... the edges of everything peel into stacked copies.",
+                        "Veil lift. The edges of everything peel into stacked copies.",
                         "dark_purple",
                         particle("minecraft:enchant", 120, 0.85D, 0.02D),
                         onEnter("gregoriusdrugworkspersistence:salvinorin_a_veil_lift_bundle"),
                         effect("minecraft:nausea", 16, 0, true),
                         effect("minecraft:night_vision", 20, 0, true),
-                        effect("minecraft:slowness", 10, 0, true)
+                        effect("minecraft:blindness", 10, 0, true)
                 ))
                 .stage(stage(
                         24,
@@ -82,7 +82,7 @@ public final class TripBootstrap {
                         particle("minecraft:spell_mob_ambient", 130, 0.90D, 0.03D),
                         onEnter("gregoriusdrugworkspersistence:salvinorin_a_fracture_bundle"),
                         effect("minecraft:nausea", 18, 1, true),
-                        effect("minecraft:blindness", 4, 0, true),
+                        effect("minecraft:night_vision", 4, 0, true),
                         effect("minecraft:slowness", 12, 0, true),
                         effect("minecraft:glowing", 10, 0, true)
                 ))
@@ -162,7 +162,7 @@ public final class TripBootstrap {
                         16,
                         28,
                         36,
-                        "Comedown... the structure softens, but the pulse still lingers.",
+                        "Comedown....",
                         "gray",
                         particle("minecraft:happy_villager", 85, 0.74D, 0.02D),
                         onEnter("gregoriusdrugworkspersistence:salvinorin_a_comedown_bundle"),
