@@ -18,9 +18,11 @@ import net.minecraftforge.items.IItemHandlerModifiable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public final class GregoriusDrugworksChancedInputSupport {
 
@@ -36,7 +38,7 @@ public final class GregoriusDrugworksChancedInputSupport {
             return builder;
         }
         ItemStack copy = stack.copy();
-        builder.inputs(new GTRecipeItemInput(copy, copy.getCount()));
+        builder.input(new ChancedGTRecipeItemInput(copy, chance, chanceBoost));
         mergePropertyIntoBuilder(builder, ChancedInputRecipePropertyValue.ofItem(
                 new ChancedItemInputEntry(copy, chance, chanceBoost)));
         return builder;
@@ -48,7 +50,7 @@ public final class GregoriusDrugworksChancedInputSupport {
             return builder;
         }
         FluidStack copy = stack.copy();
-        builder.fluidInputs(new GTRecipeFluidInput(copy, copy.amount));
+        builder.fluidInputs(new ChancedGTRecipeFluidInput(copy, chance, chanceBoost));
         mergePropertyIntoBuilder(builder, ChancedInputRecipePropertyValue.ofFluid(
                 new ChancedFluidInputEntry(copy, chance, chanceBoost)));
         return builder;
@@ -117,6 +119,12 @@ public final class GregoriusDrugworksChancedInputSupport {
 
     public static ChancedItemInputEntry getChancedItemInputEntry(Recipe recipe, List<GTRecipeInput> sortedInputs,
                                                                  int slotIndex) {
+        if (slotIndex >= 0 && slotIndex < sortedInputs.size()) {
+            GTRecipeInput input = sortedInputs.get(slotIndex);
+            if (input instanceof ChancedGTRecipeItemInput chancedInput) {
+                return chancedInput.getChancedEntry();
+            }
+        }
         ChancedInputRecipePropertyValue propertyValue = recipe.getProperty(ChancedInputRecipeProperty.getInstance(), null);
         if (propertyValue == null || propertyValue.isEmpty() || slotIndex < 0 || slotIndex >= sortedInputs.size()) {
             return null;
@@ -138,6 +146,12 @@ public final class GregoriusDrugworksChancedInputSupport {
 
     public static ChancedFluidInputEntry getChancedFluidInputEntry(Recipe recipe, List<GTRecipeInput> sortedFluidInputs,
                                                                    int slotIndex) {
+        if (slotIndex >= 0 && slotIndex < sortedFluidInputs.size()) {
+            GTRecipeInput input = sortedFluidInputs.get(slotIndex);
+            if (input instanceof ChancedGTRecipeFluidInput chancedInput) {
+                return chancedInput.getChancedEntry();
+            }
+        }
         ChancedInputRecipePropertyValue propertyValue = recipe.getProperty(ChancedInputRecipeProperty.getInstance(), null);
         if (propertyValue == null || propertyValue.isEmpty() || slotIndex < 0 || slotIndex >= sortedFluidInputs.size()) {
             return null;
@@ -155,6 +169,42 @@ public final class GregoriusDrugworksChancedInputSupport {
             }
         }
         return null;
+    }
+
+    public static Map<Integer, ChancedItemInputEntry> buildDisplayedItemInputMap(Recipe recipe,
+                                                                                 List<List<ItemStack>> displayedInputs) {
+        Map<Integer, ChancedItemInputEntry> result = new HashMap<Integer, ChancedItemInputEntry>();
+        ChancedInputRecipePropertyValue propertyValue = recipe.getProperty(ChancedInputRecipeProperty.getInstance(), null);
+        if (propertyValue == null || propertyValue.isEmpty() || displayedInputs == null || displayedInputs.isEmpty()) {
+            return result;
+        }
+        List<ChancedItemInputEntry> remaining = getSortedItemEntries(propertyValue);
+        for (int slotIndex = 0; slotIndex < displayedInputs.size(); slotIndex++) {
+            int matchIndex = findDisplayedItemEntryIndex(remaining, displayedInputs.get(slotIndex));
+            if (matchIndex < 0) {
+                continue;
+            }
+            result.put(slotIndex, remaining.remove(matchIndex));
+        }
+        return result;
+    }
+
+    public static Map<Integer, ChancedFluidInputEntry> buildDisplayedFluidInputMap(Recipe recipe,
+                                                                                   List<List<FluidStack>> displayedInputs) {
+        Map<Integer, ChancedFluidInputEntry> result = new HashMap<Integer, ChancedFluidInputEntry>();
+        ChancedInputRecipePropertyValue propertyValue = recipe.getProperty(ChancedInputRecipeProperty.getInstance(), null);
+        if (propertyValue == null || propertyValue.isEmpty() || displayedInputs == null || displayedInputs.isEmpty()) {
+            return result;
+        }
+        List<ChancedFluidInputEntry> remaining = getSortedFluidEntries(propertyValue);
+        for (int slotIndex = 0; slotIndex < displayedInputs.size(); slotIndex++) {
+            int matchIndex = findDisplayedFluidEntryIndex(remaining, displayedInputs.get(slotIndex));
+            if (matchIndex < 0) {
+                continue;
+            }
+            result.put(slotIndex, remaining.remove(matchIndex));
+        }
+        return result;
     }
 
     private static boolean shouldRefund(ChancedItemInputEntry entry,
@@ -205,8 +255,31 @@ public final class GregoriusDrugworksChancedInputSupport {
     private static int findMatchingItemEntryIndex(List<ChancedItemInputEntry> entries, GTRecipeInput input) {
         for (int i = 0; i < entries.size(); i++) {
             ItemStack ingredient = entries.get(i).getIngredient();
-            if (input.getAmount() >= ingredient.getCount() && input.acceptsStack(ingredient)) {
+            GTRecipeItemInput ingredientInput = new GTRecipeItemInput(ingredient, ingredient.getCount());
+            if (!input.isNonConsumable() &&
+                    input.getAmount() >= ingredient.getCount() &&
+                    input.equalIgnoreAmount(ingredientInput)) {
                 return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int findDisplayedItemEntryIndex(List<ChancedItemInputEntry> entries, List<ItemStack> displayedStacks) {
+        if (displayedStacks == null || displayedStacks.isEmpty()) {
+            return -1;
+        }
+        for (int i = 0; i < entries.size(); i++) {
+            ItemStack ingredient = entries.get(i).getIngredient();
+            for (ItemStack displayed : displayedStacks) {
+                if (displayed == null || displayed.isEmpty()) {
+                    continue;
+                }
+                if (displayed.getCount() >= ingredient.getCount() &&
+                        ItemStack.areItemsEqual(displayed, ingredient) &&
+                        ItemStack.areItemStackTagsEqual(displayed, ingredient)) {
+                    return i;
+                }
             }
         }
         return -1;
@@ -215,8 +288,32 @@ public final class GregoriusDrugworksChancedInputSupport {
     private static int findMatchingFluidEntryIndex(List<ChancedFluidInputEntry> entries, GTRecipeInput input) {
         for (int i = 0; i < entries.size(); i++) {
             FluidStack ingredient = entries.get(i).getIngredient();
-            if (input.getAmount() >= ingredient.amount && input.acceptsFluid(ingredient)) {
+            GTRecipeFluidInput ingredientInput = new GTRecipeFluidInput(ingredient, ingredient.amount);
+            if (!input.isNonConsumable() &&
+                    input.getAmount() >= ingredient.amount &&
+                    input.equalIgnoreAmount(ingredientInput)) {
                 return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int findDisplayedFluidEntryIndex(List<ChancedFluidInputEntry> entries,
+                                                    List<FluidStack> displayedFluids) {
+        if (displayedFluids == null || displayedFluids.isEmpty()) {
+            return -1;
+        }
+        for (int i = 0; i < entries.size(); i++) {
+            FluidStack ingredient = entries.get(i).getIngredient();
+            for (FluidStack displayed : displayedFluids) {
+                if (displayed == null || displayed.amount <= 0) {
+                    continue;
+                }
+                if (displayed.amount >= ingredient.amount &&
+                        displayed.getFluid().getName().equals(ingredient.getFluid().getName()) &&
+                        FluidStack.areFluidStackTagsEqual(displayed, ingredient)) {
+                    return i;
+                }
             }
         }
         return -1;

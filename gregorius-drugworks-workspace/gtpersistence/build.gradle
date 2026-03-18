@@ -212,6 +212,11 @@ processResources {
 jar {
     manifest {
         def attribute_map = [:]
+        if (propertyBool('use_mixins')) {
+            attribute_map['MixinConfigs'] = propertyStringList('mixin_configs')
+                    .collect { config -> "mixins.${config}.json" }
+                    .join(',')
+        }
         if (propertyBool('is_coremod')) {
             attribute_map['FMLCorePlugin'] = propertyString('coremod_plugin_class_name')
             if (propertyBool('coremod_includes_mod')) {

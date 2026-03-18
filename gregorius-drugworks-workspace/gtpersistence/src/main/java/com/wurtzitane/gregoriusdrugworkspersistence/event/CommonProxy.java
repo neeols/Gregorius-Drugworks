@@ -24,6 +24,8 @@ import net.minecraftforge.registries.IForgeRegistry;
 
 public class CommonProxy {
 
+    private static boolean machineRecipesInitialized;
+
     public static void onConstruction() {
         GregoriusDrugworksNetworkHandler.onConstruction();
     }
@@ -49,9 +51,11 @@ public class CommonProxy {
     }
 
     public static void postInit() {
+        initMachineRecipes();
     }
 
     public static void loadComplete() {
+        initMachineRecipes();
     }
 
     @SubscribeEvent
@@ -77,9 +81,16 @@ public class CommonProxy {
         GregoriusDrugworksMaterials.materialChanges();
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void registerRecipes(RegistryEvent.Register<IRecipe> event) {
         event.getRegistry().register(new RecipeLoadMedicalApplicator());
+    }
+
+    private static void initMachineRecipes() {
+        if (machineRecipesInitialized) {
+            return;
+        }
         GregoriusDrugworksRecipeHandler.init();
+        machineRecipesInitialized = true;
     }
 }

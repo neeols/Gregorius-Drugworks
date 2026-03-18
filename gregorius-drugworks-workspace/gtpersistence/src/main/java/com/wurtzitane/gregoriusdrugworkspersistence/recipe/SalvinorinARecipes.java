@@ -1656,7 +1656,7 @@ public final class SalvinorinARecipes {
         builder.buildAndRegister();
 
         // zeolite_a_gel_mixing
-        builder = RecipeMaps.MIXER_RECIPES.recipeBuilder();
+        builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(GregoriusDrugworksMaterials.SodiumSilicateSolution.getFluid(1000), GregoriusDrugworksMaterials.SodiumAluminateSolution.getFluid(1000), Materials.Water.getFluid(2000));
         builder.fluidOutputs(GregoriusDrugworksMaterials.ZeoliteAGel.getFluid(2000));
         builder.circuitMeta(7);
@@ -2226,9 +2226,9 @@ public final class SalvinorinARecipes {
         builder.input(dust, GregoriusDrugworksMaterials.SalACarboxylicAcid173, 1);
         builder.input(dust, GregoriusDrugworksMaterials.Dcc, 3);
         builder.fluidInputs(Materials.Methanol.getFluid(1000));
-        builder.output(dust, GregoriusDrugworksMaterials.Material2DeacetoxysalvinorinA, 1);
         builder.output(dust, GregoriusDrugworksMaterials.Dicyclohexylurea, 3);
         builder.fluidOutputs(GregoriusDrugworksMaterials.Butanone.getFluid(500));
+        builder.output(dust, GregoriusDrugworksMaterials.Material2DeacetoxysalvinorinA, 1);
         builder.duration(3600);
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
