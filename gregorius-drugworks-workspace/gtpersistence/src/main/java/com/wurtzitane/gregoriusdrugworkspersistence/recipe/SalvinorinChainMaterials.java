@@ -1237,14 +1237,6 @@ public final class SalvinorinChainMaterials {
                 .components(Materials.Carbon, 6, Materials.Hydrogen, 15, Materials.Fluorine, 1, Materials.Silicon, 1)
                 .build();
 
-        GregoriusDrugworksMaterials.TetrabutylammoniumChloride = new Material.Builder(32221, resLoc("tetrabutylammonium_chloride"))
-                .dust()
-                .color(0xF2F2F2)
-                .iconSet(DULL)
-                .flags(DISABLE_DECOMPOSITION)
-                .components(Materials.Carbon, 16, Materials.Hydrogen, 36, Materials.Chlorine, 1, Materials.Nitrogen, 1)
-                .build();
-
         GregoriusDrugworksMaterials.TriethylammoniumChloride = new Material.Builder(32222, resLoc("triethylammonium_chloride"))
                 .dust()
                 .color(0xF2F2F2)

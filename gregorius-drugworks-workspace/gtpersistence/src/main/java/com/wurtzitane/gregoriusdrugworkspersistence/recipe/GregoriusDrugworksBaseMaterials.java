@@ -1,5 +1,6 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.worldgen.GregoriusDrugworksOreBuilder;
 import gregtech.api.unification.material.Material;
 import gregtech.api.unification.material.Materials;
 
@@ -35,12 +36,16 @@ public final class GregoriusDrugworksBaseMaterials {
                 .components(Materials.Calcium, 1, Materials.Oxygen, 2, Materials.Hydrogen, 2)
                 .build();
 
-        GregoriusDrugworksMaterials.Fluorite = new Material.Builder(32230, resLoc("fluorite"))
+        GregoriusDrugworksMaterials.Fluorite = GregoriusDrugworksOreBuilder.create(32230, "fluorite")
                 .dust()
+                .ore(2, 1)
                 .color(0xB8F0F2)
                 .iconSet(DULL)
                 .flags(DISABLE_DECOMPOSITION)
                 .components(Materials.Calcium, 1, Materials.Fluorine, 2)
+                .formula("CaF2", true)
+                .overworldLayeredVein("gregoriusdrugworkspersistence.veins.ore.fluorite", 28, 0.22f, 18, 68, 14, 18,
+                        Materials.Calcite, Materials.Apatite)
                 .build();
 
         GregoriusDrugworksMaterials.Formaldehyde = new Material.Builder(32231, resLoc("formaldehyde"))

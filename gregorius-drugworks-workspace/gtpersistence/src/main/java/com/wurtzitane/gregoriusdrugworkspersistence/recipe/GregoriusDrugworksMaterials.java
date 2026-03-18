@@ -1,6 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
+import com.wurtzitane.gregoriusdrugworkspersistence.worldgen.GregoriusDrugworksOreBuilder;
 import gregtech.api.unification.material.Material;
 import gregtech.api.util.GTUtility;
 import net.minecraft.util.ResourceLocation;
@@ -18,6 +19,7 @@ public final class GregoriusDrugworksMaterials {
         GregoriusDrugworksMatProperties.propertyChanges();
         GregoriusDrugworksMatProperties.flagChanges();
         GregoriusDrugworksMatProperties.miscChanges();
+        GregoriusDrugworksOreBuilder.registerPendingWorldgen();
     }
 
     public static ResourceLocation resLoc(String path) {
@@ -246,7 +248,6 @@ public final class GregoriusDrugworksMaterials {
     public static Material Tbacl;
     public static Material Tbaf;
     public static Material Tbsf;
-    public static Material TetrabutylammoniumChloride;
     public static Material TriethylammoniumChloride;
     public static Material Triphenylphosphine;
     public static Material TriphenylphosphineOxide;

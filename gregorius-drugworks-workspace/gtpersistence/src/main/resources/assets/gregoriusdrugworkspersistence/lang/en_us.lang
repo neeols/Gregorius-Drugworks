@@ -1,5 +1,6 @@
 itemGroup.gregoriusdrugworkspersistence.main=Gregorius Drugworks
 itemGroup.gregoriusdrugworkspersistence.materials=Gregorius Drugworks Materials
+gregoriusdrugworkspersistence.veins.ore.fluorite=Fluorite Vein
 
 item.gregoriusdrugworkspersistence.heatproof_alloy_mesh.name=Heatproof Alloy Mesh
 item.gregoriusdrugworkspersistence.fine_stainless_mesh.name=Fine Stainless Mesh
@@ -332,7 +333,6 @@ gregoriusdrugworkspersistence.material.tbsf=TBS Fluoride
 gregoriusdrugworkspersistence.material.tertbutylchloride=tert-Butyl Chloride
 gregoriusdrugworkspersistence.material.tertbutyldimethylsilanol=tert-Butyldimethylsilanol
 gregoriusdrugworkspersistence.material.tescl=TESCl
-gregoriusdrugworkspersistence.material.tetrabutylammonium_chloride=Tetrabutylammonium Chloride
 gregoriusdrugworkspersistence.material.thf=THF
 gregoriusdrugworkspersistence.material.thionyl_chloride=Thionyl Chloride
 gregoriusdrugworkspersistence.material.tributylamine=Tributylamine
