@@ -28,6 +28,8 @@ kubejs/exported/
 # EMI / JEI caches
 emi/
 jei/
+!gregorius-drugworks-workspace/gtpersistence/src/main/java/com/wurtzitane/gregoriusdrugworkspersistence/integration/jei/
+!gregorius-drugworks-workspace/gtpersistence/src/main/java/com/wurtzitane/gregoriusdrugworkspersistence/integration/jei/**
 
 # World saves
 saves/

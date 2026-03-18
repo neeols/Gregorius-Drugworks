@@ -9,7 +9,7 @@ import gregtech.api.recipes.recipeproperties.TemperatureProperty;
 import gregtech.core.sound.GTSoundEvents;
 
 public final class GregoriusDrugworksRecipeMaps {
-    public static final RecipeMap<ChemicalPlantRecipeBuilder> CHEMICAL_PLANT_RECIPES = new RecipeMap<>(
+    public static final RecipeMap<ChemicalPlantRecipeBuilder> CHEMICAL_PLANT_RECIPES = new RecipeMapChemicalPlant(
             "chemical_plant", 6, 6, 6, 6, new ChemicalPlantRecipeBuilder(), false)
             .setProgressBar(GuiTextures.PROGRESS_BAR_ARROW, ProgressWidget.MoveType.HORIZONTAL)
             .setSlotOverlay(false, false, GuiTextures.BEAKER_OVERLAY_1)

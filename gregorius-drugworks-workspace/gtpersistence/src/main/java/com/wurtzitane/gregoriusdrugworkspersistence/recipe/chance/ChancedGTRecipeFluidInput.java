@@ -11,13 +11,17 @@ public class ChancedGTRecipeFluidInput extends GTRecipeFluidInput {
     private final ChancedFluidInputEntry chancedEntry;
 
     public ChancedGTRecipeFluidInput(FluidStack stack, int chance, int chanceBoost) {
-        this(new ChancedFluidInputEntry(stack, chance, chanceBoost), stack.amount);
+        this(stack, chance, chanceBoost, 0);
+    }
+
+    public ChancedGTRecipeFluidInput(FluidStack stack, int chance, int chanceBoost, int tierReductionRate) {
+        this(new ChancedFluidInputEntry(stack, chance, chanceBoost, tierReductionRate), stack.amount);
     }
 
     private ChancedGTRecipeFluidInput(ChancedFluidInputEntry chancedEntry, int amount) {
         super(withAmount(chancedEntry.getIngredient(), amount), amount);
         this.chancedEntry = new ChancedFluidInputEntry(withAmount(chancedEntry.getIngredient(), amount),
-                chancedEntry.getChance(), chancedEntry.getChanceBoost());
+                chancedEntry.getChance(), chancedEntry.getChanceBoost(), chancedEntry.getTierReductionRate());
     }
 
     public ChancedFluidInputEntry getChancedEntry() {
@@ -44,7 +48,8 @@ public class ChancedGTRecipeFluidInput extends GTRecipeFluidInput {
 
     @Override
     protected int computeHash() {
-        return Objects.hash(super.computeHash(), chancedEntry.getChance(), chancedEntry.getChanceBoost());
+        return Objects.hash(super.computeHash(), chancedEntry.getChance(), chancedEntry.getChanceBoost(),
+                chancedEntry.getTierReductionRate());
     }
 
     @Override
@@ -54,7 +59,8 @@ public class ChancedGTRecipeFluidInput extends GTRecipeFluidInput {
         }
         return super.equals(other) &&
                 chancedEntry.getChance() == other.chancedEntry.getChance() &&
-                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost();
+                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost() &&
+                chancedEntry.getTierReductionRate() == other.chancedEntry.getTierReductionRate();
     }
 
     @Override
@@ -64,7 +70,8 @@ public class ChancedGTRecipeFluidInput extends GTRecipeFluidInput {
         }
         return super.equalIgnoreAmount(other) &&
                 chancedEntry.getChance() == other.chancedEntry.getChance() &&
-                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost();
+                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost() &&
+                chancedEntry.getTierReductionRate() == other.chancedEntry.getTierReductionRate();
     }
 
     private static FluidStack withAmount(FluidStack stack, int amount) {

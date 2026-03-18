@@ -2,6 +2,7 @@ package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksUnificationHelper;
 import gregtech.api.recipes.FluidCellInput;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.material.Material;
@@ -64,7 +65,8 @@ public final class GregoriusDrugworksCreativeTabs {
 
     private static ItemStack createMaterialsIcon() {
         if (GregoriusDrugworksMaterials.SalvinorinA != null) {
-            ItemStack dust = OreDictUnifier.get(OrePrefix.dust, GregoriusDrugworksMaterials.SalvinorinA);
+            ItemStack dust = GregoriusDrugworksUnificationHelper.get(OrePrefix.dust,
+                    GregoriusDrugworksMaterials.SalvinorinA);
             if (!dust.isEmpty()) {
                 return dust;
             }
@@ -87,7 +89,7 @@ public final class GregoriusDrugworksCreativeTabs {
         Map<String, ItemStack> orderedStacks = new LinkedHashMap<>();
         for (Material material : materials) {
             for (OrePrefix prefix : OrePrefix.values()) {
-                ItemStack stack = OreDictUnifier.get(prefix, material);
+                ItemStack stack = GregoriusDrugworksUnificationHelper.get(prefix, material);
                 addUniqueStack(orderedStacks, stack);
             }
             if (material.hasFluid()) {

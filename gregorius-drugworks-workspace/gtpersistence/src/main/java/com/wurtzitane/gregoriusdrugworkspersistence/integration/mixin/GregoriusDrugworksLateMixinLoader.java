@@ -1,4 +1,4 @@
-package com.wurtzitane.gregoriusdrugworkspersistence.mixin;
+package com.wurtzitane.gregoriusdrugworkspersistence.integration.mixin;
 
 import java.util.Collections;
 import java.util.List;

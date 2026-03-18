@@ -26,6 +26,8 @@ import java.util.Map;
 
 public final class GregoriusDrugworksChancedInputSupport {
 
+    public static final int DEFAULT_CATALYST_TIER_REDUCTION_RATE = 1000;
+
     private static final Field RECIPE_PROPERTY_STORAGE_FIELD = findField("recipePropertyStorage");
     private static final Field RECIPE_PROPERTY_STORAGE_ERRORED_FIELD = findField("recipePropertyStorageErrored");
 
@@ -33,27 +35,44 @@ public final class GregoriusDrugworksChancedInputSupport {
     }
 
     public static <R extends RecipeBuilder<R>> R chancedItemInput(R builder, ItemStack stack, int chance, int chanceBoost) {
+        return chancedItemInput(builder, stack, chance, chanceBoost, 0);
+    }
+
+    public static <R extends RecipeBuilder<R>> R chancedItemInput(R builder, ItemStack stack, int chance, int chanceBoost,
+                                                                  int tierReductionRate) {
         validateChance(chance);
+        validateTierReductionRate(tierReductionRate);
         if (stack == null || stack.isEmpty()) {
             return builder;
         }
         ItemStack copy = stack.copy();
-        builder.input(new ChancedGTRecipeItemInput(copy, chance, chanceBoost));
+        builder.input(new ChancedGTRecipeItemInput(copy, chance, chanceBoost, tierReductionRate));
         mergePropertyIntoBuilder(builder, ChancedInputRecipePropertyValue.ofItem(
-                new ChancedItemInputEntry(copy, chance, chanceBoost)));
+                new ChancedItemInputEntry(copy, chance, chanceBoost, tierReductionRate)));
         return builder;
     }
 
     public static <R extends RecipeBuilder<R>> R chancedFluidInput(R builder, FluidStack stack, int chance, int chanceBoost) {
+        return chancedFluidInput(builder, stack, chance, chanceBoost, 0);
+    }
+
+    public static <R extends RecipeBuilder<R>> R chancedFluidInput(R builder, FluidStack stack, int chance, int chanceBoost,
+                                                                   int tierReductionRate) {
         validateChance(chance);
+        validateTierReductionRate(tierReductionRate);
         if (stack == null || stack.amount <= 0) {
             return builder;
         }
         FluidStack copy = stack.copy();
-        builder.fluidInputs(new ChancedGTRecipeFluidInput(copy, chance, chanceBoost));
+        builder.fluidInputs(new ChancedGTRecipeFluidInput(copy, chance, chanceBoost, tierReductionRate));
         mergePropertyIntoBuilder(builder, ChancedInputRecipePropertyValue.ofFluid(
-                new ChancedFluidInputEntry(copy, chance, chanceBoost)));
+                new ChancedFluidInputEntry(copy, chance, chanceBoost, tierReductionRate)));
         return builder;
+    }
+
+    public static <R extends RecipeBuilder<R>> R chancedCatalystItemInput(R builder, ItemStack stack, int chance,
+                                                                           int chanceBoost) {
+        return chancedItemInput(builder, stack, chance, chanceBoost, DEFAULT_CATALYST_TIER_REDUCTION_RATE);
     }
 
     public static void mergePropertyIntoBuilder(RecipeBuilder<?> builder, ChancedInputRecipePropertyValue addition) {
@@ -207,11 +226,28 @@ public final class GregoriusDrugworksChancedInputSupport {
         return result;
     }
 
+    public static int getTierReducedChance(int baseChance, int recipeTier, int machineTier, int tierReductionRate) {
+        int tierDiff = machineTier - recipeTier;
+        if (tierDiff <= 0 || tierReductionRate <= 0) {
+            return baseChance;
+        }
+
+        int chance = baseChance;
+        for (int i = 0; i < tierDiff; i++) {
+            chance = (int) Math.round(chance * (10000.0D - tierReductionRate) / 10000.0D);
+        }
+        return Math.max(0, chance);
+    }
+
+    public static double getTierReductionPerTierDisplay(int baseChance, int tierReductionRate) {
+        return (baseChance / 100.0D) * (tierReductionRate / 10000.0D);
+    }
+
     private static boolean shouldRefund(ChancedItemInputEntry entry,
                                         ChanceBoostFunction boostFunction,
                                         int recipeTier,
                                         int machineTier) {
-        int chance = boostFunction.getBoostedChance(entry, recipeTier, machineTier);
+        int chance = getEffectiveChance(entry, boostFunction, recipeTier, machineTier);
         return !ChancedOutputLogic.passesChance(chance);
     }
 
@@ -219,7 +255,7 @@ public final class GregoriusDrugworksChancedInputSupport {
                                         ChanceBoostFunction boostFunction,
                                         int recipeTier,
                                         int machineTier) {
-        int chance = boostFunction.getBoostedChance(entry, recipeTier, machineTier);
+        int chance = getEffectiveChance(entry, boostFunction, recipeTier, machineTier);
         return !ChancedOutputLogic.passesChance(chance);
     }
 
@@ -228,6 +264,33 @@ public final class GregoriusDrugworksChancedInputSupport {
             throw new IllegalArgumentException("Chance must be between 0 and " +
                     ChancedOutputLogic.getMaxChancedValue() + ": " + chance);
         }
+    }
+
+    private static void validateTierReductionRate(int tierReductionRate) {
+        if (tierReductionRate < 0 || tierReductionRate > 10000) {
+            throw new IllegalArgumentException("Tier reduction rate must be between 0 and 10000: " +
+                    tierReductionRate);
+        }
+    }
+
+    private static int getEffectiveChance(ChancedItemInputEntry entry,
+                                          ChanceBoostFunction boostFunction,
+                                          int recipeTier,
+                                          int machineTier) {
+        if (entry.getTierReductionRate() > 0) {
+            return getTierReducedChance(entry.getChance(), recipeTier, machineTier, entry.getTierReductionRate());
+        }
+        return boostFunction.getBoostedChance(entry, recipeTier, machineTier);
+    }
+
+    private static int getEffectiveChance(ChancedFluidInputEntry entry,
+                                          ChanceBoostFunction boostFunction,
+                                          int recipeTier,
+                                          int machineTier) {
+        if (entry.getTierReductionRate() > 0) {
+            return getTierReducedChance(entry.getChance(), recipeTier, machineTier, entry.getTierReductionRate());
+        }
+        return boostFunction.getBoostedChance(entry, recipeTier, machineTier);
     }
 
     private static List<ChancedItemInputEntry> getSortedItemEntries(ChancedInputRecipePropertyValue propertyValue) {

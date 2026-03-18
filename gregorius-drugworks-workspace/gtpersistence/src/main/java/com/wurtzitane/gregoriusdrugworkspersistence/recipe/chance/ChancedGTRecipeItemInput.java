@@ -11,13 +11,17 @@ public class ChancedGTRecipeItemInput extends GTRecipeItemInput {
     private final ChancedItemInputEntry chancedEntry;
 
     public ChancedGTRecipeItemInput(ItemStack stack, int chance, int chanceBoost) {
-        this(new ChancedItemInputEntry(stack, chance, chanceBoost), stack.getCount());
+        this(stack, chance, chanceBoost, 0);
+    }
+
+    public ChancedGTRecipeItemInput(ItemStack stack, int chance, int chanceBoost, int tierReductionRate) {
+        this(new ChancedItemInputEntry(stack, chance, chanceBoost, tierReductionRate), stack.getCount());
     }
 
     private ChancedGTRecipeItemInput(ChancedItemInputEntry chancedEntry, int amount) {
         super(withAmount(chancedEntry.getIngredient(), amount), amount);
         this.chancedEntry = new ChancedItemInputEntry(withAmount(chancedEntry.getIngredient(), amount),
-                chancedEntry.getChance(), chancedEntry.getChanceBoost());
+                chancedEntry.getChance(), chancedEntry.getChanceBoost(), chancedEntry.getTierReductionRate());
     }
 
     public ChancedItemInputEntry getChancedEntry() {
@@ -44,7 +48,8 @@ public class ChancedGTRecipeItemInput extends GTRecipeItemInput {
 
     @Override
     protected int computeHash() {
-        return Objects.hash(super.computeHash(), chancedEntry.getChance(), chancedEntry.getChanceBoost());
+        return Objects.hash(super.computeHash(), chancedEntry.getChance(), chancedEntry.getChanceBoost(),
+                chancedEntry.getTierReductionRate());
     }
 
     @Override
@@ -54,7 +59,8 @@ public class ChancedGTRecipeItemInput extends GTRecipeItemInput {
         }
         return super.equals(other) &&
                 chancedEntry.getChance() == other.chancedEntry.getChance() &&
-                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost();
+                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost() &&
+                chancedEntry.getTierReductionRate() == other.chancedEntry.getTierReductionRate();
     }
 
     @Override
@@ -64,7 +70,8 @@ public class ChancedGTRecipeItemInput extends GTRecipeItemInput {
         }
         return super.equalIgnoreAmount(other) &&
                 chancedEntry.getChance() == other.chancedEntry.getChance() &&
-                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost();
+                chancedEntry.getChanceBoost() == other.chancedEntry.getChanceBoost() &&
+                chancedEntry.getTierReductionRate() == other.chancedEntry.getTierReductionRate();
     }
 
     private static ItemStack withAmount(ItemStack stack, int amount) {

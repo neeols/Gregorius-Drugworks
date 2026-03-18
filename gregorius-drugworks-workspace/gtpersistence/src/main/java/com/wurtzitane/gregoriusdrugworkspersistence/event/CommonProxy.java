@@ -9,6 +9,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPa
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadSources;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeHandler;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksUnificationHelper;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.RecipeLoadMedicalApplicator;
 import com.wurtzitane.gregoriusdrugworkspersistence.trigger.GregoriusDrugworksTriggerBundles;
 import com.wurtzitane.gregoriusdrugworkspersistence.visual.GregoriusDrugworksVisualProfiles;
@@ -86,10 +87,16 @@ public class CommonProxy {
         event.getRegistry().register(new RecipeLoadMedicalApplicator());
     }
 
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void repairMaterialUnification(RegistryEvent.Register<IRecipe> event) {
+        GregoriusDrugworksUnificationHelper.repairNumericMaterialUnification();
+    }
+
     private static void initMachineRecipes() {
         if (machineRecipesInitialized) {
             return;
         }
+        GregoriusDrugworksUnificationHelper.repairNumericMaterialUnification();
         GregoriusDrugworksRecipeHandler.init();
         machineRecipesInitialized = true;
     }

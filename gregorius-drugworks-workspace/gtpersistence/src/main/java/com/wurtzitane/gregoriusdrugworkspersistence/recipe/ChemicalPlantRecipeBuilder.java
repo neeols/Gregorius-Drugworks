@@ -7,6 +7,7 @@ import gregtech.api.recipes.RecipeMap;
 import gregtech.api.recipes.recipeproperties.TemperatureProperty;
 import gregtech.api.util.EnumValidationResult;
 import gregtech.api.util.GTLog;
+import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nonnull;
@@ -44,6 +45,13 @@ public class ChemicalPlantRecipeBuilder extends RecipeBuilder<ChemicalPlantRecip
             coilTemperature(((Number) value).intValue());
             return true;
         }
+        if (ChemicalPlantAtmosphereProperty.KEY.equals(key)) {
+            if (!(value instanceof FluidStack)) {
+                return false;
+            }
+            atmosphere((FluidStack) value);
+            return true;
+        }
         return super.applyProperty(key, value);
     }
 
@@ -67,6 +75,25 @@ public class ChemicalPlantRecipeBuilder extends RecipeBuilder<ChemicalPlantRecip
         return this;
     }
 
+    public ChemicalPlantRecipeBuilder atmosphere(FluidStack atmosphere) {
+        if (atmosphere == null || atmosphere.amount <= 0) {
+            GTLog.logger.error("Chemical Plant atmosphere must be a non-empty gas input.",
+                    new IllegalArgumentException());
+            recipeStatus = EnumValidationResult.INVALID;
+            return this;
+        }
+        if (!ChemicalPlantAtmosphereHelper.isAtmosphereGas(atmosphere)) {
+            GTLog.logger.error("Chemical Plant atmosphere must be an allowed atmospheric gas. Actual: {}",
+                    atmosphere.getLocalizedName(), new IllegalArgumentException());
+            recipeStatus = EnumValidationResult.INVALID;
+            return this;
+        }
+        FluidStack copy = atmosphere.copy();
+        notConsumable(copy.copy());
+        applyProperty(ChemicalPlantAtmosphereProperty.getInstance(), copy);
+        return this;
+    }
+
     public int getChemicalPlantTier() {
         return recipePropertyStorage == null ? GTValues.MV :
                 recipePropertyStorage.getRecipePropertyValue(ChemicalPlantTierProperty.getInstance(), GTValues.MV);
@@ -77,12 +104,18 @@ public class ChemicalPlantRecipeBuilder extends RecipeBuilder<ChemicalPlantRecip
                 recipePropertyStorage.getRecipePropertyValue(TemperatureProperty.getInstance(), 0);
     }
 
+    public FluidStack getAtmosphere() {
+        return recipePropertyStorage == null ? null :
+                recipePropertyStorage.getRecipePropertyValue(ChemicalPlantAtmosphereProperty.getInstance(), null);
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this)
                 .appendSuper(super.toString())
                 .append(ChemicalPlantTierProperty.getInstance().getKey(), getChemicalPlantTier())
                 .append(TemperatureProperty.getInstance().getKey(), getCoilTemperature())
+                .append(ChemicalPlantAtmosphereProperty.getInstance().getKey(), getAtmosphere())
                 .toString();
     }
 }
