@@ -7,6 +7,7 @@ import gregtech.api.recipes.FluidCellInput;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.material.Material;
 import gregtech.api.unification.ore.OrePrefix;
+import gregtech.api.unification.material.properties.PropertyKey;
 import gregtech.api.util.BaseCreativeTab;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
@@ -87,18 +88,9 @@ public final class GregoriusDrugworksCreativeTabs {
         }
 
         Map<String, ItemStack> orderedStacks = new LinkedHashMap<>();
-        for (Material material : materials) {
-            for (OrePrefix prefix : OrePrefix.values()) {
-                ItemStack stack = GregoriusDrugworksUnificationHelper.get(prefix, material);
-                addUniqueStack(orderedStacks, stack);
-            }
-            if (material.hasFluid()) {
-                try {
-                    addUniqueStack(orderedStacks, FluidCellInput.getFilledCell(material.getFluid()));
-                } catch (IllegalArgumentException ignored) {
-                }
-            }
-        }
+        addOreStacks(orderedStacks, materials);
+        addDustStacks(orderedStacks, materials);
+        addFluidOnlyStacks(orderedStacks, materials);
 
         materialStacksCache = new ArrayList<>(orderedStacks.values());
         return materialStacksCache;
@@ -124,6 +116,37 @@ public final class GregoriusDrugworksCreativeTabs {
         }
         materials.sort(Comparator.comparingInt(Material::getId));
         return materials;
+    }
+
+    private static void addOreStacks(Map<String, ItemStack> orderedStacks, List<Material> materials) {
+        for (Material material : materials) {
+            if (!material.hasProperty(PropertyKey.ORE)) {
+                continue;
+            }
+            addUniqueStack(orderedStacks, GregoriusDrugworksUnificationHelper.get(OrePrefix.ore, material));
+            addUniqueStack(orderedStacks, GregoriusDrugworksUnificationHelper.get(OrePrefix.dust, material));
+        }
+    }
+
+    private static void addDustStacks(Map<String, ItemStack> orderedStacks, List<Material> materials) {
+        for (Material material : materials) {
+            if (material.hasProperty(PropertyKey.ORE) || !material.hasProperty(PropertyKey.DUST)) {
+                continue;
+            }
+            addUniqueStack(orderedStacks, GregoriusDrugworksUnificationHelper.get(OrePrefix.dust, material));
+        }
+    }
+
+    private static void addFluidOnlyStacks(Map<String, ItemStack> orderedStacks, List<Material> materials) {
+        for (Material material : materials) {
+            if (material.hasProperty(PropertyKey.ORE) || material.hasProperty(PropertyKey.DUST) || !material.hasFluid()) {
+                continue;
+            }
+            try {
+                addUniqueStack(orderedStacks, FluidCellInput.getFilledCell(material.getFluid()));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
     }
 
     private static void addUniqueStack(Map<String, ItemStack> orderedStacks, ItemStack stack) {

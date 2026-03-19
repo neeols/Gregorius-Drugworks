@@ -4,6 +4,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityChemic
 import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityDistillationUnit;
 import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityPyrolysisChamber;
 import gregtech.api.metatileentity.MetaTileEntity;
+import gregtech.api.block.machines.MachineItemBlock;
 import gregtech.common.metatileentities.MetaTileEntities;
 import net.minecraft.util.ResourceLocation;
 
@@ -23,6 +24,8 @@ public final class GregoriusDrugworksMetaTileEntities {
             return;
         }
         bootstrapped = true;
+
+        MachineItemBlock.addCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
 
         CHEMICAL_PLANT = MetaTileEntities.registerMetaTileEntity(11000,
                 new MetaTileEntityChemicalPlant(id("chemical_plant")));

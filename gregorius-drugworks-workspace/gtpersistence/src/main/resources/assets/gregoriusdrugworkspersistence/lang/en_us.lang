@@ -19,6 +19,13 @@ item.gregoriusdrugworkspersistence.vitamin_k_ampoule.name=Vitamin K Ampoule
 item.gregoriusdrugworkspersistence.protamine_vial.name=Protamine Ampoule
 item.gregoriusdrugworkspersistence.glucagon_injector.name=Glucagon Ampoule
 item.gregoriusdrugworkspersistence.digoxin_fab.name=Digoxin-Fab Ampoule
+item.gregoriusdrugworkspersistence.plunger.name=Plunger
+item.gregoriusdrugworkspersistence.needle.name=Needle
+item.gregoriusdrugworkspersistence.pvc_glove.name=Polyvinyl Chloride (PVC) Glove
+item.gregoriusdrugworkspersistence.shape_glove.name=Mold (Glove)
+item.gregoriusdrugworkspersistence.crystalmeth.name=Crystal Meth
+tile.gregoriusdrugworkspersistence.methblock.name=Compressed Meth Brick
+tile.gregoriusdrugworkspersistence.compressedmethblock.name=Double Compressed Meth Brick
 
 tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t1.name=Chemical Plant Pipe Casing (MV)
 tile.gregoriusdrugworkspersistence.chemplant_pipe_casing_t2.name=Chemical Plant Pipe Casing (HV)
@@ -94,6 +101,11 @@ gregoriusdrugworkspersistence.material.potassium_chloride=Potassium Chloride
 gregoriusdrugworkspersistence.material.potassium_hydroxide=Potassium Hydroxide
 gregoriusdrugworkspersistence.material.potassium_iodide=Potassium Iodide
 gregoriusdrugworkspersistence.material.potassium_carbonate=Potassium Carbonate
+gregoriusdrugworkspersistence.material.methamphetamine=Methamphetamine
+gregoriusdrugworkspersistence.material.chloroacetone=Chloroacetone
+gregoriusdrugworkspersistence.material.methylamine=Methylamine
+gregoriusdrugworkspersistence.material.phenylacetone=Phenylacetone
+gregoriusdrugworkspersistence.material.lithium_chloride=Lithium Chloride
 
 gregoriusdrugworkspersistence.material.ceramic_fiber=Ceramic Fiber
 gregoriusdrugworkspersistence.material.high_temperature_insulation=High-Temperature Insulation

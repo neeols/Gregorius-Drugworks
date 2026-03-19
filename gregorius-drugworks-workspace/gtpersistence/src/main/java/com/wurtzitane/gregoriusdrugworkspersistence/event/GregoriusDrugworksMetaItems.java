@@ -50,6 +50,12 @@ public final class GregoriusDrugworksMetaItems {
     public static Item DIGOXIN_FAB;
     public static Item KAPPA_RESET_AMPOULE;
 
+    public static Item PLUNGER;
+    public static Item NEEDLE;
+    public static Item PVC_GLOVE;
+    public static Item SHAPE_GLOVE;
+    public static Item CRYSTALMETH;
+
     public static Item SAMPLE_VAPE;
     public static Item SALVINORIN_A_PILL;
 
@@ -62,6 +68,11 @@ public final class GregoriusDrugworksMetaItems {
         GregoriusDrugworksContentCatalogs.clear();
 
         EMPTY_GLASS_AMPOULE = createBasicItem("empty_glass_ampoule", 64);
+        PLUNGER = createBasicItem("plunger", 64);
+        NEEDLE = createBasicItem("needle", 64);
+        PVC_GLOVE = createBasicItem("pvc_glove", 64);
+        SHAPE_GLOVE = createBasicItem("shape_glove", 64);
+        CRYSTALMETH = createBasicItem("crystalmeth", 64);
 
         NALOXONE_AUTOINJECTOR = createSourceVial("naloxone_autoinjector", 16, EnumRarity.RARE);
         FLUMAZENIL_AMPOULE = createSourceVial("flumazenil_ampoule", 16, EnumRarity.RARE);
@@ -331,6 +342,7 @@ public final class GregoriusDrugworksMetaItems {
         public EnumRarity getRarity(@Nonnull final ItemStack stack) {
             return this.rarity;
         }
+
 
         @Nonnull
         @Override

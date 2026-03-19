@@ -26,7 +26,10 @@ function Step($msg) {
 
 function Fail($msg) {
     Write-Host ""
-    Write-Host "DEPLOY FAILED: $msg" -ForegroundColor Red
+    catch {
+        Write-Host ("ERROR: " + ($_ | Out-String).Trim()) -ForegroundColor Red
+        throw
+    }
     Read-Host "Press Enter to exit"
     exit 1
 }
@@ -155,7 +158,7 @@ try {
 }
 catch {
     Write-Host ""
-    Write-Host $_ | Out-String -ForegroundColor Red
+    Write-Host $_ | Out-String
     Read-Host "Press Enter to exit"
 }
 finally {

@@ -1,11 +1,13 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.machine;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksBlocks;
+import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksCreativeTabs;
 import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksMetaTileEntities;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.ChemicalPlantTierProperty;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeMaps;
 import gregtech.api.GTValues;
 import gregtech.api.block.IHeatingCoilBlockStats;
+import gregtech.api.capability.GregtechDataCodes;
 import gregtech.api.capability.impl.MultiblockRecipeLogic;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.interfaces.IGregTechTileEntity;
@@ -37,6 +39,8 @@ import gregtech.core.sound.GTSoundEvents;
 import net.minecraft.init.Blocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -52,6 +56,8 @@ import java.util.List;
 public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
 
     private static final int PARALLEL_LIMIT = 6;
+    private static final int LIVE_SHELL_CASING_MIN = 66;
+    private static final int UPDATE_FORMED_TIER_STATE = GregtechDataCodes.assignId();
     private static final String TIER_CONTEXT_KEY = "GregoriusDrugworksChemicalPlantTier";
     private static final String TIER_MISMATCH_KEY =
             "gregoriusdrugworkspersistence.multiblock.pattern.error.chemical_plant_tier";
@@ -136,7 +142,7 @@ public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
                 .where('P', chemicalPlantTieredPipeCasings())
                 .where('C',
                         chemicalPlantTieredShellCasings()
-                                .setMinGlobalLimited(86)
+                                .setMinGlobalLimited(LIVE_SHELL_CASING_MIN)
                                 .or(abilities(MultiblockAbility.IMPORT_ITEMS).setMaxGlobalLimited(6).setPreviewCount(1))
                                 .or(abilities(MultiblockAbility.EXPORT_ITEMS).setMaxGlobalLimited(6).setPreviewCount(1))
                                 .or(abilities(MultiblockAbility.IMPORT_FLUIDS).setMaxGlobalLimited(6).setPreviewCount(1))
@@ -194,6 +200,7 @@ public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
             this.coilTier = 0;
             this.coilTemperature = 0;
         }
+        syncFormedTierState();
     }
 
     @Override
@@ -202,6 +209,7 @@ public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
         this.chemicalPlantTier = -1;
         this.coilTier = -1;
         this.coilTemperature = 0;
+        syncFormedTierState();
     }
 
     @Override
@@ -239,6 +247,11 @@ public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
                 .addProgressLine(recipeMapWorkable.getProgressPercent());
     }
 
+    @Override
+    public boolean isInCreativeTab(CreativeTabs creativeTab) {
+        return super.isInCreativeTab(creativeTab) || creativeTab == GregoriusDrugworksCreativeTabs.MAIN;
+    }
+
     @SideOnly(Side.CLIENT)
     @Override
     public ICubeRenderer getBaseTexture(IMultiblockPart sourcePart) {
@@ -255,6 +268,28 @@ public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
     @Override
     protected ICubeRenderer getFrontOverlay() {
         return Textures.LARGE_CHEMICAL_REACTOR_OVERLAY;
+    }
+
+    @Override
+    public void writeInitialSyncData(PacketBuffer buf) {
+        super.writeInitialSyncData(buf);
+        writeTierSyncData(buf);
+    }
+
+    @Override
+    public void receiveInitialSyncData(PacketBuffer buf) {
+        super.receiveInitialSyncData(buf);
+        readTierSyncData(buf);
+        refreshTieredAppearance();
+    }
+
+    @Override
+    public void receiveCustomData(int dataId, PacketBuffer buf) {
+        super.receiveCustomData(dataId, buf);
+        if (dataId == UPDATE_FORMED_TIER_STATE) {
+            readTierSyncData(buf);
+            refreshTieredAppearance();
+        }
     }
 
     private boolean hasValidChemicalPlantTier() {
@@ -342,6 +377,37 @@ public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
             blockInfos[i] = new BlockInfo(states[i]);
         }
         return blockInfos;
+    }
+
+    private void syncFormedTierState() {
+        if (getWorld() == null || getWorld().isRemote) {
+            return;
+        }
+        writeCustomData(UPDATE_FORMED_TIER_STATE, this::writeTierSyncData);
+        notifyBlockUpdate();
+    }
+
+    private void writeTierSyncData(PacketBuffer buf) {
+        buf.writeInt(chemicalPlantTier);
+        buf.writeInt(coilTier);
+        buf.writeInt(coilTemperature);
+    }
+
+    private void readTierSyncData(PacketBuffer buf) {
+        this.chemicalPlantTier = buf.readInt();
+        this.coilTier = buf.readInt();
+        this.coilTemperature = buf.readInt();
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void refreshTieredAppearance() {
+        scheduleRenderUpdate();
+        if (getWorld() == null || getPos() == null) {
+            return;
+        }
+        getWorld().markBlockRangeForRenderUpdate(
+                getPos().getX() - 4, getPos().getY() - 1, getPos().getZ() - 4,
+                getPos().getX() + 4, getPos().getY() + 7, getPos().getZ() + 4);
     }
 
     private static final class ChemicalPlantWorkableHandler extends MultiblockRecipeLogic {

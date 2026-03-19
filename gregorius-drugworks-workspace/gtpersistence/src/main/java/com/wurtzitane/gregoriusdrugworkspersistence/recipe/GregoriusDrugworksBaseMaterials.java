@@ -21,7 +21,7 @@ public final class GregoriusDrugworksBaseMaterials {
                 .build();
 
         GregoriusDrugworksMaterials.AluminiumTrichloride = new Material.Builder(32228, resLoc("aluminium_trichloride"))
-                .dust()
+                .dust().liquid()
                 .color(0xF2F5E9)
                 .iconSet(DULL)
                 .flags(DISABLE_DECOMPOSITION)

@@ -1,17 +1,21 @@
-package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
+package com.wurtzitane.gregoriusdrugworkspersistence.recipe.recipes;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksBlocks;
-import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksItems;
 import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksMetaItems;
-import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksMetaTileEntities;
+import com.wurtzitane.gregoriusdrugworkspersistence.medical.GregoriusDrugworksApplicatorPayloads;
+import com.wurtzitane.gregoriusdrugworkspersistence.medical.GregoriusDrugworksMedicalApplicators;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.ChemicalPlantRecipeBuilder;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeMaps;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksUnificationHelper;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.chance.GregoriusDrugworksChancedInputSupport;
+import gregtech.api.recipes.ModHandler;
 import gregtech.api.recipes.RecipeBuilder;
 import gregtech.api.recipes.RecipeMaps;
 import gregtech.api.unification.OreDictUnifier;
-import gregtech.api.unification.material.MarkerMaterials;
 import gregtech.api.unification.material.Materials;
-import gregtech.common.items.MetaItems;
-import gregtech.common.metatileentities.MetaTileEntities;
+import gregtech.api.unification.ore.OrePrefix;
+import gregtech.api.unification.stack.UnificationEntry;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -60,6 +64,10 @@ public final class SalvinorinARecipes {
             default:
                 throw new IllegalArgumentException("Unsupported Chemical Plant tier: " + tier);
         }
+    }
+
+    private static int chemicalPlantDuration(int duration) {
+        return Math.max(1, (int) Math.round(duration * 0.9D));
     }
 
     public static void init() {
@@ -1294,7 +1302,7 @@ public final class SalvinorinARecipes {
         builder.input(dust, Materials.Lithium, 1);
         builder.fluidOutputs(GregoriusDrugworksMaterials.TBuliInPentane.getFluid(1000));
         builder.output(dust, Materials.LithiumChloride, 1);
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -1617,7 +1625,7 @@ public final class SalvinorinARecipes {
         builder = GregoriusDrugworksRecipeMaps.distillationUnitBuilder(DISTILLATION_COIL_CUPRONICKEL);
         builder.fluidInputs(GregoriusDrugworksMaterials.CrudePyridine.getFluid(1000));
         builder.fluidOutputs(GregoriusDrugworksMaterials.Pyridine.getFluid(800), GregoriusDrugworksMaterials.PyridineResidue.getFluid(200));
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
@@ -1626,7 +1634,7 @@ public final class SalvinorinARecipes {
         builder.fluidInputs(GregoriusDrugworksMaterials.PentoseSolution.getFluid(1500));
         builder.fluidOutputs(Materials.Water.getFluid(900), GregoriusDrugworksMaterials.Furfural.getFluid(600));
         builder.output(dust, GregoriusDrugworksMaterials.Humins, 1);
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
@@ -1643,7 +1651,7 @@ public final class SalvinorinARecipes {
         builder.fluidInputs(GregoriusDrugworksMaterials.PyridineTreatedWater.getFluid(150), GregoriusDrugworksMaterials.PyridineWasteWater.getFluid(100));
         builder.fluidOutputs(Materials.DistilledWater.getFluid(200));
         builder.output(dustTiny, Materials.Salt, 1);
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
@@ -1662,7 +1670,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, Materials.AmmoniumChloride, 1);
         builder.output(dust, GregoriusDrugworksMaterials.SodiumChloride, 1);
         builder.output(dust, GregoriusDrugworksMaterials.SalAMixedSaltsD8ToB9, 1);
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
@@ -1670,7 +1678,7 @@ public final class SalvinorinARecipes {
         builder = GregoriusDrugworksRecipeMaps.distillationUnitBuilder(DISTILLATION_COIL_RTM);
         builder.input(dust, GregoriusDrugworksMaterials.SalAFurylOrganicWaste14To15And16, 1);
         builder.fluidOutputs(GregoriusDrugworksMaterials.Material3Bromofuran.getFluid(250), GregoriusDrugworksMaterials.Furan.getFluid(250), GregoriusDrugworksMaterials.SalAHeavyOrganicResidue14To15And16.getFluid(500));
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
@@ -1678,7 +1686,7 @@ public final class SalvinorinARecipes {
         builder = GregoriusDrugworksRecipeMaps.distillationUnitBuilder(DISTILLATION_COIL_NICHROME);
         builder.fluidInputs(GregoriusDrugworksMaterials.SalAAnisoleWasteFluid17To172.getFluid(500));
         builder.fluidOutputs(GregoriusDrugworksMaterials.Anisole.getFluid(400), Materials.Toluene.getFluid(300), GregoriusDrugworksMaterials.SalAHeavyAromaticResidue17To172.getFluid(300));
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
@@ -2152,7 +2160,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.TriethylammoniumChloride, 1);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalATbs102, 1, 9900, 0);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalASilylationOrganicWasteD10To102, 1, 100, 0);
-        builder.duration(1800);
+        builder.duration(chemicalPlantDuration(1800));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2163,7 +2171,7 @@ public final class SalvinorinARecipes {
         builder.input(dust, GregoriusDrugworksMaterials.Tbaf, 1);
         builder.output(dust, GregoriusDrugworksMaterials.Tbsf, 1);
         builder.output(dust, GregoriusDrugworksMaterials.SalAAlcohol102, 1);
-        builder.duration(1800);
+        builder.duration(chemicalPlantDuration(1800));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2178,7 +2186,7 @@ public final class SalvinorinARecipes {
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAExomethylene11, 1, 9400, 0);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAOrganicWaste102To11, 1, 600, 0);
         builder.fluidOutputs(GregoriusDrugworksMaterials.SalACrudeOrganics102To11.getFluid(150), Materials.Hydrogen.getFluid(3000));
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2192,7 +2200,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.SodiumChloride, 1);
         builder.output(dust, GregoriusDrugworksMaterials.SalAMixedSalts102To11, 1);
         builder.fluidOutputs(Materials.Water.getFluid(900));
-        builder.duration(1800);
+        builder.duration(chemicalPlantDuration(1800));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2203,7 +2211,7 @@ public final class SalvinorinARecipes {
         builder.fluidInputs(GregoriusDrugworksMaterials.BoraneThf.getFluid(5000));
         builder.input(dust, GregoriusDrugworksMaterials.SalAExomethylene11, 1);
         builder.output(dust, GregoriusDrugworksMaterials.SalAOrganoboraneIntermediate11To112, 1);
-        builder.duration(3000);
+        builder.duration(chemicalPlantDuration(3000));
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2216,7 +2224,7 @@ public final class SalvinorinARecipes {
         builder.fluidOutputs(Materials.Oxygen.getFluid(1000), Materials.Water.getFluid(3000));
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAAlcohol112, 1, 9500, 0);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAHydroborationOrganicWaste11To112, 1, 500, 0);
-        builder.duration(3000);
+        builder.duration(chemicalPlantDuration(3000));
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2232,7 +2240,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.PyridiniumSaltWaste, 2);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalABisaldehyde113, 1, 8700, 0);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAChromiumOxidationOrganicWaste112To113, 1, 1300, 0);
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2245,7 +2253,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.ChromiumOxide, 1);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalABisaldehyde12, 1, 7300, 0);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAAldehydeBaseWaste113To12, 1, 2700, 0);
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2258,7 +2266,7 @@ public final class SalvinorinARecipes {
         builder.input(dust, GregoriusDrugworksMaterials.SalABisaldehyde12, 1);
         builder.output(dust, GregoriusDrugworksMaterials.SalAKetal13, 1);
         builder.fluidOutputs(Materials.Water.getFluid(2000));
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2272,7 +2280,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.Tbsf, 1);
         builder.output(dust, GregoriusDrugworksMaterials.Tbacl, 1);
         builder.fluidOutputs(Materials.Water.getFluid(2000));
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2288,7 +2296,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.PyridiniumSaltWaste, 1);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAAldehyde14, 1, 7800, 0);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAPdc132To14, 1, 2200, 0);
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2303,7 +2311,7 @@ public final class SalvinorinARecipes {
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAFurylAlcohol16, 1, 3500, 0);
         builder.chancedOutput(dust, GregoriusDrugworksMaterials.SalAFurylOrganicWaste14To15And16, 1, 2000, 0);
         builder.fluidOutputs(GregoriusDrugworksMaterials.Isobutane.getFluid(4000), GregoriusDrugworksMaterials.Pentane.getFluid(5200));
-        builder.duration(3600);
+        builder.duration(chemicalPlantDuration(3600));
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2317,7 +2325,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.SalAAldehyde14, 1);
         builder.output(dust, GregoriusDrugworksMaterials.ChromiumOxide, 1);
         builder.output(dust, GregoriusDrugworksMaterials.PyridiniumSaltWaste, 1);
-        builder.duration(3600);
+        builder.duration(chemicalPlantDuration(3600));
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2329,7 +2337,7 @@ public final class SalvinorinARecipes {
         builder.fluidInputs(GregoriusDrugworksMaterials.Material5AqueousAcetone.getFluid(1000));
         builder.output(dust, GregoriusDrugworksMaterials.SalALactol17, 1);
         builder.fluidOutputs(Materials.Acetone.getFluid(900), Materials.Water.getFluid(100));
-        builder.duration(3600);
+        builder.duration(chemicalPlantDuration(3600));
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2343,7 +2351,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.SalAAlcohol172, 1);
         builder.output(dust, GregoriusDrugworksMaterials.DdqReduced, 2);
         builder.fluidOutputs(GregoriusDrugworksMaterials.SalAAnisoleWasteFluid17To172.getFluid(500));
-        builder.duration(2400);
+        builder.duration(chemicalPlantDuration(2400));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2359,7 +2367,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.ChromiumOxide, 2);
         builder.output(dust, GregoriusDrugworksMaterials.PyridiniumSaltWaste, 2);
         builder.fluidOutputs(GregoriusDrugworksMaterials.Butanone.getFluid(500));
-        builder.duration(3600);
+        builder.duration(chemicalPlantDuration(3600));
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2379,7 +2387,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.Dicyclohexylurea, 3);
         builder.outputs(deacetoxysalvinorinA);
         builder.fluidOutputs(GregoriusDrugworksMaterials.Butanone.getFluid(500));
-        builder.duration(3600);
+        builder.duration(chemicalPlantDuration(3600));
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2392,7 +2400,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.SalATes19, 1);
         builder.output(dust, GregoriusDrugworksMaterials.SodiumChloride, 3);
         builder.fluidOutputs(GregoriusDrugworksMaterials.Hmds.getFluid(1000));
-        builder.duration(1800);
+        builder.duration(chemicalPlantDuration(1800));
         builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
@@ -2409,7 +2417,7 @@ public final class SalvinorinARecipes {
         }
         builder.outputs(epiSalvinorinB);
         builder.fluidOutputs(Materials.Toluene.getFluid(850), Materials.Water.getFluid(150), GregoriusDrugworksMaterials.MchlorobenzoicAcid.getFluid(1000));
-        builder.duration(3600);
+        builder.duration(chemicalPlantDuration(3600));
         builder.EUt(VA[LuV]);
         builder.buildAndRegister();
 
@@ -2435,15 +2443,6 @@ public final class SalvinorinARecipes {
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
-        // kappa_reset_ampoule
-        builder = RecipeMaps.CANNER_RECIPES.recipeBuilder();
-        builder.input(GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE, 1);
-        builder.fluidInputs(GregoriusDrugworksMaterials.KappaResetConcentrate.getFluid(250));
-        builder.output(GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE, 1);
-        builder.duration(300);
-        builder.EUt(VA[EV]);
-        builder.buildAndRegister();
-
         // empty_glass_ampoule
         builder = RecipeMaps.ASSEMBLER_RECIPES.recipeBuilder();
         builder.input(Blocks.GLASS, 2);
@@ -2451,6 +2450,76 @@ public final class SalvinorinARecipes {
         builder.output(GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE, 4);
         builder.circuitMeta(7);
         builder.duration(200);
+        builder.EUt(VA[MV]);
+        builder.buildAndRegister();
+
+        ModHandler.addShapedRecipe("empty_glass_ampoule_craft", new ItemStack(GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE), " G ", " P ", "   ",
+                'G', Blocks.GLASS,
+                'P', new UnificationEntry(OrePrefix.pipeTinyFluid, Materials.Steel));
+
+        // medical_applicator
+        builder = RecipeMaps.ASSEMBLER_RECIPES.recipeBuilder();
+        builder.input(GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE, 1);
+        builder.input(GregoriusDrugworksMetaItems.NEEDLE, 1);
+        builder.input(GregoriusDrugworksMetaItems.PLUNGER, 1);
+        builder.output(GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR, 1);
+        builder.duration(200);
+        builder.EUt(VA[MV]);
+        builder.buildAndRegister();
+
+        ModHandler.addShapedRecipe("medical_applicator_craft", new ItemStack(GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR), "  N", " G ", "P  ",
+                'N', GregoriusDrugworksMetaItems.NEEDLE,
+                'G', GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE,
+                'P', GregoriusDrugworksMetaItems.PLUNGER);
+
+        // kappa_reset_ampoule
+        builder = RecipeMaps.CANNER_RECIPES.recipeBuilder();
+        builder.input(GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE, 1);
+        builder.fluidInputs(GregoriusDrugworksMaterials.KappaResetConcentrate.getFluid(250));
+        builder.output(GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE, 1);
+        builder.duration(10);
+        builder.EUt(VA[MV]);
+        builder.buildAndRegister();
+
+        // aalvinorin a extraction
+        builder = RecipeMaps.EXTRACTOR_RECIPES.recipeBuilder();
+        builder.input(dust, GregoriusDrugworksMaterials.SalvinorinA, 1);
+        builder.fluidOutputs(GregoriusDrugworksMaterials.SalvinorinA.getFluid(144));
+        builder.duration(300);
+        builder.EUt(VA[EV]);
+        builder.buildAndRegister();
+
+        // salvinorin a ampoule
+        builder = RecipeMaps.CANNER_RECIPES.recipeBuilder();
+        builder.input(GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE, 1);
+        builder.fluidInputs(GregoriusDrugworksMaterials.SalvinorinA.getFluid(250));
+        builder.output(GregoriusDrugworksMetaItems.SALVINORIN_A_VIAL, 1);
+        builder.duration(10);
+        builder.EUt(VA[MV]);
+        builder.buildAndRegister();
+
+
+        // kappa reset loaded medical applicator
+        builder = RecipeMaps.CANNER_RECIPES.recipeBuilder();
+        builder.input(GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR, 1);
+        builder.fluidInputs(GregoriusDrugworksMaterials.KappaResetConcentrate.getFluid(250));
+        builder.outputs(GregoriusDrugworksApplicatorPayloads.createLoadedApplicatorStack(
+                GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR,
+                "gregoriusdrugworkspersistence:salvinorin_antidote_payload",
+                1, null));
+        builder.duration(10);
+        builder.EUt(VA[MV]);
+        builder.buildAndRegister();
+
+        // salvinorin loaded medical applicator
+        builder = RecipeMaps.CANNER_RECIPES.recipeBuilder();
+        builder.input(GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR, 1);
+        builder.fluidInputs(GregoriusDrugworksMaterials.SalvinorinA.getFluid(250));
+        builder.outputs(GregoriusDrugworksApplicatorPayloads.createLoadedApplicatorStack(
+                GregoriusDrugworksMedicalApplicators.MEDICAL_APPLICATOR,
+                "gregoriusdrugworkspersistence:salvinorin_a_payload",
+                1, null));
+        builder.duration(10);
         builder.EUt(VA[MV]);
         builder.buildAndRegister();
     }

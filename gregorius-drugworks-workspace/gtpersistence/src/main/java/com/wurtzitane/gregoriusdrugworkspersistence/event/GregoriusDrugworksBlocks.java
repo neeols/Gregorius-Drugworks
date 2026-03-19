@@ -52,6 +52,9 @@ public final class GregoriusDrugworksBlocks {
     public static Block OBSIDIAN_FORGED_THERMAL_CASING;
     public static Block THERMOCRACK_MATRIX_CASING;
 
+    public static Block METHBLOCK;
+    public static Block COMPRESSEDMETHBLOCK;
+
     private GregoriusDrugworksBlocks() {
     }
 
@@ -84,6 +87,8 @@ public final class GregoriusDrugworksBlocks {
         OBSIDIAN_FORGED_THERMAL_CASING = createActiveBlock("obsidian_forged_thermal_casing", Material.ROCK, 8.0F, 20.0F,
                 SoundType.STONE);
         THERMOCRACK_MATRIX_CASING = createActiveMetalBlock("thermocrack_matrix_casing", 7.0F, 15.0F);
+        METHBLOCK = createMetalBlock("methblock", 5.0F, 6.0F);
+        COMPRESSEDMETHBLOCK = createMetalBlock("compressedmethblock", 5.0F, 6.0F);
     }
 
     public static void register(IForgeRegistry<Block> registry) {

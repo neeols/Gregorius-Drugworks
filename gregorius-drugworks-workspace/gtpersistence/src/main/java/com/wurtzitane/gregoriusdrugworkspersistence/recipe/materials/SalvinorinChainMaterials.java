@@ -1,5 +1,6 @@
-package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
+package com.wurtzitane.gregoriusdrugworkspersistence.recipe.materials;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials;
 import gregtech.api.unification.material.Material;
 import gregtech.api.unification.material.Materials;
 
@@ -8,7 +9,8 @@ import static gregtech.api.unification.material.info.MaterialIconSet.*;
 import static com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials.resLoc;
 
 public final class SalvinorinChainMaterials {
-    private SalvinorinChainMaterials() {}
+    private SalvinorinChainMaterials() {
+    }
 
     public static void init() {
         GregoriusDrugworksMaterials.HydrogenBromide = new Material.Builder(32030, resLoc("hydrogen_bromide"))
@@ -1121,6 +1123,7 @@ public final class SalvinorinChainMaterials {
 
         GregoriusDrugworksMaterials.SalvinorinA = new Material.Builder(32206, resLoc("salvinorin_a"))
                 .dust()
+                .liquid()
                 .color(0xEADBC2)
                 .iconSet(DULL)
                 .flags(DISABLE_DECOMPOSITION)

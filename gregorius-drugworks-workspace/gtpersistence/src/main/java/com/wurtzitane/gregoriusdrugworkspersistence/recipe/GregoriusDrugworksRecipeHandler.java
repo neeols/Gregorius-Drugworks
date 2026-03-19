@@ -1,10 +1,14 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.recipes.SalvinorinARecipes;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.recipes.MethamphetamineRecipes;
+
 public final class GregoriusDrugworksRecipeHandler {
     private GregoriusDrugworksRecipeHandler() {}
 
     public static void init() {
         MultiblockCasingsRecipes.init();
         SalvinorinARecipes.init();
+        MethamphetamineRecipes.init();
     }
 }

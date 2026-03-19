@@ -1,6 +1,8 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.materials.MethamphetamineChainMaterials;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.materials.SalvinorinChainMaterials;
 import com.wurtzitane.gregoriusdrugworkspersistence.worldgen.GregoriusDrugworksOreBuilder;
 import gregtech.api.unification.material.Material;
 import gregtech.api.util.GTUtility;
@@ -12,6 +14,7 @@ public final class GregoriusDrugworksMaterials {
     public static void init() {
         GregoriusDrugworksBaseMaterials.init();
         SalvinorinChainMaterials.init();
+        MethamphetamineChainMaterials.init();
         MultiblockCasingsMaterials.init();
     }
 
@@ -264,4 +267,10 @@ public final class GregoriusDrugworksMaterials {
     public static Material PotassiumHydroxide;
     public static Material PotassiumIodide;
     public static Material PotassiumCarbonate;
+    public static Material Methamphetamine;
+    public static Material Chloroacetone;
+    public static Material Methylamine;
+    public static Material Phenylacetone;
+    public static Material LithiumChloride;
+
 }

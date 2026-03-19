@@ -1,6 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.machine;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksBlocks;
+import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksCreativeTabs;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeMaps;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.interfaces.IGregTechTileEntity;
@@ -16,6 +17,7 @@ import gregtech.client.renderer.texture.cube.SimpleCubeRenderer;
 import gregtech.common.blocks.BlockGlassCasing;
 import gregtech.common.blocks.MetaBlocks;
 import gregtech.core.sound.GTSoundEvents;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -61,6 +63,11 @@ public class MetaTileEntityPyrolysisChamber extends RecipeMapMultiblockControlle
                                 .or(abilities(MultiblockAbility.MAINTENANCE_HATCH).setExactLimit(1).setPreviewCount(1)))
                 .where(' ', air())
                 .build();
+    }
+
+    @Override
+    public boolean isInCreativeTab(CreativeTabs creativeTab) {
+        return super.isInCreativeTab(creativeTab) || creativeTab == GregoriusDrugworksCreativeTabs.MAIN;
     }
 
     @SideOnly(Side.CLIENT)
