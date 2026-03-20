@@ -1,6 +1,9 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.pill;
 
+import gregtech.api.util.DyeUtil;
+import gregtech.common.items.MetaItems;
 import net.minecraft.init.Items;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -89,11 +92,32 @@ public final class GregoriusDrugworksPillColors {
     }
 
     private static void registerVanilla(String id, String displayName, int rgb, int dyeMeta) {
-        register(PillColorDefinition.builder(id)
+        EnumDyeColor dyeColor = EnumDyeColor.values()[15 - dyeMeta];
+        PillColorDefinition.Builder builder = PillColorDefinition.builder(id)
                 .displayName(displayName)
                 .rgb(rgb)
                 .dye(new ItemStack(Items.DYE, 1, dyeMeta))
-                .build());
+                .oreDict(DyeUtil.getOredictColorName(dyeColor));
+
+        ItemStack gtChemicalDye = getGtChemicalDye(dyeColor);
+        if (!gtChemicalDye.isEmpty()) {
+            builder.addDye(gtChemicalDye);
+        }
+
+        register(builder.build());
+    }
+
+    private static ItemStack getGtChemicalDye(EnumDyeColor dyeColor) {
+        int index = dyeColor.ordinal();
+        if (index < 0 || index >= MetaItems.DYE_ONLY_ITEMS.length) {
+            return ItemStack.EMPTY;
+        }
+
+        if (MetaItems.DYE_ONLY_ITEMS[index] == null) {
+            return ItemStack.EMPTY;
+        }
+
+        return MetaItems.DYE_ONLY_ITEMS[index].getStackForm();
     }
 
     private static String normalize(String value) {

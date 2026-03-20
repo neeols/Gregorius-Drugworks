@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 /**
- * Dynamic crafting recipe for payload-laced food items.
+ * Dynamic shapeless crafting recipe for payload-laced food items.
  *
  * @author wurtzitane
  */
@@ -41,7 +41,7 @@ public final class RecipeLaceFoods implements IRecipe {
 
     @Override
     public boolean canFit(int width, int height) {
-        return width >= 2 && height >= 1;
+        return width * height >= 2;
     }
 
     @Override
@@ -80,36 +80,58 @@ public final class RecipeLaceFoods implements IRecipe {
     }
 
     private Match findMatch(InventoryCrafting inv) {
-        if (inv.getWidth() < 2 || inv.getHeight() < 1) {
+        if (inv.getWidth() * inv.getHeight() < 2) {
             return null;
         }
 
-        ItemStack food = inv.getStackInSlot(0);
-        ItemStack additive = inv.getStackInSlot(1);
-        if (!PayloadFoodLacingRegistry.isSupportedFood(food) || additive.isEmpty()) {
+        int firstSlot = -1;
+        int secondSlot = -1;
+        for (int i = 0; i < inv.getSizeInventory(); i++) {
+            if (inv.getStackInSlot(i).isEmpty()) {
+                continue;
+            }
+            if (firstSlot < 0) {
+                firstSlot = i;
+                continue;
+            }
+            if (secondSlot < 0) {
+                secondSlot = i;
+                continue;
+            }
+            return null;
+        }
+
+        if (firstSlot < 0 || secondSlot < 0) {
+            return null;
+        }
+
+        Match match = tryMatch(inv.getStackInSlot(firstSlot), inv.getStackInSlot(secondSlot));
+        if (match != null) {
+            return match;
+        }
+
+        return tryMatch(inv.getStackInSlot(secondSlot), inv.getStackInSlot(firstSlot));
+    }
+
+    private Match tryMatch(ItemStack food, ItemStack additive) {
+        if (food.isEmpty() || additive.isEmpty()) {
             return null;
         }
         if (PayloadLoaderUtil.hasPayload(food)) {
             return null;
         }
 
-        for (int i = 2; i < inv.getSizeInventory(); i++) {
-            if (!inv.getStackInSlot(i).isEmpty()) {
-                return null;
-            }
-        }
-
-        PayloadFoodLacingRegistry.Entry entry = PayloadFoodLacingRegistry.find(additive);
+        PayloadFoodLacingRegistry.Entry entry = PayloadFoodLacingRegistry.find(food, additive);
         if (entry == null) {
             return null;
         }
 
-        if (!PayloadLoadingService.createLoadedResult(food.copy(), entry.getPayloadId(), 1,
+        if (PayloadLoadingService.createLoadedResult(food.copy(), entry.getPayloadId(), 1,
                 PayloadFoodLacingRegistry.createFoodPayloadData(entry.getModeId(), false)).isEmpty()) {
-            return new Match(food, entry);
+            return null;
         }
 
-        return null;
+        return new Match(food, entry);
     }
 
     private static final class Match {

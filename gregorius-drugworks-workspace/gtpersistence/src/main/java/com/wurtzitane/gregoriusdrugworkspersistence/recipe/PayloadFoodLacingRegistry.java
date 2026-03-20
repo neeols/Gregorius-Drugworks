@@ -9,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -35,8 +36,20 @@ public final class PayloadFoodLacingRegistry {
         }
         bootstrapped = true;
         ENTRIES.clear();
-        laceFoods(OrePrefix.dust, GregoriusDrugworksMaterials.SalvinorinA,
-                "gregoriusdrugworkspersistence:salvinorin_a_payload", "food");
+        builder("salvinorin_a_food")
+                .additive(OrePrefix.dust, GregoriusDrugworksMaterials.SalvinorinA)
+                .payload("gregoriusdrugworkspersistence:salvinorin_a_payload")
+                .mode("food")
+                .allVanillaFoods()
+                .register();
+    }
+
+    public static Builder builder(String id) {
+        return new Builder(id);
+    }
+
+    public static void register(Entry entry) {
+        ENTRIES.add(entry);
     }
 
     public static void laceFoods(OrePrefix prefix, Material material, String payloadId) {
@@ -44,7 +57,12 @@ public final class PayloadFoodLacingRegistry {
     }
 
     public static void laceFoods(OrePrefix prefix, Material material, String payloadId, @Nullable String modeId) {
-        ENTRIES.add(new Entry(stack -> ItemStack.areItemsEqual(stack, OreDictUnifier.get(prefix, material, 1)), payloadId, modeId));
+        builder(autoId(payloadId))
+                .additive(prefix, material)
+                .payload(payloadId)
+                .mode(modeId)
+                .anyFood()
+                .register();
     }
 
     public static void laceFoods(OrePrefix prefix, String materialName, String payloadId) {
@@ -72,9 +90,12 @@ public final class PayloadFoodLacingRegistry {
     }
 
     public static void laceFoods(ItemStack stack, String payloadId, @Nullable String modeId) {
-        ItemStack template = stack.copy();
-        template.setCount(1);
-        ENTRIES.add(new Entry(candidate -> ItemStack.areItemsEqual(candidate, template), payloadId, modeId));
+        builder(autoId(payloadId))
+                .additive(stack)
+                .payload(payloadId)
+                .mode(modeId)
+                .anyFood()
+                .register();
     }
 
     public static void laceFoods(String itemId, String payloadId) {
@@ -94,9 +115,9 @@ public final class PayloadFoodLacingRegistry {
     }
 
     @Nullable
-    public static Entry find(ItemStack additive) {
+    public static Entry find(ItemStack food, ItemStack additive) {
         for (Entry entry : ENTRIES) {
-            if (entry.matches(additive)) {
+            if (entry.matches(food, additive)) {
                 return entry;
             }
         }
@@ -104,7 +125,12 @@ public final class PayloadFoodLacingRegistry {
     }
 
     public static boolean isSupportedFood(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem() instanceof ItemFood;
+        for (Entry entry : ENTRIES) {
+            if (entry.matchesFood(stack)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static NBTTagCompound createFoodPayloadData(@Nullable String modeId, boolean revealed) {
@@ -130,19 +156,44 @@ public final class PayloadFoodLacingRegistry {
         return null;
     }
 
+    private static boolean isFoodStack(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() instanceof ItemFood;
+    }
+
+    private static String autoId(String payloadId) {
+        String normalized = payloadId == null ? "payload" : payloadId.replace(':', '_').replace('/', '_');
+        return "auto_food_lacing_" + normalized + "_" + (ENTRIES.size() + 1);
+    }
+
     public static final class Entry {
-        private final Matcher matcher;
+        private final String id;
+        private final Matcher additiveMatcher;
+        private final Matcher foodMatcher;
         private final String payloadId;
         private final String modeId;
 
-        private Entry(Matcher matcher, String payloadId, @Nullable String modeId) {
-            this.matcher = matcher;
+        private Entry(String id, Matcher additiveMatcher, Matcher foodMatcher, String payloadId, @Nullable String modeId) {
+            this.id = id;
+            this.additiveMatcher = additiveMatcher;
+            this.foodMatcher = foodMatcher;
             this.payloadId = payloadId;
             this.modeId = modeId;
         }
 
-        public boolean matches(ItemStack stack) {
-            return matcher.matches(stack);
+        public String getId() {
+            return id;
+        }
+
+        public boolean matches(ItemStack food, ItemStack additive) {
+            return matchesFood(food) && matchesAdditive(additive);
+        }
+
+        public boolean matchesAdditive(ItemStack stack) {
+            return additiveMatcher.matches(stack);
+        }
+
+        public boolean matchesFood(ItemStack stack) {
+            return foodMatcher.matches(stack);
         }
 
         public String getPayloadId() {
@@ -156,5 +207,121 @@ public final class PayloadFoodLacingRegistry {
 
     private interface Matcher {
         boolean matches(ItemStack stack);
+    }
+
+    public static final class Builder {
+        private final String id;
+        private Matcher additiveMatcher;
+        private Matcher foodMatcher;
+        private String payloadId;
+        private String modeId;
+
+        private Builder(String id) {
+            this.id = id == null ? "" : id.trim();
+        }
+
+        public Builder additive(ItemStack stack) {
+            ItemStack template = stack.copy();
+            template.setCount(1);
+            this.additiveMatcher = candidate -> !candidate.isEmpty() && ItemStack.areItemsEqual(candidate, template);
+            return this;
+        }
+
+        public Builder additive(Item item) {
+            return additive(new ItemStack(item));
+        }
+
+        public Builder additive(String itemId) {
+            Item item = Item.getByNameOrId(itemId);
+            if (item == null) {
+                throw new IllegalStateException("Unknown food-lacing additive item: " + itemId);
+            }
+            return additive(item);
+        }
+
+        public Builder additive(OrePrefix prefix, Material material) {
+            this.additiveMatcher = candidate -> {
+                if (candidate.isEmpty()) {
+                    return false;
+                }
+                ItemStack template = OreDictUnifier.get(prefix, material, 1);
+                return !template.isEmpty() && ItemStack.areItemsEqual(candidate, template);
+            };
+            return this;
+        }
+
+        public Builder additive(OrePrefix prefix, String materialName) {
+            Material material = findMaterial(materialName);
+            if (material == null) {
+                throw new IllegalStateException("Unknown food-lacing additive material: " + materialName);
+            }
+            return additive(prefix, material);
+        }
+
+        public Builder anyFood() {
+            this.foodMatcher = PayloadFoodLacingRegistry::isFoodStack;
+            return this;
+        }
+
+        public Builder allVanillaFoods() {
+            this.foodMatcher = candidate -> {
+                if (!isFoodStack(candidate)) {
+                    return false;
+                }
+                ResourceLocation name = candidate.getItem().getRegistryName();
+                return name != null && "minecraft".equals(name.getNamespace());
+            };
+            return this;
+        }
+
+        public Builder food(ItemStack stack) {
+            ItemStack template = stack.copy();
+            template.setCount(1);
+            this.foodMatcher = candidate -> !candidate.isEmpty() && ItemStack.areItemsEqual(candidate, template);
+            return this;
+        }
+
+        public Builder food(Item item) {
+            return food(new ItemStack(item));
+        }
+
+        public Builder food(String itemId) {
+            Item item = Item.getByNameOrId(itemId);
+            if (item == null) {
+                throw new IllegalStateException("Unknown laced food target item: " + itemId);
+            }
+            return food(item);
+        }
+
+        public Builder payload(String payloadId) {
+            this.payloadId = payloadId;
+            return this;
+        }
+
+        public Builder mode(@Nullable String modeId) {
+            this.modeId = modeId;
+            return this;
+        }
+
+        public Entry build() {
+            if (id.isEmpty()) {
+                throw new IllegalStateException("Food-lacing id cannot be empty.");
+            }
+            if (additiveMatcher == null) {
+                throw new IllegalStateException("Food-lacing additive matcher must be defined for " + id);
+            }
+            if (payloadId == null || payloadId.trim().isEmpty()) {
+                throw new IllegalStateException("Food-lacing payload id must be defined for " + id);
+            }
+            Matcher resolvedFoodMatcher = foodMatcher == null ? PayloadFoodLacingRegistry::isFoodStack : foodMatcher;
+            return new Entry(id, additiveMatcher, resolvedFoodMatcher, payloadId.trim(),
+                    modeId == null ? null : modeId.trim());
+        }
+
+        public Entry register() {
+            Entry entry = build();
+            PayloadFoodLacingRegistry.register(entry);
+            return entry;
+        }
     }
 }
