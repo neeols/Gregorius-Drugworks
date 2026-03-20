@@ -57,7 +57,7 @@ public class MetaTileEntityChemicalPlant extends RecipeMapMultiblockController {
 
     private static final int PARALLEL_LIMIT = 6;
     private static final int LIVE_SHELL_CASING_MIN = 66;
-    private static final int UPDATE_FORMED_TIER_STATE = GregtechDataCodes.assignId();
+    private static final int UPDATE_FORMED_TIER_STATE = 0x47445701;
     private static final String TIER_CONTEXT_KEY = "GregoriusDrugworksChemicalPlantTier";
     private static final String TIER_MISMATCH_KEY =
             "gregoriusdrugworkspersistence.multiblock.pattern.error.chemical_plant_tier";

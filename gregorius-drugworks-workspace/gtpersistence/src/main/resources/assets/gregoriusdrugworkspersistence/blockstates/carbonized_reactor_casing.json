@@ -1,7 +1,7 @@
 {
   "variants": {
     "normal": {
-      "model": "gregoriusdrugworkspersistence:block/carbonized_reactor_casing"
+      "model": "gregoriusdrugworkspersistence:carbonized_reactor_casing"
     }
   }
 }

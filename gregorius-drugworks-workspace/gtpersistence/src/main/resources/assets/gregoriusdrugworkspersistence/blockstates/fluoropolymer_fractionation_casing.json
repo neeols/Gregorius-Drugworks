@@ -1,7 +1,7 @@
 {
   "variants": {
     "normal": {
-      "model": "gregoriusdrugworkspersistence:block/fluoropolymer_fractionation_casing"
+      "model": "gregoriusdrugworkspersistence:fluoropolymer_fractionation_casing"
     }
   }
 }

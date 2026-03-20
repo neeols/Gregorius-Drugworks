@@ -20,6 +20,7 @@ public class ChancedGTRecipeItemInput extends GTRecipeItemInput {
 
     private ChancedGTRecipeItemInput(ChancedItemInputEntry chancedEntry, int amount) {
         super(withAmount(chancedEntry.getIngredient(), amount), amount);
+        this.isConsumable = false;
         this.chancedEntry = new ChancedItemInputEntry(withAmount(chancedEntry.getIngredient(), amount),
                 chancedEntry.getChance(), chancedEntry.getChanceBoost(), chancedEntry.getTierReductionRate());
     }

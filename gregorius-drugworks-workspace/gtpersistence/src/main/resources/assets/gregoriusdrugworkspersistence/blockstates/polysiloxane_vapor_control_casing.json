@@ -1,7 +1,7 @@
 {
   "variants": {
     "normal": {
-      "model": "gregoriusdrugworkspersistence:block/polysiloxane_vapor_control_casing"
+      "model": "gregoriusdrugworkspersistence:polysiloxane_vapor_control_casing"
     }
   }
 }

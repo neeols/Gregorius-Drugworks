@@ -1,7 +1,7 @@
 {
   "variants": {
     "normal": {
-      "model": "gregoriusdrugworkspersistence:block/compressedmethblock"
+      "model": "gregoriusdrugworkspersistence:compressedmethblock"
     }
   }
 }

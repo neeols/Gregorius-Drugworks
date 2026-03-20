@@ -3,7 +3,9 @@ package com.wurtzitane.gregoriusdrugworkspersistence.integration.groovyscript;
 import com.cleanroommc.groovyscript.api.GroovyPlugin;
 import com.cleanroommc.groovyscript.compat.mods.GroovyContainer;
 import com.cleanroommc.groovyscript.compat.mods.ModPropertyContainer;
+import com.cleanroommc.groovyscript.sandbox.expand.ExpansionHelper;
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
+import gregtech.api.recipes.RecipeBuilder;
 import net.minecraftforge.fml.common.Loader;
 
 import java.util.Arrays;
@@ -38,6 +40,9 @@ public final class GregoriusDrugworksGroovyScriptPlugin implements GroovyPlugin 
 
     @Override
     public void onCompatLoaded(GroovyContainer<?> container) {
+        ExpansionHelper.mixinMethod(RecipeBuilder.class, GregoriusDrugworksGroovyRecipeExpansions.class, "chancedItemInput");
+        ExpansionHelper.mixinMethod(RecipeBuilder.class, GregoriusDrugworksGroovyRecipeExpansions.class, "chancedFluidInput");
+        ExpansionHelper.mixinMethod(RecipeBuilder.class, GregoriusDrugworksGroovyRecipeExpansions.class, "chancedCatalystItemInput");
     }
 
     @Override

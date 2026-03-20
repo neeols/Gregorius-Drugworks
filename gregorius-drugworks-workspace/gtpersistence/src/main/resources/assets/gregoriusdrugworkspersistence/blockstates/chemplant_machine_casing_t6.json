@@ -1,7 +1,7 @@
 {
   "variants": {
     "normal": {
-      "model": "gregoriusdrugworkspersistence:block/chemplant_machine_casing_t6"
+      "model": "gregoriusdrugworkspersistence:chemplant_machine_casing_t6"
     }
   }
 }

@@ -20,6 +20,7 @@ public class ChancedGTRecipeFluidInput extends GTRecipeFluidInput {
 
     private ChancedGTRecipeFluidInput(ChancedFluidInputEntry chancedEntry, int amount) {
         super(withAmount(chancedEntry.getIngredient(), amount), amount);
+        this.isConsumable = false;
         this.chancedEntry = new ChancedFluidInputEntry(withAmount(chancedEntry.getIngredient(), amount),
                 chancedEntry.getChance(), chancedEntry.getChanceBoost(), chancedEntry.getTierReductionRate());
     }

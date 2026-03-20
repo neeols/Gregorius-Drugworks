@@ -1,7 +1,7 @@
 {
   "variants": {
     "normal": {
-      "model": "gregoriusdrugworkspersistence:block/polyetherimide_thermal_casing"
+      "model": "gregoriusdrugworkspersistence:polyetherimide_thermal_casing"
     }
   }
 }

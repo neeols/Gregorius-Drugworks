@@ -11,16 +11,16 @@ import gregtech.api.recipes.ingredients.GTRecipeInput;
 import gregtech.api.recipes.ingredients.GTRecipeItemInput;
 import gregtech.api.recipes.recipeproperties.IRecipePropertyStorage;
 import gregtech.api.util.GTLog;
-import gregtech.api.util.GTTransferUtils;
+import gregtech.api.util.GTUtility;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.items.IItemHandlerModifiable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -105,35 +105,44 @@ public final class GregoriusDrugworksChancedInputSupport {
         }
     }
 
-    public static void applyChancedInputRolls(Recipe recipe,
-                                              RecipeMap<?> recipeMap,
-                                              int recipeTier,
-                                              int machineTier,
-                                              IItemHandlerModifiable inputInventory,
-                                              IMultipleTankHandler inputFluids) {
+    public static boolean matchesAndConsumeRecipeInputs(Recipe recipe,
+                                                        RecipeMap<?> recipeMap,
+                                                        int machineTier,
+                                                        boolean consumeIfSuccessful,
+                                                        IItemHandlerModifiable inputInventory,
+                                                        IMultipleTankHandler inputFluids) {
         ChancedInputRecipePropertyValue propertyValue = recipe.getProperty(ChancedInputRecipeProperty.getInstance(), null);
         if (propertyValue == null || propertyValue.isEmpty()) {
-            return;
+            return recipe.matches(consumeIfSuccessful, inputInventory, inputFluids);
         }
-        ChanceBoostFunction boostFunction = recipeMap == null ? ChanceBoostFunction.NONE : recipeMap.getChanceFunction();
-
-        for (ChancedItemInputEntry entry : propertyValue.getItemInputs()) {
-            if (shouldRefund(entry, boostFunction, recipeTier, machineTier)) {
-                ItemStack refund = entry.getIngredient();
-                if (!GTTransferUtils.addItemsToItemHandler(inputInventory, false, Collections.singletonList(refund))) {
-                    GTLog.logger.warn("Failed to refund chanced recipe item input {}", refund);
-                }
-            }
+        if (!consumeIfSuccessful) {
+            return recipe.matches(false, inputInventory, inputFluids);
         }
 
-        for (ChancedFluidInputEntry entry : propertyValue.getFluidInputs()) {
-            if (shouldRefund(entry, boostFunction, recipeTier, machineTier)) {
-                FluidStack refund = entry.getIngredient();
-                if (!GTTransferUtils.addFluidsToFluidHandler(inputFluids, false, Collections.singletonList(refund))) {
-                    GTLog.logger.warn("Failed to refund chanced recipe fluid input {}", refund.getLocalizedName());
-                }
-            }
+        List<ItemStack> simulatedItems = copyItemInputs(inputInventory);
+        List<FluidStack> simulatedFluids = copyFluidInputs(inputFluids);
+        if (!recipe.matches(true, simulatedItems, simulatedFluids)) {
+            return false;
         }
+
+        int recipeTier = GTUtility.getTierByVoltage(recipe.getEUt());
+        ChancedInputConsumptionPlan consumptionPlan = createConsumptionPlan(
+                propertyValue,
+                recipeMap,
+                recipeTier,
+                machineTier,
+                simulatedItems,
+                simulatedFluids);
+        if (consumptionPlan == null) {
+            return false;
+        }
+
+        if (!recipe.matches(true, inputInventory, inputFluids)) {
+            return false;
+        }
+
+        applyConsumptionPlan(consumptionPlan, inputInventory, inputFluids);
+        return true;
     }
 
     public static ChancedItemInputEntry getChancedItemInputEntry(Recipe recipe, List<GTRecipeInput> sortedInputs,
@@ -243,22 +252,6 @@ public final class GregoriusDrugworksChancedInputSupport {
         return (baseChance / 100.0D) * (tierReductionRate / 10000.0D);
     }
 
-    private static boolean shouldRefund(ChancedItemInputEntry entry,
-                                        ChanceBoostFunction boostFunction,
-                                        int recipeTier,
-                                        int machineTier) {
-        int chance = getEffectiveChance(entry, boostFunction, recipeTier, machineTier);
-        return !ChancedOutputLogic.passesChance(chance);
-    }
-
-    private static boolean shouldRefund(ChancedFluidInputEntry entry,
-                                        ChanceBoostFunction boostFunction,
-                                        int recipeTier,
-                                        int machineTier) {
-        int chance = getEffectiveChance(entry, boostFunction, recipeTier, machineTier);
-        return !ChancedOutputLogic.passesChance(chance);
-    }
-
     private static void validateChance(int chance) {
         if (chance < 0 || chance > ChancedOutputLogic.getMaxChancedValue()) {
             throw new IllegalArgumentException("Chance must be between 0 and " +
@@ -271,6 +264,149 @@ public final class GregoriusDrugworksChancedInputSupport {
             throw new IllegalArgumentException("Tier reduction rate must be between 0 and 10000: " +
                     tierReductionRate);
         }
+    }
+
+    private static ChancedInputConsumptionPlan createConsumptionPlan(ChancedInputRecipePropertyValue propertyValue,
+                                                                     RecipeMap<?> recipeMap,
+                                                                     int recipeTier,
+                                                                     int machineTier,
+                                                                     List<ItemStack> simulatedItems,
+                                                                     List<FluidStack> simulatedFluids) {
+        ChanceBoostFunction boostFunction = recipeMap == null ? ChanceBoostFunction.NONE : recipeMap.getChanceFunction();
+        int[] itemExtraction = new int[simulatedItems.size()];
+        int[] fluidDrain = new int[simulatedFluids.size()];
+
+        for (ChancedItemInputEntry entry : propertyValue.getItemInputs()) {
+            if (!passesInputChance(entry, boostFunction, recipeTier, machineTier)) {
+                continue;
+            }
+            if (!reserveItemConsumption(entry, simulatedItems, itemExtraction)) {
+                return null;
+            }
+        }
+
+        for (ChancedFluidInputEntry entry : propertyValue.getFluidInputs()) {
+            if (!passesInputChance(entry, boostFunction, recipeTier, machineTier)) {
+                continue;
+            }
+            if (!reserveFluidConsumption(entry, simulatedFluids, fluidDrain)) {
+                return null;
+            }
+        }
+
+        return new ChancedInputConsumptionPlan(itemExtraction, fluidDrain);
+    }
+
+    private static void applyConsumptionPlan(ChancedInputConsumptionPlan consumptionPlan,
+                                             IItemHandlerModifiable inputInventory,
+                                             IMultipleTankHandler inputFluids) {
+        for (int slot = 0; slot < consumptionPlan.itemExtraction.length; slot++) {
+            int amount = consumptionPlan.itemExtraction[slot];
+            if (amount <= 0) {
+                continue;
+            }
+            ItemStack extracted = inputInventory.extractItem(slot, amount, false);
+            if (extracted.isEmpty() || extracted.getCount() != amount) {
+                GTLog.logger.error("Failed to consume chanced item input from slot {}. Expected {}, extracted {}",
+                        slot, amount, extracted.isEmpty() ? 0 : extracted.getCount());
+            }
+        }
+
+        List<IMultipleTankHandler.MultiFluidTankEntry> tanks = inputFluids.getFluidTanks();
+        for (int tankIndex = 0; tankIndex < consumptionPlan.fluidDrain.length && tankIndex < tanks.size(); tankIndex++) {
+            int amount = consumptionPlan.fluidDrain[tankIndex];
+            if (amount <= 0) {
+                continue;
+            }
+            FluidStack drained = tanks.get(tankIndex).drain(amount, true);
+            if (drained == null || drained.amount != amount) {
+                GTLog.logger.error("Failed to consume chanced fluid input from tank {}. Expected {}, drained {}",
+                        tankIndex, amount, drained == null ? 0 : drained.amount);
+            }
+        }
+    }
+
+    private static boolean reserveItemConsumption(ChancedItemInputEntry entry,
+                                                  List<ItemStack> simulatedItems,
+                                                  int[] itemExtraction) {
+        ItemStack ingredient = entry.getIngredient();
+        int remaining = ingredient.getCount();
+        for (int slot = 0; slot < simulatedItems.size(); slot++) {
+            ItemStack stackInSlot = simulatedItems.get(slot);
+            if (!matchesItemIngredient(stackInSlot, ingredient)) {
+                continue;
+            }
+            int extracted = Math.min(stackInSlot.getCount(), remaining);
+            if (extracted <= 0) {
+                continue;
+            }
+            itemExtraction[slot] += extracted;
+            remaining -= extracted;
+            stackInSlot.shrink(extracted);
+            if (stackInSlot.isEmpty()) {
+                simulatedItems.set(slot, ItemStack.EMPTY);
+            }
+            if (remaining == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean reserveFluidConsumption(ChancedFluidInputEntry entry,
+                                                   List<FluidStack> simulatedFluids,
+                                                   int[] fluidDrain) {
+        FluidStack ingredient = entry.getIngredient();
+        int remaining = ingredient.amount;
+        for (int tankIndex = 0; tankIndex < simulatedFluids.size(); tankIndex++) {
+            FluidStack tankFluid = simulatedFluids.get(tankIndex);
+            if (!matchesFluidIngredient(tankFluid, ingredient)) {
+                continue;
+            }
+            int drained = Math.min(tankFluid.amount, remaining);
+            if (drained <= 0) {
+                continue;
+            }
+            fluidDrain[tankIndex] += drained;
+            remaining -= drained;
+            tankFluid.amount -= drained;
+            if (tankFluid.amount <= 0) {
+                simulatedFluids.set(tankIndex, null);
+            }
+            if (remaining == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean matchesItemIngredient(ItemStack stackInSlot, ItemStack ingredient) {
+        return stackInSlot != null &&
+                !stackInSlot.isEmpty() &&
+                stackInSlot.getCount() > 0 &&
+                ItemStack.areItemsEqual(stackInSlot, ingredient) &&
+                ItemStack.areItemStackTagsEqual(stackInSlot, ingredient);
+    }
+
+    private static boolean matchesFluidIngredient(FluidStack tankFluid, FluidStack ingredient) {
+        return tankFluid != null &&
+                tankFluid.amount > 0 &&
+                tankFluid.isFluidEqual(ingredient) &&
+                FluidStack.areFluidStackTagsEqual(tankFluid, ingredient);
+    }
+
+    private static boolean passesInputChance(ChancedItemInputEntry entry,
+                                             ChanceBoostFunction boostFunction,
+                                             int recipeTier,
+                                             int machineTier) {
+        return ChancedOutputLogic.passesChance(getEffectiveChance(entry, boostFunction, recipeTier, machineTier));
+    }
+
+    private static boolean passesInputChance(ChancedFluidInputEntry entry,
+                                             ChanceBoostFunction boostFunction,
+                                             int recipeTier,
+                                             int machineTier) {
+        return ChancedOutputLogic.passesChance(getEffectiveChance(entry, boostFunction, recipeTier, machineTier));
     }
 
     private static int getEffectiveChance(ChancedItemInputEntry entry,
@@ -291,6 +427,24 @@ public final class GregoriusDrugworksChancedInputSupport {
             return getTierReducedChance(entry.getChance(), recipeTier, machineTier, entry.getTierReductionRate());
         }
         return boostFunction.getBoostedChance(entry, recipeTier, machineTier);
+    }
+
+    private static List<ItemStack> copyItemInputs(IItemHandlerModifiable inputInventory) {
+        List<ItemStack> copiedInputs = new ArrayList<ItemStack>(inputInventory.getSlots());
+        for (int slot = 0; slot < inputInventory.getSlots(); slot++) {
+            copiedInputs.add(GTUtility.copy(inputInventory.getStackInSlot(slot)));
+        }
+        return copiedInputs;
+    }
+
+    private static List<FluidStack> copyFluidInputs(IMultipleTankHandler inputFluids) {
+        List<IMultipleTankHandler.MultiFluidTankEntry> tanks = inputFluids.getFluidTanks();
+        List<FluidStack> copiedInputs = new ArrayList<FluidStack>(tanks.size());
+        for (IMultipleTankHandler.MultiFluidTankEntry tank : tanks) {
+            FluidStack stack = tank.getFluid();
+            copiedInputs.add(stack == null ? null : stack.copy());
+        }
+        return copiedInputs;
     }
 
     private static List<ChancedItemInputEntry> getSortedItemEntries(ChancedInputRecipePropertyValue propertyValue) {
@@ -319,9 +473,7 @@ public final class GregoriusDrugworksChancedInputSupport {
         for (int i = 0; i < entries.size(); i++) {
             ItemStack ingredient = entries.get(i).getIngredient();
             GTRecipeItemInput ingredientInput = new GTRecipeItemInput(ingredient, ingredient.getCount());
-            if (!input.isNonConsumable() &&
-                    input.getAmount() >= ingredient.getCount() &&
-                    input.equalIgnoreAmount(ingredientInput)) {
+            if (input.getAmount() >= ingredient.getCount() && input.equalIgnoreAmount(ingredientInput)) {
                 return i;
             }
         }
@@ -352,9 +504,7 @@ public final class GregoriusDrugworksChancedInputSupport {
         for (int i = 0; i < entries.size(); i++) {
             FluidStack ingredient = entries.get(i).getIngredient();
             GTRecipeFluidInput ingredientInput = new GTRecipeFluidInput(ingredient, ingredient.amount);
-            if (!input.isNonConsumable() &&
-                    input.getAmount() >= ingredient.amount &&
-                    input.equalIgnoreAmount(ingredientInput)) {
+            if (input.getAmount() >= ingredient.amount && input.equalIgnoreAmount(ingredientInput)) {
                 return i;
             }
         }
@@ -405,6 +555,17 @@ public final class GregoriusDrugworksChancedInputSupport {
             return field;
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Unable to resolve RecipeBuilder field " + name, e);
+        }
+    }
+
+    private static final class ChancedInputConsumptionPlan {
+
+        private final int[] itemExtraction;
+        private final int[] fluidDrain;
+
+        private ChancedInputConsumptionPlan(int[] itemExtraction, int[] fluidDrain) {
+            this.itemExtraction = itemExtraction;
+            this.fluidDrain = fluidDrain;
         }
     }
 }
