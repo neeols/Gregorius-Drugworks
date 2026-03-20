@@ -13,6 +13,7 @@ public final class PayloadKeys {
     public static final String VISUAL_PROFILE_ID_KEY = "VisualProfileId";
     public static final String VISUAL_DURATION_KEY = "VisualDurationTicks";
     public static final String EXTRA_DATA_KEY = "PayloadData";
+    public static final String MODE_KEY = "Mode";
 
     public static final int CURRENT_VERSION = 1;
 

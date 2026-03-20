@@ -80,6 +80,7 @@ public final class GregoriusDrugworksPillClientHooks {
                         message.getSpinZPerTick(),
                         message.isLockCamera(),
                         message.getSequenceId(),
+                        message.getRenderStack(),
                         (EntityPlayer) entity
                 )
         );
@@ -164,18 +165,13 @@ public final class GregoriusDrugworksPillClientHooks {
                 continue;
             }
 
-            String definitionKey = resolveDefinitionKey(state.getItemId());
-            PillItemDefinition definition = ItemPillBase.getDefinition(definitionKey);
-            if (definition == null) {
+            ItemStack renderStack = state.getRenderStack();
+            if (renderStack.isEmpty()) {
+                renderStack = createRenderStack(state.getItemId());
+            }
+            if (renderStack.isEmpty()) {
                 continue;
             }
-
-            Item item = resolveRenderedItem(state.getItemId());
-            if (item == null) {
-                continue;
-            }
-
-            ItemStack renderStack = new ItemStack(item);
             Vec3d pillPos = state.getPillPosition(player, worldTime, partialTicks);
 
             GlStateManager.pushMatrix();

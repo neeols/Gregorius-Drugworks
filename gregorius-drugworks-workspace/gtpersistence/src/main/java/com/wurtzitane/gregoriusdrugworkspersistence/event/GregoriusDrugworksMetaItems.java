@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.registries.IForgeRegistry;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.ItemPillBase;
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.ItemPayloadPill;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.PillItemDefinition;
 
 import javax.annotation.Nonnull;
@@ -57,7 +58,7 @@ public final class GregoriusDrugworksMetaItems {
     public static Item CRYSTALMETH;
 
     public static Item SAMPLE_VAPE;
-    public static Item SALVINORIN_A_PILL;
+    public static Item PILL;
 
     public static void preInit() {
         if (bootstrapped) {
@@ -86,25 +87,9 @@ public final class GregoriusDrugworksMetaItems {
         GLUCAGON_INJECTOR = createSourceVial("glucagon_injector", 16, EnumRarity.RARE);
         DIGOXIN_FAB = createSourceVial("digoxin_fab", 8, EnumRarity.EPIC);
         KAPPA_RESET_AMPOULE = createSourceVial("kappa_reset_ampoule", 16, EnumRarity.RARE);
-        SALVINORIN_A_PILL = createPill(
-                PillItemDefinition.builder("salvinorin_a_pill")
-                        .maxStackSize(16)
-                        .useDurationTicks(18)
-                        .arcHeight(1.15F)
-                        .launchForward(0.35F)
-                        .mouthOffsetY(-0.10F)
-                        .spinXPerTick(24.0F)
-                        .spinYPerTick(40.0F)
-                        .spinZPerTick(17.0F)
-                        .lockCamera(true)
-                        .tripHookEnabled(true)
-                        .rarity(EnumRarity.UNCOMMON)
-                        .finishSoundId(GregoriusDrugworksUtil.makeName("pill_gulp"))
-                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/salvinorin_a_pill.png"))
-                        .build()
-        );
-        EMPTY_CAPSULE_PILL = createPill(
-                PillItemDefinition.builder("empty_capsule_pill")
+        EMPTY_CAPSULE_PILL = createBasicItem("empty_capsule_pill", 16);
+        PILL = createPayloadPill(
+                PillItemDefinition.builder("pill")
                         .maxStackSize(16)
                         .useDurationTicks(18)
                         .arcHeight(1.15F)
@@ -115,9 +100,9 @@ public final class GregoriusDrugworksMetaItems {
                         .spinZPerTick(17.0F)
                         .lockCamera(true)
                         .tripHookEnabled(false)
-                        .rarity(EnumRarity.COMMON)
+                        .rarity(EnumRarity.UNCOMMON)
                         .finishSoundId(GregoriusDrugworksUtil.makeName("pill_gulp"))
-                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/empty_capsule_pill.png"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/pill/generated/pill_base.png"))
                         .build()
         );
         SAMPLE_VAPE = createInhalation(
@@ -303,6 +288,13 @@ public final class GregoriusDrugworksMetaItems {
 
     private static Item createPill(PillItemDefinition definition) {
         Item item = new ItemPillBase(definition);
+        META_ITEMS.add(item);
+        GregoriusDrugworksContentCatalogs.registerItem(item, ContentFamily.PILL, false);
+        return item;
+    }
+
+    private static Item createPayloadPill(PillItemDefinition definition) {
+        Item item = new ItemPayloadPill(definition);
         META_ITEMS.add(item);
         GregoriusDrugworksContentCatalogs.registerItem(item, ContentFamily.PILL, false);
         return item;

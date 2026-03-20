@@ -5,6 +5,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.pill.PillItemDefinition;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.client.GregoriusDrugworksPillClientHooks;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -25,11 +26,13 @@ public final class PacketStartPillAnimation implements IMessage {
     private float spinZPerTick;
     private boolean lockCamera;
     private int sequenceId;
+    private ItemStack renderStack = ItemStack.EMPTY;
 
     public PacketStartPillAnimation() {
     }
 
-    public PacketStartPillAnimation(int playerEntityId, EnumHand hand, ItemPillBase pillItem, int sequenceId) {
+    public PacketStartPillAnimation(int playerEntityId, EnumHand hand, ItemStack renderStack, int sequenceId) {
+        ItemPillBase pillItem = (ItemPillBase) renderStack.getItem();
         PillItemDefinition definition = pillItem.getDefinition();
         this.playerEntityId = playerEntityId;
         this.itemId = pillItem.getRegistryName() == null ? definition.getItemId() : pillItem.getRegistryName().toString();
@@ -43,6 +46,8 @@ public final class PacketStartPillAnimation implements IMessage {
         this.spinZPerTick = definition.getSpinZPerTick();
         this.lockCamera = definition.isLockCamera();
         this.sequenceId = sequenceId;
+        this.renderStack = renderStack.copy();
+        this.renderStack.setCount(1);
     }
 
     public int getPlayerEntityId() {
@@ -93,6 +98,10 @@ public final class PacketStartPillAnimation implements IMessage {
         return sequenceId;
     }
 
+    public ItemStack getRenderStack() {
+        return renderStack;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         this.playerEntityId = buf.readInt();
@@ -107,6 +116,7 @@ public final class PacketStartPillAnimation implements IMessage {
         this.spinZPerTick = buf.readFloat();
         this.lockCamera = buf.readBoolean();
         this.sequenceId = buf.readInt();
+        this.renderStack = ByteBufUtils.readItemStack(buf);
     }
 
     @Override
@@ -123,6 +133,7 @@ public final class PacketStartPillAnimation implements IMessage {
         buf.writeFloat(spinZPerTick);
         buf.writeBoolean(lockCamera);
         buf.writeInt(sequenceId);
+        ByteBufUtils.writeItemStack(buf, renderStack);
     }
 
     public static final class Handler implements IMessageHandler<PacketStartPillAnimation, IMessage> {

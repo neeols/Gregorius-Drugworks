@@ -6,6 +6,8 @@ import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCategory;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadChargePolicy;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCompatibility;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadDefinition;
+import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadKeys;
+import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadModeDefinition;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadValidation;
 import com.wurtzitane.gregoriusdrugworkspersistence.trip.TripHooks;
 import com.wurtzitane.gregoriusdrugworkspersistence.trigger.PayloadTriggerExecutor;
@@ -37,15 +39,16 @@ public final class GregoriusDrugworksPayloadRegistry {
                 new PayloadDefinition(
                         "gregoriusdrugworkspersistence:salvinorin_a_payload",
                         PayloadCategory.STAGED_EFFECT,
-                        PayloadCompatibility.APPLICATOR,
+                        PayloadCompatibility.UNIVERSAL,
                         "payload.gregoriusdrugworkspersistence.salvinorin_a",
                         1,
                         PayloadChargePolicy.SINGLE_USE,
-                        EnumSet.noneOf(PayloadBehaviorFlag.class),
-                        null,
+                        EnumSet.of(PayloadBehaviorFlag.FORWARD_ITEM_USE),
+                        "gregoriusdrugworkspersistence:salvinorin_a_payload",
                         null,
                         0,
-                        "gregoriusdrugworkspersistence:salvinorin_a_bundle"
+                        null,
+                        salvinorinModes()
                 ),
                 null
         );
@@ -65,6 +68,26 @@ public final class GregoriusDrugworksPayloadRegistry {
                 ),
                 null
         );
+    }
+
+    private static Map<String, PayloadModeDefinition> salvinorinModes() {
+        Map<String, PayloadModeDefinition> modes = new LinkedHashMap<>();
+        modes.put("injection", PayloadModeDefinition.builder("injection")
+                .onsetScale(0.45D)
+                .peakScale(1.20D)
+                .durationScale(0.72D)
+                .build());
+        modes.put("pill", PayloadModeDefinition.builder("pill")
+                .onsetScale(1.45D)
+                .peakScale(0.92D)
+                .durationScale(1.30D)
+                .build());
+        modes.put("food", PayloadModeDefinition.builder("food")
+                .onsetScale(1.80D)
+                .peakScale(0.86D)
+                .durationScale(1.55D)
+                .build());
+        return modes;
     }
 
     public static void register(PayloadDefinition definition, @Nullable PayloadHandler handler) {
@@ -101,28 +124,42 @@ public final class GregoriusDrugworksPayloadRegistry {
         }
 
         PayloadDefinition definition = payload.getDefinition();
+        PayloadModeDefinition mode = payload.getMode();
+        String triggerBundleId = firstNonEmpty(mode != null ? mode.getTriggerBundleId() : null, definition.getTriggerBundleId());
+        String forwardItemId = firstNonEmpty(mode != null ? mode.getForwardItemId() : null, definition.getForwardItemId());
+        String visualProfileId = firstNonEmpty(mode != null ? mode.getVisualProfileId() : null, definition.getVisualProfileId());
+        int visualDurationTicks = mode != null && mode.getVisualDurationTicks() > 0
+                ? mode.getVisualDurationTicks()
+                : definition.getDefaultVisualDurationTicks();
 
-        if (definition.getTriggerBundleId() != null && !definition.getTriggerBundleId().isEmpty()) {
+        if (triggerBundleId != null && !triggerBundleId.isEmpty()) {
             boolean executed = com.wurtzitane.gregoriusdrugworkspersistence.trigger.TriggerBundleRuntimeExecutor.executeById(
                     player,
-                    definition.getTriggerBundleId()
+                    triggerBundleId
             );
             if (executed) {
                 return;
             }
         }
 
-        if (definition.hasFlag(PayloadBehaviorFlag.FORWARD_ITEM_USE)
-                && definition.getForwardItemId() != null
-                && !definition.getForwardItemId().isEmpty()) {
-            TripHooks.onItemUse(player, definition.getForwardItemId());
+        if ((definition.hasFlag(PayloadBehaviorFlag.FORWARD_ITEM_USE) || (mode != null && forwardItemId != null && !forwardItemId.isEmpty()))
+                && forwardItemId != null
+                && !forwardItemId.isEmpty()) {
+            TripHooks.onItemUse(player, PayloadModeTripSupport.resolveTripItemId(forwardItemId, mode));
         }
 
-        if (definition.hasFlag(PayloadBehaviorFlag.START_VISUAL_PROFILE)
-                && definition.getVisualProfileId() != null
-                && !definition.getVisualProfileId().isEmpty()) {
-            TripVisualBridge.activate(player, definition.getVisualProfileId(), definition.getDefaultVisualDurationTicks());
+        if ((definition.hasFlag(PayloadBehaviorFlag.START_VISUAL_PROFILE) || (mode != null && visualProfileId != null && !visualProfileId.isEmpty()))
+                && visualProfileId != null
+                && !visualProfileId.isEmpty()) {
+            TripVisualBridge.activate(player, visualProfileId, visualDurationTicks);
         }
+    }
+
+    private static String firstNonEmpty(String preferred, String fallback) {
+        if (preferred != null && !preferred.isEmpty()) {
+            return preferred;
+        }
+        return fallback;
     }
 
     public interface PayloadHandler {
@@ -161,6 +198,16 @@ public final class GregoriusDrugworksPayloadRegistry {
 
         public net.minecraft.nbt.NBTTagCompound getExtraData() {
             return extraData;
+        }
+
+        public String getModeId() {
+            return extraData == null || !extraData.hasKey(PayloadKeys.MODE_KEY)
+                    ? ""
+                    : extraData.getString(PayloadKeys.MODE_KEY);
+        }
+
+        public PayloadModeDefinition getMode() {
+            return definition.getMode(getModeId());
         }
     }
 }

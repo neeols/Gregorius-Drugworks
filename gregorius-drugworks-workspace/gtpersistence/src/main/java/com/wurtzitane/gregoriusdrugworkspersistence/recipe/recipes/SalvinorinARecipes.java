@@ -9,6 +9,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMat
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeMaps;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksUnificationHelper;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.chance.GregoriusDrugworksChancedInputSupport;
+import gregtech.api.metatileentity.multiblock.CleanroomType;
 import gregtech.api.recipes.ModHandler;
 import gregtech.api.recipes.RecipeBuilder;
 import gregtech.api.recipes.RecipeMaps;
@@ -2388,6 +2389,7 @@ public final class SalvinorinARecipes {
         builder.outputs(deacetoxysalvinorinA);
         builder.fluidOutputs(GregoriusDrugworksMaterials.Butanone.getFluid(500));
         builder.duration(chemicalPlantDuration(3600));
+        builder.cleanroom(CleanroomType.CLEANROOM);
         builder.EUt(VA[IV]);
         builder.buildAndRegister();
 
@@ -2418,6 +2420,7 @@ public final class SalvinorinARecipes {
         builder.outputs(epiSalvinorinB);
         builder.fluidOutputs(Materials.Toluene.getFluid(850), Materials.Water.getFluid(150), GregoriusDrugworksMaterials.MchlorobenzoicAcid.getFluid(1000));
         builder.duration(chemicalPlantDuration(3600));
+        builder.cleanroom(CleanroomType.CLEANROOM);
         builder.EUt(VA[LuV]);
         builder.buildAndRegister();
 
@@ -2432,6 +2435,7 @@ public final class SalvinorinARecipes {
         builder.output(dust, GregoriusDrugworksMaterials.TriphenylphosphineOxide, 10);
         builder.output(dust, GregoriusDrugworksMaterials.SalAHydrazinedicarboxylateWaste, 10);
         builder.duration(4800);
+        builder.cleanroom(CleanroomType.CLEANROOM);
         builder.EUt(VA[UV]);
         builder.buildAndRegister();
 
@@ -2456,6 +2460,17 @@ public final class SalvinorinARecipes {
         ModHandler.addShapedRecipe("empty_glass_ampoule_craft", new ItemStack(GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE), " G ", " P ", "   ",
                 'G', Blocks.GLASS,
                 'P', new UnificationEntry(OrePrefix.pipeTinyFluid, Materials.Steel));
+
+        // empty_capsule_pill
+        builder = RecipeMaps.ASSEMBLER_RECIPES.recipeBuilder();
+        builder.input(Items.PAPER, 2);
+        builder.output(GregoriusDrugworksMetaItems.EMPTY_CAPSULE_PILL, 2);
+        builder.duration(80);
+        builder.EUt(VA[LV]);
+        builder.buildAndRegister();
+
+        ModHandler.addShapedRecipe("empty_capsule_pill_craft", new ItemStack(GregoriusDrugworksMetaItems.EMPTY_CAPSULE_PILL, 2), "PP ", "   ", "   ",
+                'P', Items.PAPER);
 
         // medical_applicator
         builder = RecipeMaps.ASSEMBLER_RECIPES.recipeBuilder();

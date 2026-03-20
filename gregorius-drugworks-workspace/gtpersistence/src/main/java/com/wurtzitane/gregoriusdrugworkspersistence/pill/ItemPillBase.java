@@ -96,7 +96,7 @@ public class ItemPillBase extends Item implements ITripUseDeferredItem {
                 return new ActionResult<>(EnumActionResult.FAIL, held);
             }
             serverPlayer.getCooldownTracker().setCooldown(this, Math.max(1, definition.getUseDurationTicks()));
-            GregoriusDrugworksNetworkHandler.sendPillUseAnimation(serverPlayer, this, hand, sequenceId);
+            GregoriusDrugworksNetworkHandler.sendPillUseAnimation(serverPlayer, held.copy(), hand, sequenceId);
         }
 
         return new ActionResult<>(EnumActionResult.SUCCESS, held);

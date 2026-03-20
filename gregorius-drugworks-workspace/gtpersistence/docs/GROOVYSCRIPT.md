@@ -282,6 +282,18 @@ gdw.payloads.builder(
     .defaultCharges(1)
     .visualProfile('showcase_focus', 200)
     .triggerBundleId('showcase_bundle')
+    .modes([
+        injection: [
+            onsetScale: 0.45D,
+            peakScale: 1.25D,
+            durationScale: 0.70D
+        ],
+        food: [
+            onsetScale: 1.60D,
+            peakScale: 0.90D,
+            durationScale: 1.35D
+        ]
+    ])
     .register()
 ```
 
@@ -295,6 +307,18 @@ Useful builder methods:
 - `visualProfileId(profileId)`
 - `defaultVisualDurationTicks(int)`
 - `triggerBundleId(bundleId)`
+- `mode(modeId, configMap)`
+- `modes([modeId: configMap, ...])`
+
+Each payload mode config map can include:
+
+- `forwardItemId`
+- `triggerBundleId`
+- `visualProfileId`
+- `visualDurationTicks`
+- `onsetScale`
+- `peakScale`
+- `durationScale`
 
 ### `mods.gdw.payloadSources`
 
@@ -321,12 +345,15 @@ Main entry points:
 - `load(applicatorStack, payloadId)`
 - `load(applicatorStack, payloadId, chargesOverride)`
 - `load(applicatorStack, payloadId, chargesOverride, payloadData)`
+- `load(applicatorStack, payloadId, chargesOverride, modeId)`
 - `createLoaded(payloadId)`
 - `createLoaded(payloadId, chargesOverride)`
 - `createLoaded(payloadId, chargesOverride, payloadData)`
+- `createLoaded(payloadId, chargesOverride, modeId)`
 - `clear(applicatorStack)`
 - `hasPayload(applicatorStack)`
 - `describe(applicatorStack)`
+- `modeData(modeId)`
 
 This is useful for quest rewards, loot scripts, or hand-built stacks created by other Groovy integrations.
 

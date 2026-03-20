@@ -23,6 +23,8 @@ public final class GregoriusDrugworksPayloadCarriers {
 
         ADAPTERS.clear();
         ADAPTERS.add(new ApplicatorPayloadCarrierAdapter());
+        ADAPTERS.add(new PillPayloadCarrierAdapter());
+        ADAPTERS.add(new ConsumablePayloadCarrierAdapter());
     }
 
     public static List<PayloadCarrierAdapter> all() {

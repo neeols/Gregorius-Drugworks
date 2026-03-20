@@ -15,6 +15,12 @@ public final class PayloadValidation {
         if (definition.getDefaultCharges() <= 0) {
             return "Default charges must be > 0";
         }
+        for (PayloadModeDefinition mode : definition.getModes().values()) {
+            String modeError = validateMode(mode);
+            if (modeError != null) {
+                return "Invalid mode: " + modeError;
+            }
+        }
         return null;
     }
 
@@ -56,5 +62,24 @@ public final class PayloadValidation {
 
     public static boolean isCompatible(PayloadCompatibility payloadCompatibility, PayloadCompatibility carrierCompatibility) {
         return payloadCompatibility == PayloadCompatibility.UNIVERSAL || payloadCompatibility == carrierCompatibility;
+    }
+
+    public static String validateMode(PayloadModeDefinition mode) {
+        if (mode == null) {
+            return "Mode was null";
+        }
+        if (mode.getId() == null || mode.getId().trim().isEmpty()) {
+            return "Missing mode id";
+        }
+        if (mode.getOnsetScale() <= 0.0D) {
+            return "Onset scale must be > 0";
+        }
+        if (mode.getPeakScale() <= 0.0D) {
+            return "Peak scale must be > 0";
+        }
+        if (mode.getDurationScale() <= 0.0D) {
+            return "Duration scale must be > 0";
+        }
+        return null;
     }
 }

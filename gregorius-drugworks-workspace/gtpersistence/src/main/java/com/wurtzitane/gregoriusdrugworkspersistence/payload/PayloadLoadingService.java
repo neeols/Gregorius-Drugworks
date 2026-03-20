@@ -3,6 +3,7 @@ package com.wurtzitane.gregoriusdrugworkspersistence.payload;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadSourceDefinition;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nullable;
 
@@ -27,6 +28,10 @@ public final class PayloadLoadingService {
     }
 
     public static ItemStack createLoadedResult(ItemStack carrierStack, ItemStack sourceStack) {
+        return createLoadedResult(carrierStack, sourceStack, null);
+    }
+
+    public static ItemStack createLoadedResult(ItemStack carrierStack, ItemStack sourceStack, @Nullable NBTTagCompound extraData) {
         PayloadCarrierAdapter carrier = GregoriusDrugworksPayloadCarriers.find(carrierStack);
         PayloadSourceDefinition source = GregoriusDrugworksPayloadSources.findBySourceStack(sourceStack);
 
@@ -37,8 +42,24 @@ public final class PayloadLoadingService {
         ItemStack result = carrierStack.copy();
         result.setCount(1);
 
-        boolean ok = carrier.loadPayload(result, source.getPayloadId(), source.getChargesOverride(), null);
+        boolean ok = carrier.loadPayload(result, source.getPayloadId(), source.getChargesOverride(), extraData);
         return ok ? result : ItemStack.EMPTY;
+    }
+
+    public static ItemStack createLoadedResult(
+            ItemStack carrierStack,
+            String payloadId,
+            int chargesOverride,
+            @Nullable NBTTagCompound extraData
+    ) {
+        PayloadCarrierAdapter carrier = GregoriusDrugworksPayloadCarriers.find(carrierStack);
+        if (carrier == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack result = carrierStack.copy();
+        result.setCount(1);
+        return carrier.loadPayload(result, payloadId, chargesOverride, extraData) ? result : ItemStack.EMPTY;
     }
 
     public static ItemStack getSourceRemainder(ItemStack sourceStack) {

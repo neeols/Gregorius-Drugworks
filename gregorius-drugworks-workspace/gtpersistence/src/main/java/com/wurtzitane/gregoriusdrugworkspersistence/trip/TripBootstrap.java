@@ -21,7 +21,6 @@ public final class TripBootstrap {
         }
         bootstrapped = true;
 
-        TripRegistrar.registerTrip(buildSalvinorinTrip("gregoriusdrugworkspersistence:salvinorin_a_pill"));
         TripRegistrar.registerTrip(buildSalvinorinTrip("gregoriusdrugworkspersistence:salvinorin_a_payload"));
 
         TripRegistrar.registerAntidote(
@@ -33,10 +32,6 @@ public final class TripBootstrap {
                         .build()
         );
 
-        TripRegistrar.allowAntidoteForTrip(
-                "gregoriusdrugworkspersistence:salvinorin_antidote_payload",
-                "gregoriusdrugworkspersistence:salvinorin_a_pill"
-        );
         TripRegistrar.allowAntidoteForTrip(
                 "gregoriusdrugworkspersistence:salvinorin_antidote_payload",
                 "gregoriusdrugworkspersistence:salvinorin_a_payload"

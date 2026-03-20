@@ -1,6 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.pill.client;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.math.MathHelper;
@@ -21,6 +22,7 @@ public final class PillAnimationState {
     private final float spinZPerTick;
     private final boolean lockCamera;
     private final int sequenceId;
+    private final ItemStack renderStack;
     private final Vec3d anchorPlayerPos;
     private final Vec3d anchorStart;
     private final Vec3d anchorControl;
@@ -42,6 +44,7 @@ public final class PillAnimationState {
             float spinZPerTick,
             boolean lockCamera,
             int sequenceId,
+            ItemStack renderStack,
             Vec3d anchorPlayerPos,
             Vec3d anchorStart,
             Vec3d anchorControl,
@@ -62,6 +65,7 @@ public final class PillAnimationState {
         this.spinZPerTick = spinZPerTick;
         this.lockCamera = lockCamera;
         this.sequenceId = sequenceId;
+        this.renderStack = renderStack.copy();
         this.anchorPlayerPos = anchorPlayerPos;
         this.anchorStart = anchorStart;
         this.anchorControl = anchorControl;
@@ -84,6 +88,7 @@ public final class PillAnimationState {
             float spinZPerTick,
             boolean lockCamera,
             int sequenceId,
+            ItemStack renderStack,
             EntityPlayer player
     ) {
         Vec3d anchorPlayerPos = getInterpolatedPlayerPos(player, 1.0F);
@@ -141,6 +146,7 @@ public final class PillAnimationState {
                 spinZPerTick,
                 lockCamera,
                 sequenceId,
+                renderStack,
                 anchorPlayerPos,
                 start,
                 control,
@@ -168,6 +174,10 @@ public final class PillAnimationState {
 
     public int getSequenceId() {
         return sequenceId;
+    }
+
+    public ItemStack getRenderStack() {
+        return renderStack.copy();
     }
 
     public boolean isExpired(long worldTime) {

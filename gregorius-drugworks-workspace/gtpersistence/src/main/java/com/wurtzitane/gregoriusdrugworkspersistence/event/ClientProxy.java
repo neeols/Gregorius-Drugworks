@@ -4,6 +4,9 @@ import com.wurtzitane.gregoriusdrugworkspersistence.client.GregoriusDrugworksHel
 import com.wurtzitane.gregoriusdrugworkspersistence.debug.GregoriusDrugworksDebug;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.client.GregoriusDrugworksInhalationClientHooks;
 import com.wurtzitane.gregoriusdrugworkspersistence.medical.client.GregoriusDrugworksApplicatorClientHooks;
+import com.wurtzitane.gregoriusdrugworkspersistence.payload.PayloadCarrierTooltipHelper;
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.GregoriusDrugworksPayloadPills;
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.GregoriusDrugworksPillColors;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.client.GregoriusDrugworksPillClientHooks;
 import com.wurtzitane.gregoriusdrugworkspersistence.visual.client.GregoriusDrugworksVisualClientHooks;
 import net.minecraft.client.Minecraft;
@@ -13,6 +16,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -57,11 +61,32 @@ public class ClientProxy {
     }
 
     @SubscribeEvent
+    public static void registerItemColors(ColorHandlerEvent.Item event) {
+        event.getItemColors().registerItemColorHandler((stack, tintIndex) -> {
+            if (tintIndex == 1) {
+                return GregoriusDrugworksPillColors.resolveRgb(
+                        GregoriusDrugworksPayloadPills.getLeftColorId(stack),
+                        0xEDEDED
+                );
+            }
+            if (tintIndex == 2) {
+                return GregoriusDrugworksPillColors.resolveRgb(
+                        GregoriusDrugworksPayloadPills.getRightColorId(stack),
+                        0xEDEDED
+                );
+            }
+            return 0xFFFFFF;
+        }, GregoriusDrugworksMetaItems.PILL);
+    }
+
+    @SubscribeEvent
     public static void addTooltipNormal(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
         if (stack.isEmpty()) {
             return;
         }
+
+        PayloadCarrierTooltipHelper.appendTooltip(stack, event.getToolTip());
 
         ResourceLocation registryName = stack.getItem().getRegistryName();
         String path = registryName == null ? "" : registryName.getPath();

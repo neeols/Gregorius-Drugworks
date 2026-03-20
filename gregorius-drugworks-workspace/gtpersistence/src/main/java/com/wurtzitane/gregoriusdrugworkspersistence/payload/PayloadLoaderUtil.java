@@ -131,7 +131,81 @@ public final class PayloadLoaderUtil {
                 + " | category=" + describeCategory(definition)
                 + " | charges=" + resolved.getCharges() + "/" + resolved.getMaxCharges()
                 + " | compatibility=" + definition.getCompatibility().name().toLowerCase()
+                + " | mode=" + resolved.getModeId()
                 + " | triggerBundle=" + (definition.getTriggerBundleId() == null ? "<legacy>" : definition.getTriggerBundleId());
+    }
+
+    public static NBTTagCompound getExtraData(ItemStack carrierStack, boolean create) {
+        if (carrierStack.isEmpty()) {
+            return new NBTTagCompound();
+        }
+
+        if (!carrierStack.hasTagCompound()) {
+            if (!create) {
+                return new NBTTagCompound();
+            }
+            carrierStack.setTagCompound(new NBTTagCompound());
+        }
+
+        NBTTagCompound root = create ? getOrCreateRoot(carrierStack) : getRoot(carrierStack);
+        if (root == null) {
+            return new NBTTagCompound();
+        }
+
+        if (!root.hasKey(PayloadKeys.EXTRA_DATA_KEY)) {
+            if (!create) {
+                return new NBTTagCompound();
+            }
+            root.setTag(PayloadKeys.EXTRA_DATA_KEY, new NBTTagCompound());
+        }
+
+        return root.getCompoundTag(PayloadKeys.EXTRA_DATA_KEY);
+    }
+
+    public static String getStringExtra(ItemStack carrierStack, String key) {
+        NBTTagCompound extra = getExtraData(carrierStack, false);
+        return extra.hasKey(key) ? extra.getString(key) : "";
+    }
+
+    public static void setStringExtra(ItemStack carrierStack, String key, String value) {
+        if (carrierStack.isEmpty() || key == null || key.isEmpty()) {
+            return;
+        }
+
+        NBTTagCompound extra = getExtraData(carrierStack, true);
+        if (value == null || value.isEmpty()) {
+            extra.removeTag(key);
+            return;
+        }
+
+        extra.setString(key, value);
+    }
+
+    public static boolean getBooleanExtra(ItemStack carrierStack, String key, boolean defaultValue) {
+        NBTTagCompound extra = getExtraData(carrierStack, false);
+        return extra.hasKey(key) ? extra.getBoolean(key) : defaultValue;
+    }
+
+    public static void setBooleanExtra(ItemStack carrierStack, String key, boolean value) {
+        if (carrierStack.isEmpty() || key == null || key.isEmpty()) {
+            return;
+        }
+
+        NBTTagCompound extra = getExtraData(carrierStack, true);
+        extra.setBoolean(key, value);
+    }
+
+    public static void setMode(ItemStack carrierStack, String modeId) {
+        if (carrierStack.isEmpty() || modeId == null || modeId.trim().isEmpty()) {
+            return;
+        }
+
+        setStringExtra(carrierStack, PayloadKeys.MODE_KEY, modeId.trim());
+    }
+
+    public static String getMode(ItemStack carrierStack) {
+        GregoriusDrugworksPayloadRegistry.ResolvedPayload resolved = resolve(carrierStack);
+        return resolved == null ? "" : resolved.getModeId();
     }
 
     private static String describeCategory(PayloadDefinition definition) {
@@ -154,6 +228,19 @@ public final class PayloadLoaderUtil {
         NBTTagCompound stackTag = carrierStack.getTagCompound();
         if (!stackTag.hasKey(PayloadKeys.ROOT_TAG)) {
             stackTag.setTag(PayloadKeys.ROOT_TAG, new NBTTagCompound());
+        }
+
+        return stackTag.getCompoundTag(PayloadKeys.ROOT_TAG);
+    }
+
+    private static NBTTagCompound getRoot(ItemStack carrierStack) {
+        if (carrierStack.isEmpty() || !carrierStack.hasTagCompound()) {
+            return null;
+        }
+
+        NBTTagCompound stackTag = carrierStack.getTagCompound();
+        if (!stackTag.hasKey(PayloadKeys.ROOT_TAG)) {
+            return null;
         }
 
         return stackTag.getCompoundTag(PayloadKeys.ROOT_TAG);

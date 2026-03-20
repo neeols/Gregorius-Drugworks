@@ -76,6 +76,18 @@ gdw.payloads.builder(
     .defaultCharges(1)
     .visualProfile('showcase_focus', 10 * SECOND)
     .triggerBundleId('showcase_focus_bundle')
+    .modes([
+        injection: [
+            onsetScale: 0.45D,
+            peakScale: 1.20D,
+            durationScale: 0.75D
+        ],
+        food: [
+            onsetScale: 1.55D,
+            peakScale: 0.90D,
+            durationScale: 1.35D
+        ]
+    ])
     .register()
 
 gdw.payloadSources.builder('minecraft:sugar', 'showcase_stimulant_payload')
@@ -84,7 +96,7 @@ gdw.payloadSources.builder('minecraft:sugar', 'showcase_stimulant_payload')
 
 // You can create a loaded applicator stack for rewards, loot, or other scripts.
 // This does not automatically give it to anyone; it just produces an ItemStack.
-def showcaseApplicator = gdw.applicators.createLoaded('showcase_stimulant_payload', 1)
+def showcaseApplicator = gdw.applicators.createLoaded('showcase_stimulant_payload', 1, 'injection')
 assert gdw.applicators.hasPayload(showcaseApplicator)
 // println(gdw.applicators.describe(showcaseApplicator))
 

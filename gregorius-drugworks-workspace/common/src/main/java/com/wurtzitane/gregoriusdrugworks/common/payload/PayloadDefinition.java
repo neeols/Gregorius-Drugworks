@@ -2,6 +2,9 @@ package com.wurtzitane.gregoriusdrugworks.common.payload;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public final class PayloadDefinition {
@@ -17,6 +20,7 @@ public final class PayloadDefinition {
     private final String visualProfileId;
     private final int defaultVisualDurationTicks;
     private final String triggerBundleId;
+    private final Map<String, PayloadModeDefinition> modes;
 
     public PayloadDefinition(
             String id,
@@ -41,6 +45,7 @@ public final class PayloadDefinition {
                 forwardItemId,
                 visualProfileId,
                 defaultVisualDurationTicks,
+                null,
                 null
         );
     }
@@ -58,6 +63,36 @@ public final class PayloadDefinition {
             int defaultVisualDurationTicks,
             String triggerBundleId
     ) {
+        this(
+                id,
+                category,
+                compatibility,
+                displayNameKey,
+                defaultCharges,
+                chargePolicy,
+                behaviorFlags,
+                forwardItemId,
+                visualProfileId,
+                defaultVisualDurationTicks,
+                triggerBundleId,
+                null
+        );
+    }
+
+    public PayloadDefinition(
+            String id,
+            PayloadCategory category,
+            PayloadCompatibility compatibility,
+            String displayNameKey,
+            int defaultCharges,
+            PayloadChargePolicy chargePolicy,
+            Set<PayloadBehaviorFlag> behaviorFlags,
+            String forwardItemId,
+            String visualProfileId,
+            int defaultVisualDurationTicks,
+            String triggerBundleId,
+            Map<String, PayloadModeDefinition> modes
+    ) {
         this.id = id;
         this.category = category;
         this.compatibility = compatibility;
@@ -71,6 +106,7 @@ public final class PayloadDefinition {
         this.visualProfileId = visualProfileId;
         this.defaultVisualDurationTicks = defaultVisualDurationTicks;
         this.triggerBundleId = triggerBundleId;
+        this.modes = freezeModes(modes);
     }
 
     public String getId() {
@@ -117,7 +153,44 @@ public final class PayloadDefinition {
         return triggerBundleId;
     }
 
+    public Map<String, PayloadModeDefinition> getModes() {
+        return modes;
+    }
+
+    public PayloadModeDefinition getMode(String modeId) {
+        if (modeId == null || modeId.trim().isEmpty()) {
+            return null;
+        }
+        return modes.get(normalizeModeId(modeId));
+    }
+
     public boolean hasFlag(PayloadBehaviorFlag flag) {
         return behaviorFlags.contains(flag);
+    }
+
+    private static Map<String, PayloadModeDefinition> freezeModes(Map<String, PayloadModeDefinition> modes) {
+        if (modes == null || modes.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        LinkedHashMap<String, PayloadModeDefinition> out = new LinkedHashMap<String, PayloadModeDefinition>();
+        for (Map.Entry<String, PayloadModeDefinition> entry : modes.entrySet()) {
+            if (entry == null || entry.getValue() == null) {
+                continue;
+            }
+            String key = normalizeModeId(entry.getKey() == null ? entry.getValue().getId() : entry.getKey());
+            if (key.isEmpty()) {
+                continue;
+            }
+            out.put(key, entry.getValue());
+        }
+        return Collections.unmodifiableMap(out);
+    }
+
+    private static String normalizeModeId(String modeId) {
+        if (modeId == null) {
+            return "";
+        }
+        return modeId.trim().toLowerCase(Locale.ROOT);
     }
 }

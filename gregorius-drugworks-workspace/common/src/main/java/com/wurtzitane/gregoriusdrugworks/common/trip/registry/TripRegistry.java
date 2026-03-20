@@ -76,6 +76,10 @@ public final class TripRegistry {
         return Collections.unmodifiableSet(allowed);
     }
 
+    public Set<String> getAntidoteIds() {
+        return Collections.unmodifiableSet(antidotesByItemId.keySet());
+    }
+
     public static int hashId(String value) {
         int hash = 0;
         for (int i = 0; i < value.length(); i++) {

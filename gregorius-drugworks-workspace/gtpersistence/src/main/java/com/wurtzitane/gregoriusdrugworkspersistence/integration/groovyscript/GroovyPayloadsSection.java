@@ -5,8 +5,11 @@ import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCategory;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadChargePolicy;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCompatibility;
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadDefinition;
+import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadModeDefinition;
 
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public final class GroovyPayloadsSection extends AbstractGroovySection {
 
@@ -41,6 +44,7 @@ public final class GroovyPayloadsSection extends AbstractGroovySection {
         private String visualProfileId;
         private int defaultVisualDurationTicks;
         private String triggerBundleId;
+        private final Map<String, PayloadModeDefinition> modes = new LinkedHashMap<String, PayloadModeDefinition>();
 
         private Builder(
                 String id,
@@ -103,6 +107,35 @@ public final class GroovyPayloadsSection extends AbstractGroovySection {
             return this;
         }
 
+        public Builder mode(String id, Map<?, ?> config) {
+            this.modes.put(id, parseMode(id, config));
+            return this;
+        }
+
+        public Builder mode(PayloadModeDefinition value) {
+            if (value == null) {
+                throw new IllegalArgumentException("Payload mode definition cannot be null");
+            }
+            this.modes.put(value.getId(), value);
+            return this;
+        }
+
+        public Builder modes(Map<?, ?> values) {
+            if (values == null) {
+                return this;
+            }
+
+            for (Map.Entry<?, ?> entry : values.entrySet()) {
+                String id = entry.getKey() == null ? null : String.valueOf(entry.getKey());
+                Object config = entry.getValue();
+                if (!(config instanceof Map)) {
+                    throw new IllegalArgumentException("Payload mode `" + id + "` must be configured with a map");
+                }
+                mode(id, (Map<?, ?>) config);
+            }
+            return this;
+        }
+
         public PayloadDefinition build() {
             return new PayloadDefinition(
                     id,
@@ -115,7 +148,8 @@ public final class GroovyPayloadsSection extends AbstractGroovySection {
                     forwardItemId,
                     visualProfileId,
                     defaultVisualDurationTicks,
-                    triggerBundleId
+                    triggerBundleId,
+                    modes
             );
         }
 
@@ -123,6 +157,25 @@ public final class GroovyPayloadsSection extends AbstractGroovySection {
             PayloadDefinition definition = build();
             GregoriusDrugworksGroovyScriptBridge.registerPayload(definition);
             return definition;
+        }
+
+        private static PayloadModeDefinition parseMode(String id, Map<?, ?> config) {
+            if (id == null || id.trim().isEmpty()) {
+                throw new IllegalArgumentException("Payload mode id cannot be empty");
+            }
+            if (config == null) {
+                throw new IllegalArgumentException("Payload mode `" + id + "` must have a config map");
+            }
+
+            return PayloadModeDefinition.builder(id)
+                    .forwardItemId(GroovyScriptUtil.stringValue(config, "forwardItemId"))
+                    .triggerBundleId(GroovyScriptUtil.stringValue(config, "triggerBundleId"))
+                    .visualProfileId(GroovyScriptUtil.stringValue(config, "visualProfileId"))
+                    .visualDurationTicks(GroovyScriptUtil.intValue(config, "visualDurationTicks", 0))
+                    .onsetScale(GroovyScriptUtil.doubleValue(config, "onsetScale", 1.0D))
+                    .peakScale(GroovyScriptUtil.doubleValue(config, "peakScale", 1.0D))
+                    .durationScale(GroovyScriptUtil.doubleValue(config, "durationScale", 1.0D))
+                    .build();
         }
     }
 }

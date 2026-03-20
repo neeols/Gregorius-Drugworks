@@ -7,17 +7,29 @@ import com.wurtzitane.gregoriusdrugworkspersistence.network.GregoriusDrugworksNe
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadCarriers;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadRegistry;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.GregoriusDrugworksPayloadSources;
+import com.wurtzitane.gregoriusdrugworkspersistence.payload.ConsumablePayloadCarrierAdapter;
+import com.wurtzitane.gregoriusdrugworkspersistence.payload.PayloadCarrierAdapter;
+import com.wurtzitane.gregoriusdrugworkspersistence.pill.GregoriusDrugworksPillColors;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeHandler;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksUnificationHelper;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.PayloadFoodLacingRegistry;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.PayloadPillCraftingRegistry;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.RecipeLaceFoods;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.RecipeLoadMedicalApplicator;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.RecipeLoadPayloadPill;
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.RecipeRevealPayloadCarrier;
 import com.wurtzitane.gregoriusdrugworkspersistence.trigger.GregoriusDrugworksTriggerBundles;
 import com.wurtzitane.gregoriusdrugworkspersistence.visual.GregoriusDrugworksVisualProfiles;
 import gregtech.api.unification.material.event.MaterialEvent;
 import gregtech.api.unification.material.event.PostMaterialEvent;
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemFood;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -44,6 +56,9 @@ public class CommonProxy {
         GregoriusDrugworksPayloadRegistry.preInit();
         GregoriusDrugworksPayloadSources.preInit();
         GregoriusDrugworksPayloadCarriers.preInit();
+        GregoriusDrugworksPillColors.preInit();
+        PayloadFoodLacingRegistry.preInit();
+        PayloadPillCraftingRegistry.preInit();
         GregoriusDrugworksTriggerBundles.preInit();
         GregoriusDrugworksVisualProfiles.preInit();
         GregoriusDrugworksGroovyScriptBridge.onCommonPreInit();
@@ -85,6 +100,9 @@ public class CommonProxy {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void registerRecipes(RegistryEvent.Register<IRecipe> event) {
         event.getRegistry().register(new RecipeLoadMedicalApplicator());
+        event.getRegistry().register(new RecipeLoadPayloadPill());
+        event.getRegistry().register(new RecipeRevealPayloadCarrier());
+        event.getRegistry().register(new RecipeLaceFoods());
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
@@ -99,5 +117,45 @@ public class CommonProxy {
         GregoriusDrugworksUnificationHelper.repairNumericMaterialUnification();
         GregoriusDrugworksRecipeHandler.init();
         machineRecipesInitialized = true;
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void handlePayloadConsumableFinish(LivingEntityUseItemEvent.Finish event) {
+        if (event.getEntityLiving().world.isRemote || !(event.getEntityLiving() instanceof EntityPlayerMP)) {
+            return;
+        }
+
+        ItemStack usedStack = event.getItem();
+        if (usedStack.isEmpty()) {
+            return;
+        }
+
+        PayloadCarrierAdapter adapter = GregoriusDrugworksPayloadCarriers.find(usedStack);
+        if (!(adapter instanceof ConsumablePayloadCarrierAdapter)) {
+            return;
+        }
+
+        GregoriusDrugworksPayloadRegistry.ResolvedPayload payload = adapter.resolve(usedStack);
+        if (payload == null) {
+            return;
+        }
+
+        EntityPlayerMP player = (EntityPlayerMP) event.getEntityLiving();
+        GregoriusDrugworksPayloadRegistry.applyResolved(player, usedStack, payload);
+
+        if (usedStack.getItem() instanceof ItemFood) {
+            return;
+        }
+
+        ItemStack resultStack = event.getResultStack();
+        if (resultStack.isEmpty()) {
+            return;
+        }
+
+        PayloadCarrierAdapter resultAdapter = GregoriusDrugworksPayloadCarriers.find(resultStack);
+        if (resultAdapter instanceof ConsumablePayloadCarrierAdapter && resultAdapter.hasPayload(resultStack)) {
+            resultAdapter.decrementOrClear(resultStack, false);
+            event.setResultStack(resultStack);
+        }
     }
 }

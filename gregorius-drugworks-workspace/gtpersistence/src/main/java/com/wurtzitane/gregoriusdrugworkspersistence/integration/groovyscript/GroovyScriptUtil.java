@@ -7,6 +7,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Locale;
+import java.util.Map;
 
 final class GroovyScriptUtil {
 
@@ -49,6 +50,46 @@ final class GroovyScriptUtil {
             throw new IllegalArgumentException("Expected a non-empty value for " + enumType.getSimpleName());
         }
         return Enum.valueOf(enumType, normalizeEnumName(value));
+    }
+
+    static String stringValue(Map<?, ?> values, String key) {
+        if (values == null || !values.containsKey(key)) {
+            return null;
+        }
+        Object value = values.get(key);
+        if (value == null) {
+            return null;
+        }
+        String text = String.valueOf(value).trim();
+        return text.isEmpty() ? null : text;
+    }
+
+    static int intValue(Map<?, ?> values, String key, int fallback) {
+        if (values == null || !values.containsKey(key)) {
+            return fallback;
+        }
+        Object value = values.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        if (value instanceof String) {
+            return Integer.parseInt(((String) value).trim());
+        }
+        throw new IllegalArgumentException("Expected an integer for key `" + key + "` but got " + value);
+    }
+
+    static double doubleValue(Map<?, ?> values, String key, double fallback) {
+        if (values == null || !values.containsKey(key)) {
+            return fallback;
+        }
+        Object value = values.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        if (value instanceof String) {
+            return Double.parseDouble(((String) value).trim());
+        }
+        throw new IllegalArgumentException("Expected a decimal number for key `" + key + "` but got " + value);
     }
 
     private static String normalizeEnumName(String value) {
