@@ -2,8 +2,8 @@
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
   "textures": {
-    "shell": "gregoriusdrugworkspersistence:item/pill/generated/pill_shell",
-    "particle": "gregoriusdrugworkspersistence:item/pill/generated/pill_shell"
+    "shell": "gregoriusdrugworkspersistence:item/pill/pill_shell",
+    "particle": "gregoriusdrugworkspersistence:item/pill/pill_shell"
   },
   "elements": [
     {

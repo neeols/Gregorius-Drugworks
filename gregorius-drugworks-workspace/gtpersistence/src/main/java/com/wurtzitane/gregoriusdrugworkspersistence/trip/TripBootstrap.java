@@ -21,6 +21,7 @@ public final class TripBootstrap {
         }
         bootstrapped = true;
 
+        TripRegistrar.registerTrip(buildLsdTrip("gregoriusdrugworkspersistence:lsd_payload"));
         TripRegistrar.registerTrip(buildSalvinorinTrip("gregoriusdrugworkspersistence:salvinorin_a_payload"));
 
         TripRegistrar.registerAntidote(
@@ -175,6 +176,25 @@ public final class TripBootstrap {
                         onEnter("gregoriusdrugworkspersistence:salvinorin_a_afterglow_bundle"),
                         effect("minecraft:night_vision", 10, 0, true)
                 ))
+                .build();
+    }
+
+    private static TripDefinition buildLsdTrip(String itemId) {
+        return TripDefinition.builder(itemId)
+                .consumeOnUse(false)
+                .consumeAmount(1)
+                .stage(TripStage.builder(0)
+                        .periodTicks(20)
+                        .particlesPeriodTicks(200)
+                        .particlesMinGapTicks(200)
+                        .message("Chromatic onset... the screen begins to melt through a spectrum.", "light_purple")
+                        .build())
+                .stage(TripStage.builder(50)
+                        .periodTicks(20)
+                        .particlesPeriodTicks(200)
+                        .particlesMinGapTicks(200)
+                        .message("Afterimage... the rainbow starts to soften.", "aqua")
+                        .build())
                 .build();
     }
 

@@ -102,7 +102,7 @@ public final class GregoriusDrugworksMetaItems {
                         .tripHookEnabled(false)
                         .rarity(EnumRarity.UNCOMMON)
                         .finishSoundId(GregoriusDrugworksUtil.makeName("pill_gulp"))
-                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/pill/generated/pill_base.png"))
+                        .modelTexture(GregoriusDrugworksUtil.makeName("textures/item/pill/pill_shell.png"))
                         .build()
         );
         SAMPLE_VAPE = createInhalation(

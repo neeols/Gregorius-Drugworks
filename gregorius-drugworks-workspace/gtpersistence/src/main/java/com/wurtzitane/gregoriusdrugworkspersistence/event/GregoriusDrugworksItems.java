@@ -1,5 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.ItemPrintableCarrier;
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.PrintableCarrierKind;
 import com.wurtzitane.gregoriusdrugworkspersistence.integration.groovyscript.GregoriusDrugworksGroovyScriptClientBridge;
 import com.wurtzitane.gregoriusdrugworkspersistence.integration.groovyscript.GregoriusDrugworksGroovyScriptBridge;
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
@@ -25,6 +27,9 @@ public final class GregoriusDrugworksItems {
     public static Item USED_PAPER_FILTER;
     public static Item USED_VAPE;
     public static Item ASH_RESIDUE;
+    public static Item SINGLE_TAB;
+    public static Item BLOTTER_PAPER_MOLD;
+    public static Item BLOTTER_PAPER;
 
     private GregoriusDrugworksItems() {
     }
@@ -44,12 +49,25 @@ public final class GregoriusDrugworksItems {
         FINE_STAINLESS_MESH = createItem("fine_stainless_mesh", 64);
         CERAMIC_FILTER = createItem("ceramic_filter", 64);
         CARBON_NANOTUBES = createItem("carbon_nanotubes", 64);
+        SINGLE_TAB = createPrintableCarrier("single_tab", PrintableCarrierKind.SINGLE_TAB, 64);
+        BLOTTER_PAPER_MOLD = createItem("blotter_paper_mold", 64);
+        BLOTTER_PAPER = createPrintableCarrier("blotter_paper", PrintableCarrierKind.BLOTTER_PAPER, 64);
         USED_PAPER_FILTER = createItem("used_paper_filter", 64);
         USED_VAPE = createItem("used_vape", 1);
     }
 
     private static Item createItem(String name, int maxStackSize) {
         Item item = new Item();
+        item.setRegistryName(GregoriusDrugworksUtil.makeName(name));
+        item.setTranslationKey(Tags.MOD_ID + "." + name);
+        item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
+        item.setMaxStackSize(maxStackSize);
+        REGISTERED_ITEMS.add(item);
+        return item;
+    }
+
+    private static Item createPrintableCarrier(String name, PrintableCarrierKind carrierKind, int maxStackSize) {
+        Item item = new ItemPrintableCarrier(carrierKind);
         item.setRegistryName(GregoriusDrugworksUtil.makeName(name));
         item.setTranslationKey(Tags.MOD_ID + "." + name);
         item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);

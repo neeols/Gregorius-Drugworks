@@ -37,6 +37,23 @@ public final class GregoriusDrugworksPayloadRegistry {
         bootstrapped = true;
         register(
                 new PayloadDefinition(
+                        "gregoriusdrugworkspersistence:lsd_payload",
+                        PayloadCategory.STAGED_EFFECT,
+                        PayloadCompatibility.UNIVERSAL,
+                        "payload.gregoriusdrugworkspersistence.lsd",
+                        1,
+                        PayloadChargePolicy.SINGLE_USE,
+                        EnumSet.of(PayloadBehaviorFlag.FORWARD_ITEM_USE, PayloadBehaviorFlag.START_VISUAL_PROFILE),
+                        "gregoriusdrugworkspersistence:lsd_payload",
+                        "gregoriusdrugworkspersistence:lsd_rainbow",
+                        1200,
+                        null,
+                        lsdModes()
+                ),
+                null
+        );
+        register(
+                new PayloadDefinition(
                         "gregoriusdrugworkspersistence:salvinorin_a_payload",
                         PayloadCategory.STAGED_EFFECT,
                         PayloadCompatibility.UNIVERSAL,
@@ -86,6 +103,18 @@ public final class GregoriusDrugworksPayloadRegistry {
                 .onsetScale(1.80D)
                 .peakScale(0.86D)
                 .durationScale(1.55D)
+                .build());
+        return modes;
+    }
+
+    private static Map<String, PayloadModeDefinition> lsdModes() {
+        Map<String, PayloadModeDefinition> modes = new LinkedHashMap<String, PayloadModeDefinition>();
+        modes.put("blotter", PayloadModeDefinition.builder("blotter")
+                .onsetScale(1.00D)
+                .peakScale(1.00D)
+                .durationScale(1.00D)
+                .visualProfileId("gregoriusdrugworkspersistence:lsd_rainbow")
+                .visualDurationTicks(1200)
                 .build());
         return modes;
     }

@@ -273,6 +273,31 @@ public final class GregoriusDrugworksVisualProfiles {
                 0.01F,
                 0.03F
         ));
+        register(profile(
+                "gregoriusdrugworkspersistence:lsd_rainbow",
+                "LSD Rainbow",
+                VisualColorMode.RAINBOW,
+                0x30FFFFFF,
+                0.10F,
+                0.14F,
+                0.00F,
+                0.00F,
+                0.00F,
+                0.00F,
+                0.00F,
+                0.000F,
+                0.000F,
+                0.00F,
+                0,
+                0.00F,
+                0.00F,
+                0.00F,
+                0.00F,
+                0,
+                0.00F,
+                0.00F,
+                0.00F
+        ));
     }
 
     public static void register(VisualEffectProfile profile) {

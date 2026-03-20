@@ -8,6 +8,7 @@ public final class GregoriusDrugworksRecipeHandler {
 
     public static void init() {
         MultiblockCasingsRecipes.init();
+        BlotterRecipes.init();
         SalvinorinARecipes.init();
         MethamphetamineRecipes.init();
     }

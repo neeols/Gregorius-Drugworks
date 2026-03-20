@@ -1,6 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.payload;
 
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadCompatibility;
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.ItemPrintableCarrier;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.ItemInhalationConsumable;
 import com.wurtzitane.gregoriusdrugworkspersistence.medical.ItemMedicalApplicator;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.ItemPillBase;
@@ -29,7 +30,7 @@ public final class ConsumablePayloadCarrierAdapter implements PayloadCarrierAdap
             return false;
         }
 
-        return item instanceof ItemFood || item.getMaxItemUseDuration(stack) > 0;
+        return item instanceof ItemFood || item instanceof ItemPrintableCarrier || item.getMaxItemUseDuration(stack) > 0;
     }
 
     @Override

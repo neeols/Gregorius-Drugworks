@@ -1,6 +1,8 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.ItemPrintableCarrier;
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.BlotterPrintableRegistry;
 import com.wurtzitane.gregoriusdrugworkspersistence.integration.groovyscript.GregoriusDrugworksGroovyScriptBridge;
 import com.wurtzitane.gregoriusdrugworkspersistence.medical.GregoriusDrugworksMedicalApplicators;
 import com.wurtzitane.gregoriusdrugworkspersistence.network.GregoriusDrugworksNetworkHandler;
@@ -57,6 +59,7 @@ public class CommonProxy {
         GregoriusDrugworksPayloadSources.preInit();
         GregoriusDrugworksPayloadCarriers.preInit();
         GregoriusDrugworksPillColors.preInit();
+        BlotterPrintableRegistry.preInit();
         PayloadFoodLacingRegistry.preInit();
         PayloadPillCraftingRegistry.preInit();
         GregoriusDrugworksTriggerBundles.preInit();
@@ -127,6 +130,9 @@ public class CommonProxy {
 
         ItemStack usedStack = event.getItem();
         if (usedStack.isEmpty()) {
+            return;
+        }
+        if (usedStack.getItem() instanceof ItemPrintableCarrier) {
             return;
         }
 

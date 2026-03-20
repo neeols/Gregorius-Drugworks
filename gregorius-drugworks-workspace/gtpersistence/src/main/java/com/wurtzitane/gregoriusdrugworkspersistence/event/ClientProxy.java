@@ -1,5 +1,6 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.client.GregoriusDrugworksBlotterClientHooks;
 import com.wurtzitane.gregoriusdrugworkspersistence.client.GregoriusDrugworksHeldItemLayerHooks;
 import com.wurtzitane.gregoriusdrugworkspersistence.debug.GregoriusDrugworksDebug;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.client.GregoriusDrugworksInhalationClientHooks;
@@ -37,6 +38,7 @@ public class ClientProxy {
     }
 
     public static void latePreInit() {
+        GregoriusDrugworksBlotterClientHooks.preInit();
         GregoriusDrugworksHeldItemLayerHooks.preInit();
         GregoriusDrugworksPillClientHooks.preInit();
         GregoriusDrugworksInhalationClientHooks.preInit();
