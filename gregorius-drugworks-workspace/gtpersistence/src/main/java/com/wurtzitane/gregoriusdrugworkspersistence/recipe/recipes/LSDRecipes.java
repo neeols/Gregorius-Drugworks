@@ -30,7 +30,7 @@ public final class LSDRecipes {
 
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(GregoriusDrugworksMaterials.AcidifiedSaltWater.getFluid(2000), Materials.Chlorine.getFluid(1000));
-        builder.fluidOutputs(GregoriusDrugworksMaterials.TreatedSaltWater.getFluid(2000), Materials.Bromine.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.TreatedSaltWater.getFluid(2000), GregoriusDrugworksMaterials.BromineVapor.getFluid(1000));
         builder.duration(220);
         builder.EUt(VA[MV]);
         builder.buildAndRegister();
@@ -45,7 +45,7 @@ public final class LSDRecipes {
         builder.buildAndRegister();
 
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
-        builder.fluidInputs(Materials.Bromine.getFluid(1000), Materials.SulfurDioxide.getFluid(1000), Materials.Water.getFluid(2000));
+        builder.fluidInputs(GregoriusDrugworksMaterials.BromineVapor.getFluid(500), Materials.SulfurDioxide.getFluid(1000), Materials.Water.getFluid(2000));
         builder.fluidOutputs(GregoriusDrugworksMaterials.HydrobromicAcid.getFluid(2000), Materials.SulfuricAcid.getFluid(1000));
         builder.duration(220);
         builder.EUt(VA[MV]);

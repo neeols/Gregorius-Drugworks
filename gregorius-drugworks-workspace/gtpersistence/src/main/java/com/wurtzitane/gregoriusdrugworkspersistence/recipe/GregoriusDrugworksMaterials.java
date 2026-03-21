@@ -323,4 +323,5 @@ public final class GregoriusDrugworksMaterials {
     public static Material CupricNitrate;
     public static Material CopperDiisocinchomeronate;
     public static Material IsocinchomeronicAcid;
+    public static Material BromineVapor;
 }

@@ -212,6 +212,8 @@ public final class LSDChainMaterials {
                 .components(Materials.Magnesium, 1, Materials.Sulfur, 1, Materials.Oxygen, 4)
                 .build().setFormula("MgSO4", true);
 
+
+
         GregoriusDrugworksMaterials.LSDOrganicMixture = new Material.Builder(32273, resLoc("lsd_organic_mixture"))
                 .dust()
                 .color(0x74605B).iconSet(DULL)
@@ -343,5 +345,12 @@ public final class LSDChainMaterials {
                 .color(0xE8E6D7).iconSet(FINE)
                 .components(Materials.Carbon, 7, Materials.Hydrogen, 5, Materials.Nitrogen, 1, Materials.Oxygen, 4)
                 .build().setFormula("C5H3N(CO2H)2", true);
+
+        GregoriusDrugworksMaterials.BromineVapor = new Material.Builder(32293, resLoc("bromine_vapor"))
+                .gas()
+                .color(0x260300)
+                .components(Materials.Bromine, 2)
+                .build().setFormula("MgSO4", true);
+
     }
 }
