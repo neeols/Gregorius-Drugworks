@@ -83,7 +83,7 @@ public final class GregoriusDrugworksOreBuilder {
         private Builder(int id, String path) {
             ResourceLocation resourceLocation = GregoriusDrugworksMaterials.resLoc(path);
             this.materialBuilder = new Material.Builder(id, resourceLocation);
-            this.materialPath = resourceLocation.getPath();
+            this.materialPath = extractResourcePath(resourceLocation);
         }
 
         public Builder dust() {
@@ -166,6 +166,12 @@ public final class GregoriusDrugworksOreBuilder {
                 PENDING_ORE_VEINS.add(layeredVeinSpec.toPendingOreVein());
             }
             return material;
+        }
+
+        private String extractResourcePath(ResourceLocation resourceLocation) {
+            String stringValue = resourceLocation.toString();
+            int separatorIndex = stringValue.indexOf(':');
+            return separatorIndex >= 0 ? stringValue.substring(separatorIndex + 1) : stringValue;
         }
     }
 

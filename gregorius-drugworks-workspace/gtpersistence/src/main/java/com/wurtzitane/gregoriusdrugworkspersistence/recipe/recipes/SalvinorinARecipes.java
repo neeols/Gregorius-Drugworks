@@ -286,7 +286,7 @@ public final class SalvinorinARecipes {
         // dimethylformamide_synthesis
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
         builder.notConsumable(GregoriusDrugworksMaterials.SodiumMethoxide.getFluid(100));
-        builder.fluidInputs(Materials.Dimethylamine.getFluid(1000), Materials.CarbonMonoxide.getFluid(1000));
+        builder.fluidInputs(Materials.Dimethylamine.getFluid(1000), Materials.CarbonMonoxide.getFluid(1000), Materials.Methanol.getFluid(1000));
         builder.fluidOutputs(GregoriusDrugworksMaterials.Dimethylformamide.getFluid(1000));
         builder.duration(600);
         builder.EUt(VA[MV]);
@@ -331,7 +331,7 @@ public final class SalvinorinARecipes {
         builder.fluidInputs(Materials.Water.getFluid(1000));
         builder.input(dust, Materials.Potassium, 1);
         builder.output(dust, GregoriusDrugworksMaterials.PotassiumHydroxide, 1);
-        builder.fluidOutputs(Materials.Hydrogen.getFluid(1000));
+        builder.fluidOutputs(Materials.Hydrogen.getFluid(500));
         builder.duration(800);
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
@@ -365,7 +365,7 @@ public final class SalvinorinARecipes {
 
         // triethylamine_synthesis
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
-        builder.fluidInputs(GregoriusDrugworksMaterials.EthylChloride.getFluid(1000), Materials.Ammonia.getFluid(1000));
+        builder.fluidInputs(GregoriusDrugworksMaterials.EthylChloride.getFluid(3000), Materials.Ammonia.getFluid(1000));
         builder.fluidOutputs(GregoriusDrugworksMaterials.HydrogenChloride.getFluid(3000), GregoriusDrugworksMaterials.Triethylamine.getFluid(1000));
         builder.duration(600);
         builder.EUt(VA[MV]);
@@ -468,7 +468,7 @@ public final class SalvinorinARecipes {
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(Materials.Methanol.getFluid(1000));
         builder.input(dust, Materials.Sodium, 1);
-        builder.fluidOutputs(GregoriusDrugworksMaterials.SodiumMethoxide.getFluid(1000), Materials.Hydrogen.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.SodiumMethoxide.getFluid(1000), Materials.Hydrogen.getFluid(500));
         builder.circuitMeta(4);
         builder.duration(1200);
         builder.EUt(VA[EV]);
@@ -513,7 +513,7 @@ public final class SalvinorinARecipes {
         // acetaldehyde_to_butanol
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(GregoriusDrugworksMaterials.Acetaldehyde.getFluid(2000), Materials.Hydrogen.getFluid(2000));
-        builder.fluidOutputs(GregoriusDrugworksMaterials.Butanol.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.Butanol.getFluid(1000), Materials.Water.getFluid(1000));
         builder.duration(600);
         builder.EUt(VA[MV]);
         builder.buildAndRegister();
@@ -589,7 +589,7 @@ public final class SalvinorinARecipes {
 
         // dicyclohexylurea_synthesis
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
-        builder.fluidInputs(GregoriusDrugworksMaterials.Cyclohexylamine.getFluid(1000), Materials.CarbonDioxide.getFluid(1000));
+        builder.fluidInputs(GregoriusDrugworksMaterials.Cyclohexylamine.getFluid(2000), Materials.CarbonDioxide.getFluid(1000));
         builder.fluidOutputs(Materials.Water.getFluid(1000));
         builder.output(dust, GregoriusDrugworksMaterials.Dicyclohexylurea, 1);
         builder.duration(600);
@@ -670,7 +670,7 @@ public final class SalvinorinARecipes {
 
         // iodoacetic_acid_synthesis
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
-        builder.fluidInputs(Materials.AceticAcid.getFluid(1000));
+        builder.fluidInputs(GregoriusDrugworksMaterials.ChloroaceticAcid.getFluid(1000));
         builder.input(dust, GregoriusDrugworksMaterials.PotassiumIodide, 1);
         builder.fluidOutputs(GregoriusDrugworksMaterials.IodoaceticAcid.getFluid(1000));
         builder.output(dust, GregoriusDrugworksMaterials.PotassiumChloride, 1);
@@ -810,7 +810,7 @@ public final class SalvinorinARecipes {
 
         // triethylamine_synthesis
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
-        builder.fluidInputs(GregoriusDrugworksMaterials.EthylChloride.getFluid(1000), Materials.Ammonia.getFluid(1000));
+        builder.fluidInputs(GregoriusDrugworksMaterials.EthylChloride.getFluid(3000), Materials.Ammonia.getFluid(1000));
         builder.fluidOutputs(GregoriusDrugworksMaterials.HydrogenChloride.getFluid(3000), GregoriusDrugworksMaterials.Triethylamine.getFluid(1000));
         builder.duration(600);
         builder.EUt(VA[MV]);
@@ -913,7 +913,7 @@ public final class SalvinorinARecipes {
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(Materials.Methanol.getFluid(1000));
         builder.input(dust, Materials.Sodium, 1);
-        builder.fluidOutputs(GregoriusDrugworksMaterials.SodiumMethoxide.getFluid(1000), Materials.Hydrogen.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.SodiumMethoxide.getFluid(1000), Materials.Hydrogen.getFluid(500));
         builder.circuitMeta(4);
         builder.duration(1200);
         builder.EUt(VA[EV]);
@@ -958,7 +958,7 @@ public final class SalvinorinARecipes {
         // acetaldehyde_to_butanol
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(GregoriusDrugworksMaterials.Acetaldehyde.getFluid(2000), Materials.Hydrogen.getFluid(2000));
-        builder.fluidOutputs(GregoriusDrugworksMaterials.Butanol.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.Butanol.getFluid(1000), Materials.Water.getFluid(1000));
         builder.duration(600);
         builder.EUt(VA[MV]);
         builder.buildAndRegister();
@@ -1034,7 +1034,7 @@ public final class SalvinorinARecipes {
 
         // dicyclohexylurea_synthesis
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
-        builder.fluidInputs(GregoriusDrugworksMaterials.Cyclohexylamine.getFluid(1000), Materials.CarbonDioxide.getFluid(1000));
+        builder.fluidInputs(GregoriusDrugworksMaterials.Cyclohexylamine.getFluid(2000), Materials.CarbonDioxide.getFluid(1000));
         builder.fluidOutputs(Materials.Water.getFluid(1000));
         builder.output(dust, GregoriusDrugworksMaterials.Dicyclohexylurea, 1);
         builder.duration(600);
@@ -1326,7 +1326,7 @@ public final class SalvinorinARecipes {
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
         GregoriusDrugworksChancedInputSupport.chancedItemInput(builder, OreDictUnifier.get(dust, Materials.Copper, 1), 500, 0);
         builder.fluidInputs(GregoriusDrugworksMaterials.Material14Benzoquinone.getFluid(1000), GregoriusDrugworksMaterials.HydrogenCyanide.getFluid(2000), Materials.Chlorine.getFluid(1000));
-        builder.fluidOutputs(Materials.Hydrogen.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.HydrogenChloride.getFluid(2000));
         builder.output(dust, GregoriusDrugworksMaterials.Ddq, 1);
         builder.duration(1800);
         builder.EUt(VA[EV]);
@@ -1336,7 +1336,7 @@ public final class SalvinorinARecipes {
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(GregoriusDrugworksMaterials.ThionylChloride.getFluid(500));
         builder.input(dust, GregoriusDrugworksMaterials.Dicyclohexylurea, 1);
-        builder.fluidOutputs(Materials.SulfurDioxide.getFluid(500), GregoriusDrugworksMaterials.HydrogenChloride.getFluid(500));
+        builder.fluidOutputs(Materials.SulfurDioxide.getFluid(500), GregoriusDrugworksMaterials.HydrogenChloride.getFluid(1000));
         builder.output(dust, GregoriusDrugworksMaterials.Dcc, 1);
         builder.duration(1800);
         builder.EUt(VA[EV]);

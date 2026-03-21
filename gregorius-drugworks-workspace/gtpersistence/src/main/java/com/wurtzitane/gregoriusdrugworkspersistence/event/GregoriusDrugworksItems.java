@@ -59,9 +59,9 @@ public final class GregoriusDrugworksItems {
     private static Item createItem(String name, int maxStackSize) {
         Item item = new Item();
         item.setRegistryName(GregoriusDrugworksUtil.makeName(name));
-        item.setTranslationKey(Tags.MOD_ID + "." + name);
-        item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        item.setMaxStackSize(maxStackSize);
+        GregoriusDrugworksUtil.setTranslationKeyCompat(item, Tags.MOD_ID + "." + name);
+        GregoriusDrugworksUtil.setCreativeTabCompat(item, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(item, maxStackSize);
         REGISTERED_ITEMS.add(item);
         return item;
     }
@@ -69,9 +69,9 @@ public final class GregoriusDrugworksItems {
     private static Item createPrintableCarrier(String name, PrintableCarrierKind carrierKind, int maxStackSize) {
         Item item = new ItemPrintableCarrier(carrierKind);
         item.setRegistryName(GregoriusDrugworksUtil.makeName(name));
-        item.setTranslationKey(Tags.MOD_ID + "." + name);
-        item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        item.setMaxStackSize(maxStackSize);
+        GregoriusDrugworksUtil.setTranslationKeyCompat(item, Tags.MOD_ID + "." + name);
+        GregoriusDrugworksUtil.setCreativeTabCompat(item, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(item, maxStackSize);
         REGISTERED_ITEMS.add(item);
         return item;
     }

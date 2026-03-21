@@ -51,9 +51,9 @@ public class ItemDirectPayloadConsumable extends Item {
         this.cooldownTicks = Math.max(0, cooldownTicks);
 
         setRegistryName(GregoriusDrugworksUtil.makeName(itemId));
-        setTranslationKey(Tags.MOD_ID + "." + itemId);
-        setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        setMaxStackSize(maxStackSize);
+        GregoriusDrugworksUtil.setTranslationKeyCompat(this, Tags.MOD_ID + "." + itemId);
+        GregoriusDrugworksUtil.setCreativeTabCompat(this, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(this, maxStackSize);
     }
 
     @Nonnull

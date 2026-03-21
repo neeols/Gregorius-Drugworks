@@ -58,6 +58,8 @@ public final class GregoriusDrugworksMetaItems {
     public static Item SHAPE_GLOVE;
     public static Item CRYSTALMETH;
 
+    public static Item MONTMORILLONITE_CLAY;
+
     public static Item SAMPLE_VAPE;
     public static Item PILL;
 
@@ -74,6 +76,8 @@ public final class GregoriusDrugworksMetaItems {
         NEEDLE = createBasicItem("needle", 64);
         PVC_GLOVE = createBasicItem("pvc_glove", 64);
         SHAPE_GLOVE = createBasicItem("shape_glove", 64);
+        MONTMORILLONITE_CLAY = createBasicItem("montmorillonite_clay", 64);
+
         CRYSTALMETH = createDirectPayloadConsumable(
                 "crystalmeth",
                 64,
@@ -266,9 +270,9 @@ public final class GregoriusDrugworksMetaItems {
     private static Item createBasicItem(final String name, final int maxStackSize) {
         final Item item = new Item();
         item.setRegistryName(GregoriusDrugworksUtil.makeName(name));
-        item.setTranslationKey(Tags.MOD_ID + "." + name);
-        item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        item.setMaxStackSize(maxStackSize);
+        GregoriusDrugworksUtil.setTranslationKeyCompat(item, Tags.MOD_ID + "." + name);
+        GregoriusDrugworksUtil.setCreativeTabCompat(item, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(item, maxStackSize);
         META_ITEMS.add(item);
         return item;
     }
@@ -308,9 +312,9 @@ public final class GregoriusDrugworksMetaItems {
         };
 
         item.setRegistryName(GregoriusDrugworksUtil.makeName(name));
-        item.setTranslationKey(Tags.MOD_ID + "." + name);
-        item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        item.setMaxStackSize(maxStackSize);
+        GregoriusDrugworksUtil.setTranslationKeyCompat(item, Tags.MOD_ID + "." + name);
+        GregoriusDrugworksUtil.setCreativeTabCompat(item, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(item, maxStackSize);
         META_ITEMS.add(item);
         return item;
     }
@@ -344,7 +348,7 @@ public final class GregoriusDrugworksMetaItems {
         private GregoriusDrugworksInjectorItem(final EnumRarity rarity, final EnumAction action) {
             this.rarity = rarity;
             this.action = action;
-            this.setMaxDamage(0);
+            GregoriusDrugworksUtil.setMaxDamageCompat(this, 0);
         }
 
         @Nonnull

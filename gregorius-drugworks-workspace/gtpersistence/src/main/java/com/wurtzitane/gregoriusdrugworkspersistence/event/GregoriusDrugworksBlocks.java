@@ -164,8 +164,8 @@ public final class GregoriusDrugworksBlocks {
 
     private static void configureBlock(Block block, String name) {
         block.setRegistryName(GregoriusDrugworksUtil.makeName(name));
-        block.setTranslationKey(Tags.MOD_ID + "." + name);
-        block.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setTranslationKeyCompat(block, Tags.MOD_ID + "." + name);
+        GregoriusDrugworksUtil.setCreativeTabCompat(block, GregoriusDrugworksCreativeTabs.MAIN);
     }
 
     private static void registerBlockWithItem(Block block, ItemBlock itemBlock) {
@@ -189,10 +189,10 @@ public final class GregoriusDrugworksBlocks {
                                         float resistance,
                                         SoundType soundType) {
             super(material);
-            setHardness(hardness);
-            setResistance(resistance);
+            GregoriusDrugworksUtil.setHardnessCompat(this, hardness);
+            GregoriusDrugworksUtil.setResistanceCompat(this, resistance);
             setHarvestLevel("pickaxe", 1);
-            setSoundType(soundType);
+            GregoriusDrugworksUtil.setSoundTypeCompat(this, soundType);
         }
 
         @Nonnull
@@ -210,13 +210,13 @@ public final class GregoriusDrugworksBlocks {
                                                     float resistance,
                                                     SoundType soundType) {
             super(material);
-            setHardness(hardness);
-            setResistance(resistance);
+            GregoriusDrugworksUtil.setHardnessCompat(this, hardness);
+            GregoriusDrugworksUtil.setResistanceCompat(this, resistance);
             setHarvestLevel("pickaxe", 1);
-            setSoundType(soundType);
+            GregoriusDrugworksUtil.setSoundTypeCompat(this, soundType);
             setDefaultState(getState(ActiveCasingVariant.NORMAL));
-            setTranslationKey(Tags.MOD_ID + "." + name);
-            setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
+            GregoriusDrugworksUtil.setTranslationKeyCompat(this, Tags.MOD_ID + "." + name);
+            GregoriusDrugworksUtil.setCreativeTabCompat(this, GregoriusDrugworksCreativeTabs.MAIN);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.recipe.recipes.LSDRecipes;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.recipes.SalvinorinARecipes;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.recipes.MethamphetamineRecipes;
 
@@ -11,5 +12,6 @@ public final class GregoriusDrugworksRecipeHandler {
         BlotterRecipes.init();
         SalvinorinARecipes.init();
         MethamphetamineRecipes.init();
+        LSDRecipes.init();
     }
 }

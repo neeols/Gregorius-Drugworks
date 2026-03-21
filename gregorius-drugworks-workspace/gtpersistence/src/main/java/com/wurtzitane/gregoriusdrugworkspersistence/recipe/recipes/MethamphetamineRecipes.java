@@ -7,6 +7,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMat
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeMaps;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksUnificationHelper;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.chance.GregoriusDrugworksChancedInputSupport;
+import gregtech.api.metatileentity.multiblock.CleanroomType;
 import gregtech.api.recipes.ModHandler;
 import gregtech.api.recipes.RecipeBuilder;
 import gregtech.api.recipes.RecipeMaps;
@@ -34,26 +35,27 @@ public final class MethamphetamineRecipes {
         // chloroacetone
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(Materials.Chlorine.getFluid(1000), Materials.Acetone.getFluid(1000));
-        builder.fluidOutputs(GregoriusDrugworksMaterials.Chloroacetone.getFluid(1000));
-        builder.duration(200);
+        builder.fluidOutputs(GregoriusDrugworksMaterials.Chloroacetone.getFluid(1000), GregoriusDrugworksMaterials.HydrogenChloride.getFluid(1000));
+        builder.duration(240);
         builder.circuitMeta(1);
-        builder.EUt(VA[HV]);
+        builder.EUt(VA[MV]);
         builder.buildAndRegister();
 
         // chloroacetone 2
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(Materials.Chlorine.getFluid(10000), Materials.Acetone.getFluid(10000));
-        builder.fluidOutputs(GregoriusDrugworksMaterials.Chloroacetone.getFluid(10000));
-        builder.duration(200);
+        builder.fluidOutputs(GregoriusDrugworksMaterials.Chloroacetone.getFluid(10000), GregoriusDrugworksMaterials.HydrogenChloride.getFluid(10000));
+        builder.duration(280);
         builder.circuitMeta(2);
-        builder.EUt(VA[EV]);
+        builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
         // phenylacetone
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
-        builder.fluidInputs(Materials.Benzene.getFluid(44000), GregoriusDrugworksMaterials.Chloroacetone.getFluid(7000));
-        builder.fluidOutputs(GregoriusDrugworksMaterials.Phenylacetone.getFluid(6000));
-        builder.duration(400);
+        builder.notConsumable(dust, GregoriusDrugworksMaterials.AluminiumTrichloride, 1);
+        builder.fluidInputs(Materials.Benzene.getFluid(1000), GregoriusDrugworksMaterials.Chloroacetone.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.Phenylacetone.getFluid(1000), GregoriusDrugworksMaterials.HydrogenChloride.getFluid(1000));
+        builder.duration(480);
         builder.EUt(VA[HV]);
         builder.buildAndRegister();
 
@@ -61,17 +63,18 @@ public final class MethamphetamineRecipes {
         builder = RecipeMaps.CHEMICAL_RECIPES.recipeBuilder();
         builder.fluidInputs(Materials.Methanol.getFluid(2000), Materials.Ammonia.getFluid(2000));
         builder.fluidOutputs(GregoriusDrugworksMaterials.Methylamine.getFluid(2000), Materials.Water.getFluid(2000));
-        builder.duration(400);
-        builder.EUt(VA[HV]);
+        builder.duration(300);
+        builder.EUt(VA[MV]);
         builder.buildAndRegister();
 
-        // methamphetamine (make cleanroom)
+        // methamphetamine
         builder = RecipeMaps.LARGE_CHEMICAL_RECIPES.recipeBuilder();
         builder.input(dust, GregoriusDrugworksMaterials.LithiumAluminiumHydride, 1);
-        builder.fluidInputs(GregoriusDrugworksMaterials.Methylamine.getFluid(2000), GregoriusDrugworksMaterials.Phenylacetone.getFluid(1000));
-        builder.fluidOutputs(GregoriusDrugworksMaterials.Methamphetamine.getFluid(2000));
-        builder.duration(400);
-        builder.EUt(VA[HV]);
+        builder.fluidInputs(GregoriusDrugworksMaterials.Methylamine.getFluid(1000), GregoriusDrugworksMaterials.Phenylacetone.getFluid(1000));
+        builder.fluidOutputs(GregoriusDrugworksMaterials.Methamphetamine.getFluid(1000), Materials.Water.getFluid(1000));
+        builder.duration(600);
+        builder.cleanroom(CleanroomType.CLEANROOM);
+        builder.EUt(VA[EV]);
         builder.buildAndRegister();
 
         builder = RecipeMaps.FLUID_SOLIDFICATION_RECIPES.recipeBuilder();

@@ -53,10 +53,10 @@ public class ItemInhalationConsumable extends Item implements ITripUseDeferredIt
     public ItemInhalationConsumable(InhalationDefinition definition) {
         this.definition = definition;
         this.setRegistryName(GregoriusDrugworksUtil.makeName(definition.getItemId()));
-        this.setTranslationKey(Tags.MOD_ID + "." + definition.getItemId());
-        this.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        this.setMaxStackSize(1);
-        this.setMaxDamage(definition.getMaxUses());
+        GregoriusDrugworksUtil.setTranslationKeyCompat(this, Tags.MOD_ID + "." + definition.getItemId());
+        GregoriusDrugworksUtil.setCreativeTabCompat(this, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(this, 1);
+        GregoriusDrugworksUtil.setMaxDamageCompat(this, definition.getMaxUses());
 
         DEFINITIONS.put(definition.getItemId(), definition);
     }

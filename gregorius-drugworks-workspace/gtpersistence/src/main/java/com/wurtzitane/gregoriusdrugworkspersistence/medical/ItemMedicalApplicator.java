@@ -58,9 +58,9 @@ public class ItemMedicalApplicator extends Item implements ITripUseDeferredItem 
         this.failSoundId = failSoundId;
 
         setRegistryName(GregoriusDrugworksUtil.makeName(itemId));
-        setTranslationKey(Tags.MOD_ID + "." + itemId);
-        setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        setMaxStackSize(1);
+        GregoriusDrugworksUtil.setTranslationKeyCompat(this, Tags.MOD_ID + "." + itemId);
+        GregoriusDrugworksUtil.setCreativeTabCompat(this, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(this, 1);
     }
 
     public ApplicatorUseProfile getUseProfile() {

@@ -38,9 +38,9 @@ public class ItemPillBase extends Item implements ITripUseDeferredItem {
     public ItemPillBase(PillItemDefinition definition) {
         this.definition = definition;
         this.setRegistryName(GregoriusDrugworksUtil.makeName(definition.getItemId()));
-        this.setTranslationKey(Tags.MOD_ID + "." + definition.getItemId());
-        this.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        this.setMaxStackSize(definition.getMaxStackSize());
+        GregoriusDrugworksUtil.setTranslationKeyCompat(this, Tags.MOD_ID + "." + definition.getItemId());
+        GregoriusDrugworksUtil.setCreativeTabCompat(this, GregoriusDrugworksCreativeTabs.MAIN);
+        GregoriusDrugworksUtil.setMaxStackSizeCompat(this, definition.getMaxStackSize());
 
         DEFINITIONS.put(definition.getItemId(), definition);
     }
