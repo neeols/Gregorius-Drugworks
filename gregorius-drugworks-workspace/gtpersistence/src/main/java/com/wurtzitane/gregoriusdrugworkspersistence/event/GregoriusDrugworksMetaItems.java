@@ -1,6 +1,7 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworks.common.catalog.ContentFamily;
+import com.wurtzitane.gregoriusdrugworkspersistence.payload.ItemDirectPayloadConsumable;
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
 import com.wurtzitane.gregoriusdrugworkspersistence.catalog.GregoriusDrugworksContentCatalogs;
 import com.wurtzitane.gregoriusdrugworkspersistence.inhalation.*;
@@ -73,7 +74,15 @@ public final class GregoriusDrugworksMetaItems {
         NEEDLE = createBasicItem("needle", 64);
         PVC_GLOVE = createBasicItem("pvc_glove", 64);
         SHAPE_GLOVE = createBasicItem("shape_glove", 64);
-        CRYSTALMETH = createBasicItem("crystalmeth", 64);
+        CRYSTALMETH = createDirectPayloadConsumable(
+                "crystalmeth",
+                64,
+                EnumRarity.UNCOMMON,
+                "gregoriusdrugworkspersistence:methamphetamine_payload",
+                "snort",
+                GregoriusDrugworksUtil.makeName("snort"),
+                4
+        );
 
         NALOXONE_AUTOINJECTOR = createSourceVial("naloxone_autoinjector", 16, EnumRarity.RARE);
         FLUMAZENIL_AMPOULE = createSourceVial("flumazenil_ampoule", 16, EnumRarity.RARE);
@@ -260,6 +269,26 @@ public final class GregoriusDrugworksMetaItems {
         item.setTranslationKey(Tags.MOD_ID + "." + name);
         item.setCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
         item.setMaxStackSize(maxStackSize);
+        META_ITEMS.add(item);
+        return item;
+    }
+
+    private static Item createDirectPayloadConsumable(final String name,
+                                                      final int maxStackSize,
+                                                      final EnumRarity rarity,
+                                                      final String payloadId,
+                                                      final String modeId,
+                                                      final ResourceLocation useSoundId,
+                                                      final int cooldownTicks) {
+        final Item item = new ItemDirectPayloadConsumable(
+                name,
+                maxStackSize,
+                rarity,
+                payloadId,
+                modeId,
+                useSoundId,
+                cooldownTicks
+        );
         META_ITEMS.add(item);
         return item;
     }

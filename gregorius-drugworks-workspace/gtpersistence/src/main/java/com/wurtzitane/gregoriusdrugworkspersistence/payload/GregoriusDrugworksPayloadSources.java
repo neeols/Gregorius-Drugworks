@@ -36,6 +36,14 @@ public final class GregoriusDrugworksPayloadSources {
                 true,
                 "gregoriusdrugworkspersistence:empty_glass_ampoule"
         ));
+
+        register(new PayloadSourceDefinition(
+                "gregoriusdrugworkspersistence:crystalmeth",
+                "gregoriusdrugworkspersistence:methamphetamine_payload",
+                1,
+                true,
+                ""
+        ));
     }
 
     public static void register(PayloadSourceDefinition definition) {

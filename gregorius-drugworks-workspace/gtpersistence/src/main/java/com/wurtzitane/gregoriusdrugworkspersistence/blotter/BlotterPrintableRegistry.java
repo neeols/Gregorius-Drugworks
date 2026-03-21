@@ -339,8 +339,12 @@ public final class BlotterPrintableRegistry {
 
     private static BufferedImage composeSingleTabTexture(BufferedImage singleTabBase, BufferedImage normalizedSource,
                                                          int opacityPercent) {
-        BufferedImage canvas = copyImage(singleTabBase);
-        BufferedImage reducedOverlay = scaleNearest(normalizedSource, 8, 8);
+        BufferedImage canvas = scaleNearest(singleTabBase,
+                PrintableCarrierKind.SINGLE_TAB.getTextureWidth(),
+                PrintableCarrierKind.SINGLE_TAB.getTextureHeight());
+        BufferedImage reducedOverlay = scaleNearest(normalizedSource,
+                PrintableCarrierKind.SINGLE_TAB.getTextureWidth(),
+                PrintableCarrierKind.SINGLE_TAB.getTextureHeight());
         int x = (canvas.getWidth() - reducedOverlay.getWidth()) / 2;
         int y = (canvas.getHeight() - reducedOverlay.getHeight()) / 2;
         alphaComposite(canvas, reducedOverlay, x, y, BlotterPrintData.clampOpacity(opacityPercent) / 100.0F);

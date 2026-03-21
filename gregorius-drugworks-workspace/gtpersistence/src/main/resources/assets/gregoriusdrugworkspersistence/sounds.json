@@ -8,6 +8,15 @@
       }
     ]
   },
+  "snort": {
+    "subtitle": "Snorting... [Gregorius Drugworks]",
+    "sounds": [
+      {
+        "name": "minecraft:entity.horse.breathe",
+        "stream": false
+      }
+    ]
+  },
   "inhalation_start": {
     "subtitle": "Preparing inhalation... [Gregorius Drugworks]",
     "sounds": [

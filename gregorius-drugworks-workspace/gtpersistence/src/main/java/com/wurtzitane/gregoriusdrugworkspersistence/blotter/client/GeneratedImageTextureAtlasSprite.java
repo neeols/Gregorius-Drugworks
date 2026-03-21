@@ -46,8 +46,8 @@ public final class GeneratedImageTextureAtlasSprite extends TextureAtlasSprite {
             setIconHeight(image.getHeight());
 
             int minDimension = Math.max(1, Math.min(image.getWidth(), image.getHeight()));
-            int maxMipLevels = MathHelper.log2(Integer.highestOneBit(minDimension)) + 1;
-            int[][] pixels = new int[Math.max(1, maxMipLevels)][];
+            int maxMipLevel = MathHelper.log2(Integer.highestOneBit(minDimension));
+            int[][] pixels = new int[Math.max(1, maxMipLevel + 2)][];
             pixels[0] = new int[image.getWidth() * image.getHeight()];
             image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels[0], 0, image.getWidth());
             this.framesTextureData.add(pixels);

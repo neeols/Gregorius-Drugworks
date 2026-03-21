@@ -1,5 +1,6 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksMetaItems;
 import gregtech.api.GregTechAPI;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.material.Material;
@@ -37,6 +38,16 @@ public final class PayloadPillCraftingRegistry {
         builder("salvinorin_a_dust")
                 .additive(OrePrefix.dust, GregoriusDrugworksMaterials.SalvinorinA)
                 .payload("gregoriusdrugworkspersistence:salvinorin_a_payload")
+                .mode("pill")
+                .register();
+        builder("lsd_dust")
+                .additive(OrePrefix.dust, GregoriusDrugworksMaterials.LSD)
+                .payload("gregoriusdrugworkspersistence:lsd_payload")
+                .mode("pill")
+                .register();
+        builder("crystalmeth_item")
+                .additive(GregoriusDrugworksMetaItems.CRYSTALMETH)
+                .payload("gregoriusdrugworkspersistence:methamphetamine_payload")
                 .mode("pill")
                 .register();
     }

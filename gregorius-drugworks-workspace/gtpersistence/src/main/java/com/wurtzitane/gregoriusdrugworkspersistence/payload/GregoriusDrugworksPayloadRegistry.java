@@ -54,6 +54,23 @@ public final class GregoriusDrugworksPayloadRegistry {
         );
         register(
                 new PayloadDefinition(
+                        "gregoriusdrugworkspersistence:methamphetamine_payload",
+                        PayloadCategory.STAGED_EFFECT,
+                        PayloadCompatibility.UNIVERSAL,
+                        "payload.gregoriusdrugworkspersistence.methamphetamine",
+                        1,
+                        PayloadChargePolicy.SINGLE_USE,
+                        EnumSet.of(PayloadBehaviorFlag.FORWARD_ITEM_USE, PayloadBehaviorFlag.START_VISUAL_PROFILE),
+                        "gregoriusdrugworkspersistence:methamphetamine_payload",
+                        "gregoriusdrugworkspersistence:methamphetamine_rush",
+                        900,
+                        null,
+                        methamphetamineModes()
+                ),
+                null
+        );
+        register(
+                new PayloadDefinition(
                         "gregoriusdrugworkspersistence:salvinorin_a_payload",
                         PayloadCategory.STAGED_EFFECT,
                         PayloadCompatibility.UNIVERSAL,
@@ -115,6 +132,46 @@ public final class GregoriusDrugworksPayloadRegistry {
                 .durationScale(1.00D)
                 .visualProfileId("gregoriusdrugworkspersistence:lsd_rainbow")
                 .visualDurationTicks(1200)
+                .build());
+        modes.put("pill", PayloadModeDefinition.builder("pill")
+                .onsetScale(1.30D)
+                .peakScale(0.94D)
+                .durationScale(1.20D)
+                .visualProfileId("gregoriusdrugworkspersistence:lsd_rainbow")
+                .visualDurationTicks(1440)
+                .build());
+        modes.put("food", PayloadModeDefinition.builder("food")
+                .onsetScale(1.65D)
+                .peakScale(0.88D)
+                .durationScale(1.40D)
+                .visualProfileId("gregoriusdrugworkspersistence:lsd_rainbow")
+                .visualDurationTicks(1680)
+                .build());
+        return modes;
+    }
+
+    private static Map<String, PayloadModeDefinition> methamphetamineModes() {
+        Map<String, PayloadModeDefinition> modes = new LinkedHashMap<String, PayloadModeDefinition>();
+        modes.put("snort", PayloadModeDefinition.builder("snort")
+                .onsetScale(0.32D)
+                .peakScale(1.18D)
+                .durationScale(0.72D)
+                .visualProfileId("gregoriusdrugworkspersistence:methamphetamine_rush")
+                .visualDurationTicks(760)
+                .build());
+        modes.put("pill", PayloadModeDefinition.builder("pill")
+                .onsetScale(1.18D)
+                .peakScale(0.92D)
+                .durationScale(1.14D)
+                .visualProfileId("gregoriusdrugworkspersistence:methamphetamine_rush")
+                .visualDurationTicks(980)
+                .build());
+        modes.put("food", PayloadModeDefinition.builder("food")
+                .onsetScale(1.55D)
+                .peakScale(0.84D)
+                .durationScale(1.30D)
+                .visualProfileId("gregoriusdrugworkspersistence:methamphetamine_rush")
+                .visualDurationTicks(1180)
                 .build());
         return modes;
     }

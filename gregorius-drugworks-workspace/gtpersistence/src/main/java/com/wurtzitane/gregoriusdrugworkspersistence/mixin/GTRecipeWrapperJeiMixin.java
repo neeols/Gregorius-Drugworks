@@ -2,6 +2,7 @@ package com.wurtzitane.gregoriusdrugworkspersistence.mixin;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.integration.jei.GregoriusDrugworksJeiChancedInputModule;
 import com.wurtzitane.gregoriusdrugworkspersistence.integration.jei.GregoriusDrugworksJeiRecipeWrapperAccess;
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.BlotterSoakingSupport;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.ChemicalPlantAtmosphereHelper;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksRecipeMaps;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.chance.ChancedFluidInputEntry;
@@ -15,7 +16,9 @@ import gregtech.api.recipes.chance.output.ChancedOutputLogic;
 import gregtech.api.recipes.ingredients.GTRecipeInput;
 import gregtech.client.utils.TooltipHelper;
 import gregtech.integration.jei.recipe.GTRecipeWrapper;
+import mezz.jei.api.ingredients.VanillaTypes;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -141,6 +144,29 @@ public abstract class GTRecipeWrapperJeiMixin implements GregoriusDrugworksJeiRe
     @Override
     @Unique
     public void gdw$prepareChancedInputMappings(mezz.jei.api.ingredients.IIngredients ingredients) {
+        List<List<ItemStack>> itemOutputs = ingredients.getOutputs(VanillaTypes.ITEM);
+        if (itemOutputs == null || itemOutputs.isEmpty()) {
+            return;
+        }
+
+        boolean changed = false;
+        List<List<ItemStack>> rewrittenOutputs = new ArrayList<>(itemOutputs.size());
+        for (List<ItemStack> outputOptions : itemOutputs) {
+            List<ItemStack> rewrittenOptions = new ArrayList<>(outputOptions.size());
+            for (ItemStack output : outputOptions) {
+                ItemStack rewritten = BlotterSoakingSupport.createPreviewSoakOutput(recipe, recipeMap, output);
+                rewrittenOptions.add(rewritten);
+                if (!ItemStack.areItemsEqual(output, rewritten)
+                        || !ItemStack.areItemStackTagsEqual(output, rewritten)) {
+                    changed = true;
+                }
+            }
+            rewrittenOutputs.add(rewrittenOptions);
+        }
+
+        if (changed) {
+            ingredients.setOutputLists(VanillaTypes.ITEM, rewrittenOutputs);
+        }
     }
 
     @Override

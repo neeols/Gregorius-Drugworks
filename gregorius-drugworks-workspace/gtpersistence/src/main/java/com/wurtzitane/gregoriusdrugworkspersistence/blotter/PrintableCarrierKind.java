@@ -8,7 +8,7 @@ package com.wurtzitane.gregoriusdrugworkspersistence.blotter;
 public enum PrintableCarrierKind {
 
     BLOTTER_PAPER("blotter_paper", "blotter_paper", 64, 64),
-    SINGLE_TAB("single_tab", "single_tab", 16, 16);
+    SINGLE_TAB("single_tab", "single_tab", 8, 8);
 
     private final String itemName;
     private final String generatedTextureFolder;

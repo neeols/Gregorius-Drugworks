@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.init.MobEffects;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
@@ -35,6 +36,8 @@ public final class GregoriusDrugworksVisualClientHooks {
     private static float smoothedRollOffset;
     private static float smoothedScreenOffsetX;
     private static float smoothedScreenOffsetY;
+    private static boolean forcedNightActive;
+    private static long savedNaturalWorldTime = -1L;
 
     private GregoriusDrugworksVisualClientHooks() {
     }
@@ -78,6 +81,35 @@ public final class GregoriusDrugworksVisualClientHooks {
         }
     }
 
+    public static KirinoTripVisualState getLsdKirinoState(float partialTicks) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (ACTIVE == null || mc.world == null) {
+            return null;
+        }
+
+        VisualEffectProfile profile = ACTIVE.getProfile();
+        if (!isLsdProfile(profile)) {
+            return null;
+        }
+
+        float progress = ACTIVE.progress(mc.world.getTotalWorldTime(), partialTicks);
+        float envelope = computeEnvelope(progress);
+        float intensity = clamp01(envelope * (0.55F + profile.getPrismSeparation() + (profile.getTunnelStrength() * 0.75F)));
+        if (intensity <= 0.0001F) {
+            return null;
+        }
+
+        return new KirinoTripVisualState(
+                ACTIVE.age(mc.world.getTotalWorldTime(), partialTicks),
+                progress,
+                intensity,
+                profile.getPrismSeparation(),
+                profile.getTunnelStrength(),
+                profile.getRibbonIntensity(),
+                profile.getWobbleAmplitude()
+        );
+    }
+
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) {
@@ -88,6 +120,7 @@ public final class GregoriusDrugworksVisualClientHooks {
         if (mc.world == null || mc.player == null) {
             ACTIVE = null;
             hardResetSmoothing();
+            clearNightOverrideState();
             return;
         }
 
@@ -96,6 +129,7 @@ public final class GregoriusDrugworksVisualClientHooks {
             ACTIVE = null;
         }
 
+        updateNightOverride(mc);
         updateSmoothing(worldTime);
 
         if (ACTIVE != null) {
@@ -157,6 +191,10 @@ public final class GregoriusDrugworksVisualClientHooks {
         float[] baseRgb = computeRgb(profile, age);
 
         GlStateManager.pushMatrix();
+        GlStateManager.disableDepth();
+        GlStateManager.depthMask(false);
+        GlStateManager.disableCull();
+        GlStateManager.disableLighting();
         GlStateManager.enableBlend();
         GlStateManager.disableAlpha();
         GlStateManager.disableTexture2D();
@@ -182,11 +220,22 @@ public final class GregoriusDrugworksVisualClientHooks {
         drawPrismGhosts(centerX, centerY, width, height, profile, age, envelope);
         drawRibbonBands(width, height, profile, age, envelope);
         drawScanlines(width, height, profile, age, envelope, baseRgb);
+        if (isLsdProfile(profile)) {
+            drawKaleidoscopeSpokes(centerX, centerY, width, height, profile, age, envelope);
+            drawWaveVeil(width, height, profile, age, envelope);
+        }
+        if (isMethProfile(profile)) {
+            drawRushLines(width, height, profile, age, envelope);
+        }
 
         GlStateManager.shadeModel(GL11.GL_FLAT);
         GlStateManager.enableTexture2D();
         GlStateManager.enableAlpha();
         GlStateManager.disableBlend();
+        GlStateManager.enableLighting();
+        GlStateManager.enableCull();
+        GlStateManager.depthMask(true);
+        GlStateManager.enableDepth();
         GlStateManager.popMatrix();
     }
 
@@ -377,6 +426,112 @@ public final class GregoriusDrugworksVisualClientHooks {
         }
     }
 
+    private static void drawKaleidoscopeSpokes(
+            float centerX,
+            float centerY,
+            float width,
+            float height,
+            VisualEffectProfile profile,
+            float age,
+            float envelope
+    ) {
+        int spokes = clampInt(10 + profile.getRibbonDensity(), 10, 24);
+        float innerRadius = 26.0F + profile.getTunnelStrength() * 84.0F;
+        float outerRadius = Math.max(width, height) * 0.82F;
+
+        for (int i = 0; i < spokes; i++) {
+            float baseAngle = ((float) (Math.PI * 2.0D * i) / spokes) + (age * 0.010F);
+            float spread = 0.070F + profile.getPrismSeparation() * 0.11F
+                    + ((float) Math.sin(age * 0.032F + i) * 0.018F);
+            float[] rgb = rainbowRgb(age * 0.45F + (i * 0.85F));
+            int innerColor = colorArgb(
+                    (int) (255.0F * envelope * (0.035F + profile.getPrismSeparation() * 0.10F)),
+                    rgb[0], rgb[1], rgb[2]
+            );
+            int outerColor = colorArgb(0, rgb[0], rgb[1], rgb[2]);
+
+            drawQuad(
+                    centerX + ((float) Math.cos(baseAngle - spread) * innerRadius),
+                    centerY + ((float) Math.sin(baseAngle - spread) * innerRadius),
+                    centerX + ((float) Math.cos(baseAngle + spread) * innerRadius),
+                    centerY + ((float) Math.sin(baseAngle + spread) * innerRadius),
+                    centerX + ((float) Math.cos(baseAngle + spread * 1.7F) * outerRadius),
+                    centerY + ((float) Math.sin(baseAngle + spread * 1.7F) * outerRadius),
+                    centerX + ((float) Math.cos(baseAngle - spread * 1.7F) * outerRadius),
+                    centerY + ((float) Math.sin(baseAngle - spread * 1.7F) * outerRadius),
+                    innerColor,
+                    innerColor,
+                    outerColor,
+                    outerColor
+            );
+        }
+    }
+
+    private static void drawWaveVeil(float width, float height, VisualEffectProfile profile, float age, float envelope) {
+        int bands = clampInt(4 + profile.getRibbonDensity(), 6, 14);
+        float amplitude = width * (0.020F + profile.getWobbleAmplitude() * 0.32F);
+        float bandHeight = 10.0F + profile.getRibbonIntensity() * 38.0F;
+
+        for (int i = 0; i < bands; i++) {
+            float lane = (bands == 1) ? 0.5F : i / (float) (bands - 1);
+            float y = (lane * height) + ((float) Math.sin(age * 0.022F + i * 0.9F) * height * 0.05F);
+            float leftShift = (float) Math.sin(age * 0.030F + i) * amplitude;
+            float rightShift = (float) Math.cos(age * 0.026F + (i * 1.3F)) * amplitude;
+            float[] rgb = rainbowRgb(age * 0.30F + (i * 0.55F));
+            int color = colorArgb(
+                    (int) (255.0F * envelope * (0.018F + profile.getRibbonIntensity() * 0.08F)),
+                    rgb[0], rgb[1], rgb[2]
+            );
+
+            drawQuad(
+                    -bandHeight + leftShift,
+                    y - bandHeight,
+                    width + rightShift,
+                    y - bandHeight * 0.35F,
+                    width - leftShift,
+                    y + bandHeight,
+                    bandHeight - rightShift,
+                    y + bandHeight * 0.35F,
+                    color,
+                    color,
+                    color,
+                    color
+            );
+        }
+    }
+
+    private static void drawRushLines(float width, float height, VisualEffectProfile profile, float age, float envelope) {
+        int lanes = clampInt(8 + profile.getRibbonDensity(), 10, 20);
+        float[] rgb = computeRgb(profile, age);
+        for (int i = 0; i < lanes; i++) {
+            float lane = i / (float) Math.max(1, lanes - 1);
+            float travel = fract((age * (0.030F + profile.getPulseSpeed() * 0.16F)) + lane);
+            float lineWidth = 2.0F + profile.getScanlineStrength() * 8.0F;
+            float length = height * (0.08F + profile.getRibbonIntensity() * 0.16F);
+            float x = lane * width + ((float) Math.sin(age * 0.015F + i) * width * 0.04F);
+            float y = (travel * (height + length)) - length;
+            int color = colorArgb(
+                    (int) (255.0F * envelope * (0.025F + profile.getScanlineStrength() * 0.10F)),
+                    rgb[0], rgb[1], rgb[2]
+            );
+
+            drawQuad(
+                    x - lineWidth,
+                    y,
+                    x + lineWidth,
+                    y,
+                    x + (lineWidth * 2.4F),
+                    y + length,
+                    x - (lineWidth * 2.4F),
+                    y + length,
+                    color,
+                    color,
+                    0x00000000,
+                    0x00000000
+            );
+        }
+    }
+
     private static void drawVignette(
             float centerX,
             float centerY,
@@ -452,11 +607,14 @@ public final class GregoriusDrugworksVisualClientHooks {
     }
 
     private static EnumParticleTypes chooseLocalParticle(VisualEffectProfile profile, long worldTime) {
+        if (isLsdProfile(profile)) {
+            return EnumParticleTypes.SPELL_MOB_AMBIENT;
+        }
         if (profile.getTunnelStrength() > 0.60F) {
             return (worldTime & 1L) == 0L ? EnumParticleTypes.PORTAL : EnumParticleTypes.END_ROD;
         }
         if (profile.getAfterimageStrength() > 0.16F) {
-            return EnumParticleTypes.CLOUD;
+            return EnumParticleTypes.END_ROD;
         }
         if (profile.getColorMode() == VisualColorMode.RAINBOW) {
             return EnumParticleTypes.SPELL_MOB_AMBIENT;
@@ -489,7 +647,7 @@ public final class GregoriusDrugworksVisualClientHooks {
         };
 
         if (profile.getColorMode() == VisualColorMode.RAINBOW) {
-            return rainbowRgb(age * 0.55F);
+            return rainbowRgb(age * rainbowPhaseSpeed(profile));
         }
 
         if (profile.getColorMode() == VisualColorMode.PULSE) {
@@ -502,6 +660,66 @@ public final class GregoriusDrugworksVisualClientHooks {
         }
 
         return rgb;
+    }
+
+    private static float rainbowPhaseSpeed(VisualEffectProfile profile) {
+        return (0.0125F + (profile.getPulseSpeed() * 0.12F)) * rainbowAccelerationMultiplier();
+    }
+
+    private static float rainbowAccelerationMultiplier() {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (ACTIVE == null || mc.world == null) {
+            return 1.0F;
+        }
+
+        float progress = ACTIVE.progress(mc.world.getTotalWorldTime(), 1.0F);
+        return 1.0F + (progress * 2.25F);
+    }
+
+    private static void updateNightOverride(Minecraft mc) {
+        if (mc.world == null || mc.player == null) {
+            clearNightOverrideState();
+            return;
+        }
+
+        boolean shouldForceNight = shouldForceSalvinorinNight(mc);
+        if (!shouldForceNight) {
+            if (forcedNightActive && savedNaturalWorldTime >= 0L) {
+                mc.world.setWorldTime(savedNaturalWorldTime);
+            }
+            forcedNightActive = false;
+            savedNaturalWorldTime = mc.world.getWorldTime();
+            return;
+        }
+
+        if (!forcedNightActive) {
+            savedNaturalWorldTime = mc.world.getWorldTime();
+            forcedNightActive = true;
+        } else if (savedNaturalWorldTime >= 0L) {
+            savedNaturalWorldTime++;
+        }
+
+        mc.world.setWorldTime(18000L);
+    }
+
+    private static boolean shouldForceSalvinorinNight(Minecraft mc) {
+        return ACTIVE != null
+                && mc.player != null
+                && mc.player.isPotionActive(MobEffects.BLINDNESS)
+                && ACTIVE.getProfile().getId().startsWith("gregoriusdrugworkspersistence:salvinorin_a_");
+    }
+
+    private static boolean isLsdProfile(VisualEffectProfile profile) {
+        return profile.getId().startsWith("gregoriusdrugworkspersistence:lsd_");
+    }
+
+    private static boolean isMethProfile(VisualEffectProfile profile) {
+        return profile.getId().startsWith("gregoriusdrugworkspersistence:methamphetamine_");
+    }
+
+    private static void clearNightOverrideState() {
+        forcedNightActive = false;
+        savedNaturalWorldTime = -1L;
     }
 
     private static float[] rainbowRgb(float phase) {

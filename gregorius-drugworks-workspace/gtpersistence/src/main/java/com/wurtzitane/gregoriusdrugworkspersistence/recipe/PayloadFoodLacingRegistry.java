@@ -1,5 +1,6 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.recipe;
 
+import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksMetaItems;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.PayloadCarrierDataKeys;
 import gregtech.api.GregTechAPI;
 import gregtech.api.unification.OreDictUnifier;
@@ -39,6 +40,18 @@ public final class PayloadFoodLacingRegistry {
         builder("salvinorin_a_food")
                 .additive(OrePrefix.dust, GregoriusDrugworksMaterials.SalvinorinA)
                 .payload("gregoriusdrugworkspersistence:salvinorin_a_payload")
+                .mode("food")
+                .allVanillaFoods()
+                .register();
+        builder("lsd_food")
+                .additive(OrePrefix.dust, GregoriusDrugworksMaterials.LSD)
+                .payload("gregoriusdrugworkspersistence:lsd_payload")
+                .mode("food")
+                .allVanillaFoods()
+                .register();
+        builder("crystalmeth_food")
+                .additive(GregoriusDrugworksMetaItems.CRYSTALMETH)
+                .payload("gregoriusdrugworkspersistence:methamphetamine_payload")
                 .mode("food")
                 .allVanillaFoods()
                 .register();

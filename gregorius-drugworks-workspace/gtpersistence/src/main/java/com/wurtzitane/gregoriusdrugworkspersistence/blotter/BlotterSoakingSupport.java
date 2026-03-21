@@ -2,6 +2,7 @@ package com.wurtzitane.gregoriusdrugworkspersistence.blotter;
 
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadKeys;
 import com.wurtzitane.gregoriusdrugworkspersistence.event.GregoriusDrugworksItems;
+import com.wurtzitane.gregoriusdrugworkspersistence.payload.PayloadCarrierDataKeys;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.PayloadLoaderUtil;
 import com.wurtzitane.gregoriusdrugworkspersistence.payload.PayloadLoadingService;
 import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksMaterials;
@@ -10,6 +11,7 @@ import gregtech.api.recipes.Recipe;
 import gregtech.api.recipes.RecipeMap;
 import gregtech.api.recipes.RecipeMaps;
 import gregtech.api.recipes.ingredients.GTRecipeInput;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
@@ -53,8 +55,7 @@ public final class BlotterSoakingSupport {
             return true;
         }
 
-        ItemStack extracted = inputInventory.extractItem(plan.itemSlot, plan.itemAmount, false);
-        if (extracted.isEmpty() || extracted.getCount() != plan.itemAmount) {
+        if (!applyItemDrain(plan.itemDrain, inputInventory)) {
             clearPendingSoakInput();
             return false;
         }
@@ -82,7 +83,7 @@ public final class BlotterSoakingSupport {
                     soakedInput,
                     LSD_PAYLOAD_ID,
                     1,
-                    createBlotterModeData());
+                    createSoakExtraData(recipe));
             if (loaded.isEmpty()) {
                 return;
             }
@@ -111,11 +112,19 @@ public final class BlotterSoakingSupport {
         return extraData;
     }
 
+    private static NBTTagCompound createSoakExtraData(Recipe recipe) {
+        NBTTagCompound extraData = createBlotterModeData();
+        if (hasRevealCatalyst(recipe)) {
+            extraData.setBoolean(PayloadCarrierDataKeys.REVEALED_KEY, true);
+        }
+        return extraData;
+    }
+
     private static SoakPlan createSoakPlan(Recipe recipe,
                                            IItemHandlerModifiable inputInventory,
                                            IMultipleTankHandler inputFluids) {
-        CarrierMatch carrierMatch = findEligibleCarrier(recipe, inputInventory);
-        if (carrierMatch == null) {
+        ItemPlan itemPlan = createItemPlan(recipe, inputInventory);
+        if (itemPlan == null) {
             return null;
         }
 
@@ -124,26 +133,55 @@ public final class BlotterSoakingSupport {
             return null;
         }
 
-        return new SoakPlan(carrierMatch.slot, carrierMatch.amount, carrierMatch.snapshot, fluidDrain);
+        return new SoakPlan(itemPlan.snapshot, itemPlan.itemDrain, fluidDrain);
     }
 
-    private static CarrierMatch findEligibleCarrier(Recipe recipe, IItemHandlerModifiable inputInventory) {
-        for (GTRecipeInput input : recipe.getInputs()) {
-            for (int slot = 0; slot < inputInventory.getSlots(); slot++) {
-                ItemStack stack = inputInventory.getStackInSlot(slot);
-                if (stack.isEmpty() || stack.getCount() < input.getAmount()) {
-                    continue;
-                }
-                if (!isPrintableCarrier(stack) || PayloadLoaderUtil.hasPayload(stack) || !input.acceptsStack(stack)) {
-                    continue;
-                }
+    private static ItemPlan createItemPlan(Recipe recipe, IItemHandlerModifiable inputInventory) {
+        int[] itemDrain = new int[inputInventory.getSlots()];
+        ItemStack snapshot = ItemStack.EMPTY;
 
-                ItemStack snapshot = stack.copy();
+        for (GTRecipeInput input : recipe.getInputs()) {
+            int matchedSlot = isCarrierInput(input)
+                    ? findCarrierSlot(input, inputInventory, itemDrain)
+                    : findSupportItemSlot(input, inputInventory, itemDrain);
+            if (matchedSlot < 0) {
+                return null;
+            }
+
+            itemDrain[matchedSlot] += input.getAmount();
+            if (snapshot.isEmpty() && isCarrierInput(input)) {
+                snapshot = inputInventory.getStackInSlot(matchedSlot).copy();
                 snapshot.setCount(1);
-                return new CarrierMatch(slot, input.getAmount(), snapshot);
             }
         }
-        return null;
+        return snapshot.isEmpty() ? null : new ItemPlan(snapshot, itemDrain);
+    }
+
+    private static int findCarrierSlot(GTRecipeInput input, IItemHandlerModifiable inputInventory, int[] reserved) {
+        for (int slot = 0; slot < inputInventory.getSlots(); slot++) {
+            ItemStack stack = inputInventory.getStackInSlot(slot);
+            if (stack.isEmpty() || stack.getCount() - reserved[slot] < input.getAmount()) {
+                continue;
+            }
+            if (!isPrintableCarrier(stack) || PayloadLoaderUtil.hasPayload(stack) || !input.acceptsStack(stack)) {
+                continue;
+            }
+            return slot;
+        }
+        return -1;
+    }
+
+    private static int findSupportItemSlot(GTRecipeInput input, IItemHandlerModifiable inputInventory, int[] reserved) {
+        for (int slot = 0; slot < inputInventory.getSlots(); slot++) {
+            ItemStack stack = inputInventory.getStackInSlot(slot);
+            if (stack.isEmpty() || stack.getCount() - reserved[slot] < input.getAmount()) {
+                continue;
+            }
+            if (input.acceptsStack(stack)) {
+                return slot;
+            }
+        }
+        return -1;
     }
 
     private static int[] createFluidDrainPlan(Recipe recipe, IMultipleTankHandler inputFluids) {
@@ -203,9 +241,55 @@ public final class BlotterSoakingSupport {
         return true;
     }
 
+    private static boolean applyItemDrain(int[] drain, IItemHandlerModifiable inputInventory) {
+        for (int slot = 0; slot < drain.length && slot < inputInventory.getSlots(); slot++) {
+            int amount = drain[slot];
+            if (amount <= 0) {
+                continue;
+            }
+
+            ItemStack extracted = inputInventory.extractItem(slot, amount, false);
+            if (extracted.isEmpty() || extracted.getCount() != amount) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static boolean isPrintableCarrier(ItemStack stack) {
         return BlotterPrintStacks.isCarrier(stack, PrintableCarrierKind.BLOTTER_PAPER)
                 || BlotterPrintStacks.isCarrier(stack, PrintableCarrierKind.SINGLE_TAB);
+    }
+
+    private static boolean isCarrierInput(GTRecipeInput input) {
+        return input.acceptsStack(new ItemStack(GregoriusDrugworksItems.BLOTTER_PAPER))
+                || input.acceptsStack(new ItemStack(GregoriusDrugworksItems.SINGLE_TAB));
+    }
+
+    private static boolean hasRevealCatalyst(Recipe recipe) {
+        ItemStack glowstone = new ItemStack(Items.GLOWSTONE_DUST);
+        for (GTRecipeInput input : recipe.getInputs()) {
+            if (!isCarrierInput(input) && input.acceptsStack(glowstone)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static ItemStack createPreviewSoakOutput(Recipe recipe, RecipeMap<?> recipeMap, ItemStack carrierTemplate) {
+        if (!isBlotterSoakRecipe(recipe, recipeMap) || carrierTemplate.isEmpty()) {
+            return carrierTemplate.copy();
+        }
+        if (!isPrintableCarrier(carrierTemplate) || PayloadLoaderUtil.hasPayload(carrierTemplate)) {
+            return carrierTemplate.copy();
+        }
+
+        ItemStack loaded = PayloadLoadingService.createLoadedResult(
+                carrierTemplate,
+                LSD_PAYLOAD_ID,
+                1,
+                createSoakExtraData(recipe));
+        return loaded.isEmpty() ? carrierTemplate.copy() : loaded;
     }
 
     private static boolean isBlotterSoakRecipe(Recipe recipe, RecipeMap<?> recipeMap) {
@@ -213,7 +297,7 @@ public final class BlotterSoakingSupport {
             return false;
         }
 
-        FluidStack lsdFluid = GregoriusDrugworksMaterials.LSD.getFluid(64);
+        FluidStack lsdFluid = GregoriusDrugworksMaterials.LSD.getFluid(1);
         if (lsdFluid == null) {
             return false;
         }
@@ -232,7 +316,7 @@ public final class BlotterSoakingSupport {
 
         boolean hasLsdFluid = false;
         for (GTRecipeInput input : recipe.getFluidInputs()) {
-            if (input.acceptsFluid(lsdFluid) && input.getAmount() <= lsdFluid.amount) {
+            if (input.acceptsFluid(lsdFluid) && input.getAmount() >= 1) {
                 hasLsdFluid = true;
                 break;
             }
@@ -250,28 +334,24 @@ public final class BlotterSoakingSupport {
         return false;
     }
 
-    private static final class CarrierMatch {
-        private final int slot;
-        private final int amount;
+    private static final class ItemPlan {
         private final ItemStack snapshot;
+        private final int[] itemDrain;
 
-        private CarrierMatch(int slot, int amount, ItemStack snapshot) {
-            this.slot = slot;
-            this.amount = amount;
+        private ItemPlan(ItemStack snapshot, int[] itemDrain) {
             this.snapshot = snapshot;
+            this.itemDrain = itemDrain;
         }
     }
 
     private static final class SoakPlan {
-        private final int itemSlot;
-        private final int itemAmount;
         private final ItemStack snapshot;
+        private final int[] itemDrain;
         private final int[] fluidDrain;
 
-        private SoakPlan(int itemSlot, int itemAmount, ItemStack snapshot, int[] fluidDrain) {
-            this.itemSlot = itemSlot;
-            this.itemAmount = itemAmount;
+        private SoakPlan(ItemStack snapshot, int[] itemDrain, int[] fluidDrain) {
             this.snapshot = snapshot;
+            this.itemDrain = itemDrain;
             this.fluidDrain = fluidDrain;
         }
     }

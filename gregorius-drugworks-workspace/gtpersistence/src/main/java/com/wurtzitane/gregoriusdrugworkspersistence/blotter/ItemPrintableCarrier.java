@@ -6,12 +6,12 @@ import com.wurtzitane.gregoriusdrugworkspersistence.trip.TripHooks;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -33,19 +33,38 @@ public class ItemPrintableCarrier extends Item {
         return carrierKind;
     }
 
+    @Nonnull
+    @Override
+    public String getItemStackDisplayName(@Nonnull ItemStack stack) {
+        GregoriusDrugworksPayloadRegistry.ResolvedPayload payload = PayloadLoaderUtil.resolve(stack);
+        if (payload == null || !"blotter".equals(payload.getModeId())) {
+            return super.getItemStackDisplayName(stack);
+        }
+
+        String payloadName = I18n.canTranslate(payload.getDefinition().getDisplayNameKey())
+                ? I18n.translateToLocal(payload.getDefinition().getDisplayNameKey())
+                : payload.getDefinition().getId();
+        String soakedNameKey = carrierKind == PrintableCarrierKind.BLOTTER_PAPER
+                ? "item.gregoriusdrugworkspersistence.blotter_paper.soaked.name"
+                : "item.gregoriusdrugworkspersistence.single_tab.soaked.name";
+        return I18n.canTranslate(soakedNameKey)
+                ? I18n.translateToLocalFormatted(soakedNameKey, payloadName)
+                : super.getItemStackDisplayName(stack);
+    }
+
     private boolean isUsableCarrier(ItemStack stack) {
         return carrierKind == PrintableCarrierKind.SINGLE_TAB && PayloadLoaderUtil.hasPayload(stack);
     }
 
     @Nonnull
     @Override
-    public EnumAction getItemUseAction(@Nonnull ItemStack stack) {
-        return EnumAction.NONE;
+    public net.minecraft.item.EnumAction getItemUseAction(@Nonnull ItemStack stack) {
+        return net.minecraft.item.EnumAction.NONE;
     }
 
     @Override
     public int getMaxItemUseDuration(@Nonnull ItemStack stack) {
-        return isUsableCarrier(stack) ? 20 : 0;
+        return 0;
     }
 
     @Nonnull
@@ -63,7 +82,29 @@ public class ItemPrintableCarrier extends Item {
             return new ActionResult<ItemStack>(EnumActionResult.FAIL, held);
         }
 
-        player.setActiveHand(hand);
+        player.swingArm(hand);
+
+        if (!world.isRemote && player instanceof EntityPlayerMP) {
+            EntityPlayerMP serverPlayer = (EntityPlayerMP) player;
+            GregoriusDrugworksPayloadRegistry.ResolvedPayload payload = PayloadLoaderUtil.resolve(held);
+            if (payload == null) {
+                return new ActionResult<ItemStack>(EnumActionResult.FAIL, held);
+            }
+
+            GregoriusDrugworksPayloadRegistry.applyResolved(serverPlayer, held, payload);
+
+            if (!serverPlayer.capabilities.isCreativeMode) {
+                held.shrink(1);
+            }
+
+            if (held.isEmpty()) {
+                serverPlayer.setHeldItem(hand, ItemStack.EMPTY);
+            }
+
+            serverPlayer.inventory.markDirty();
+            serverPlayer.openContainer.detectAndSendChanges();
+        }
+
         return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, held);
     }
 
@@ -72,19 +113,6 @@ public class ItemPrintableCarrier extends Item {
     public ItemStack onItemUseFinish(@Nonnull ItemStack stack,
                                      @Nonnull World world,
                                      @Nonnull EntityLivingBase entityLiving) {
-        if (!world.isRemote && entityLiving instanceof EntityPlayerMP && isUsableCarrier(stack)) {
-            EntityPlayerMP player = (EntityPlayerMP) entityLiving;
-            GregoriusDrugworksPayloadRegistry.ResolvedPayload payload = PayloadLoaderUtil.resolve(stack);
-            if (payload != null) {
-                GregoriusDrugworksPayloadRegistry.applyResolved(player, stack, payload);
-            }
-
-            if (!player.capabilities.isCreativeMode) {
-                stack.shrink(1);
-            }
-            player.inventory.markDirty();
-            player.openContainer.detectAndSendChanges();
-        }
         return stack;
     }
 }

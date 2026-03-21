@@ -10,6 +10,7 @@ import com.wurtzitane.gregoriusdrugworkspersistence.pill.GregoriusDrugworksPaylo
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.GregoriusDrugworksPillColors;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.client.GregoriusDrugworksPillClientHooks;
 import com.wurtzitane.gregoriusdrugworkspersistence.visual.client.GregoriusDrugworksVisualClientHooks;
+import com.wurtzitane.gregoriusdrugworkspersistence.visual.client.kirino.GregoriusDrugworksKirinoClientHooks;
 import net.minecraft.client.Minecraft;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.stack.MaterialStack;
@@ -44,6 +45,7 @@ public class ClientProxy {
         GregoriusDrugworksInhalationClientHooks.preInit();
         GregoriusDrugworksApplicatorClientHooks.preInit();
         GregoriusDrugworksVisualClientHooks.preInit();
+        GregoriusDrugworksKirinoClientHooks.preInit();
     }
 
     public static void postInit() {

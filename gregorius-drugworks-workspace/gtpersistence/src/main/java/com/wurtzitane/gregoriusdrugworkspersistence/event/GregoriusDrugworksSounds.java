@@ -12,6 +12,7 @@ public final class GregoriusDrugworksSounds {
 
     public static SoundEvent ANTIDOTE_INJECT;
     public static SoundEvent PILL_GULP;
+    public static SoundEvent SNORT;
 
     public static SoundEvent INHALATION_START;
     public static SoundEvent INHALATION_INHALE;
@@ -38,6 +39,7 @@ public final class GregoriusDrugworksSounds {
     public static void registerSounds(RegistryEvent.Register<SoundEvent> event) {
         ANTIDOTE_INJECT = register(event, "antidote_inject");
         PILL_GULP = register(event, "pill_gulp");
+        SNORT = register(event, "snort");
 
         INHALATION_START = register(event, "inhalation_start");
         INHALATION_INHALE = register(event, "inhalation_inhale");

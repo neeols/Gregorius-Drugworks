@@ -22,6 +22,7 @@ public final class TripBootstrap {
         bootstrapped = true;
 
         TripRegistrar.registerTrip(buildLsdTrip("gregoriusdrugworkspersistence:lsd_payload"));
+        TripRegistrar.registerTrip(buildMethamphetamineTrip("gregoriusdrugworkspersistence:methamphetamine_payload"));
         TripRegistrar.registerTrip(buildSalvinorinTrip("gregoriusdrugworkspersistence:salvinorin_a_payload"));
 
         TripRegistrar.registerAntidote(
@@ -195,6 +196,60 @@ public final class TripBootstrap {
                         .particlesMinGapTicks(200)
                         .message("Afterimage... the rainbow starts to soften.", "aqua")
                         .build())
+                .build();
+    }
+
+    private static TripDefinition buildMethamphetamineTrip(String itemId) {
+        return TripDefinition.builder(itemId)
+                .consumeOnUse(false)
+                .consumeAmount(1)
+                .stage(stage(
+                        0,
+                        16,
+                        120,
+                        80,
+                        "Rush... the room sharpens and your pulse jumps forward.",
+                        "aqua",
+                        particle("minecraft:crit", 45, 0.36D, 0.08D),
+                        TripStageTriggerSpec.NONE,
+                        effect("minecraft:speed", 18, 1, true),
+                        effect("minecraft:haste", 18, 0, true)
+                ))
+                .stage(stage(
+                        14,
+                        14,
+                        90,
+                        60,
+                        "Sprint state... everything feels urgent and electrically bright.",
+                        "yellow",
+                        particle("minecraft:fireworks_spark", 52, 0.44D, 0.12D),
+                        TripStageTriggerSpec.NONE,
+                        effect("minecraft:speed", 22, 2, true),
+                        effect("minecraft:haste", 22, 1, true)
+                ))
+                .stage(stage(
+                        42,
+                        16,
+                        110,
+                        70,
+                        "Hyperfocus... the edge softens into a jittering hum.",
+                        "gold",
+                        particle("minecraft:spell_instant", 38, 0.34D, 0.05D),
+                        TripStageTriggerSpec.NONE,
+                        effect("minecraft:speed", 18, 1, true),
+                        effect("minecraft:haste", 18, 0, true)
+                ))
+                .stage(stage(
+                        72,
+                        18,
+                        140,
+                        90,
+                        "Comedown... momentum bleeds back into the body.",
+                        "gray",
+                        particle("minecraft:cloud", 24, 0.28D, 0.02D),
+                        TripStageTriggerSpec.NONE,
+                        effect("minecraft:speed", 10, 0, true)
+                ))
                 .build();
     }
 

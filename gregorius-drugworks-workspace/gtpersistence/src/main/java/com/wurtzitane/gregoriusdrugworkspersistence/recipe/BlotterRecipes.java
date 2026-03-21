@@ -20,19 +20,19 @@ public final class BlotterRecipes {
     public static void init() {
         RecipeMaps.CUTTER_RECIPES.recipeBuilder()
                 .inputNBT(GregoriusDrugworksItems.BLOTTER_PAPER, NBTMatcher.ANY, NBTCondition.ANY)
-                .output(GregoriusDrugworksItems.SINGLE_TAB)
+                .output(GregoriusDrugworksItems.SINGLE_TAB, 64)
                 .duration(40)
                 .EUt(GTValues.VA[GTValues.LV])
                 .buildAndRegister();
 
-        registerLsdSoakRecipe(GregoriusDrugworksItems.BLOTTER_PAPER);
-        registerLsdSoakRecipe(GregoriusDrugworksItems.SINGLE_TAB);
+        registerLsdSoakRecipe(GregoriusDrugworksItems.BLOTTER_PAPER, 64);
+        registerLsdSoakRecipe(GregoriusDrugworksItems.SINGLE_TAB, 1);
     }
 
-    private static void registerLsdSoakRecipe(Item carrierItem) {
+    private static void registerLsdSoakRecipe(Item carrierItem, int lsdAmount) {
         RecipeMaps.CHEMICAL_BATH_RECIPES.recipeBuilder()
                 .inputNBT(carrierItem, NBTMatcher.ANY, NBTCondition.ANY)
-                .fluidInputs(GregoriusDrugworksMaterials.LSD.getFluid(64))
+                .fluidInputs(GregoriusDrugworksMaterials.LSD.getFluid(lsdAmount))
                 .output(carrierItem)
                 .duration(40)
                 .EUt(GTValues.VA[GTValues.LV])

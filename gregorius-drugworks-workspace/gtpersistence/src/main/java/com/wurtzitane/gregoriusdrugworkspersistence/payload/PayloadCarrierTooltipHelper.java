@@ -1,6 +1,8 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.payload;
 
 import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadDefinition;
+import com.wurtzitane.gregoriusdrugworks.common.payload.PayloadKeys;
+import com.wurtzitane.gregoriusdrugworkspersistence.blotter.ItemPrintableCarrier;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.GregoriusDrugworksPayloadPills;
 import com.wurtzitane.gregoriusdrugworkspersistence.pill.GregoriusDrugworksPillColors;
 import net.minecraft.client.resources.I18n;
@@ -33,6 +35,8 @@ public final class PayloadCarrierTooltipHelper {
         boolean revealed = PayloadLoaderUtil.getBooleanExtra(stack, PayloadCarrierDataKeys.REVEALED_KEY, false);
         if (stack.getItem() instanceof com.wurtzitane.gregoriusdrugworkspersistence.pill.ItemPayloadPill) {
             tooltip.add(TextFormatting.LIGHT_PURPLE + localize("tooltip.gregoriusdrugworkspersistence.payload.loaded_pill", "Loaded pill"));
+        } else if (stack.getItem() instanceof ItemPrintableCarrier && isSoakedPrintableCarrier(payload)) {
+            tooltip.add(TextFormatting.LIGHT_PURPLE + localize("tooltip.gregoriusdrugworkspersistence.payload.soaked", "Soaked"));
         } else if (stack.getItem() instanceof ItemFood) {
             tooltip.add(TextFormatting.LIGHT_PURPLE + localize("tooltip.gregoriusdrugworkspersistence.payload.laced_food", "Laced food"));
         } else {
@@ -69,6 +73,10 @@ public final class PayloadCarrierTooltipHelper {
 
     private static String localize(String key, String fallback) {
         return I18n.hasKey(key) ? I18n.format(key) : fallback;
+    }
+
+    private static boolean isSoakedPrintableCarrier(GregoriusDrugworksPayloadRegistry.ResolvedPayload payload) {
+        return payload != null && "blotter".equals(payload.getExtraData().getString(PayloadKeys.MODE_KEY));
     }
 
     private static String capitalize(String value) {

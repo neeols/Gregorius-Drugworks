@@ -275,5 +275,10 @@ public final class GregoriusDrugworksMaterials {
     public static Material Phenylacetone;
     public static Material LithiumChloride;
     public static Material LSD;
-
+    public static Material AcidifiedSaltWater;
+    public static Material TreatedSaltWater;
+    public static Material BromineVapor;
+    public static Material HydrobromicAcid;
+    public static Material Material4Nitrotoluene;
+    public static Material Material2Bromo6Nitrotoluene;
 }
