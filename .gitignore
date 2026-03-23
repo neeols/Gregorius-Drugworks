@@ -31,6 +31,8 @@ jei/
 !gregorius-drugworks-workspace/gtpersistence/src/main/java/com/wurtzitane/gregoriusdrugworkspersistence/integration/jei/
 !gregorius-drugworks-workspace/gtpersistence/src/main/java/com/wurtzitane/gregoriusdrugworkspersistence/integration/jei/**
 
+gregorius-drugworks-workspace/output/*
+
 # World saves
 saves/
 
@@ -56,3 +58,5 @@ banned-ips.json
 .codex_tmp_gt/FluidStorageKey.java
 .codex_tmp_gt/FirstDegreeMaterials.java
 .codex_tmp_gt/ElementMaterials.java
+_tmp_gtpersistence_*/
+_backup_gtpersistence_*/

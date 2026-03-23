@@ -1,0 +1,11 @@
+{
+  "parent": "gregoriusdrugworkspersistence:item/medical_applicator_blank",
+  "overrides": [
+    {
+      "predicate": {
+        "gregoriusdrugworkspersistence:loaded": 1.0
+      },
+      "model": "gregoriusdrugworkspersistence:item/medical_applicator_loaded"
+    }
+  ]
+}

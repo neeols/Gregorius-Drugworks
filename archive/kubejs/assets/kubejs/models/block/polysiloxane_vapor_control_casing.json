@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "kubejs:block/polysiloxane_vapor_control_casing"
-  }
-}

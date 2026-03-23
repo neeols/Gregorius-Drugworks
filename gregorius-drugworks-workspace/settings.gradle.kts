@@ -12,4 +12,4 @@ plugins {
     id("dev.kikugie.stonecutter") version "0.8.3"
 }
 
-include("common")
+include("gregorius-drugworks-common")
