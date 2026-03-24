@@ -47,16 +47,7 @@ banned-ips.json
 
 # Codex temp files
 .codex*/
-.codex_tmp_gt/UnknownCompositionMaterials.java
-.codex_tmp_gt/SecondDegreeMaterials.java
-.codex_tmp_gt/OrganicChemistryMaterials.java
-.codex_tmp_gt/Materials.java
-.codex_tmp_gt/Material.java
-.codex_tmp_gt/MarkerMaterials.java
-.codex_tmp_gt/HigherDegreeMaterials.java
-.codex_tmp_gt/GTBlockMaterials.java
-.codex_tmp_gt/FluidStorageKey.java
-.codex_tmp_gt/FirstDegreeMaterials.java
-.codex_tmp_gt/ElementMaterials.java
-_tmp_gtpersistence_*/
+.codex_tmp_gt/*.java
 _backup_gtpersistence_*/
+_tmp_*.txt
+_tmp_*/

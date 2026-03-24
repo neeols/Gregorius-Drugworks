@@ -4,7 +4,7 @@ param(
     [string]$PrismExecutable = "C:\Users\azaza\AppData\Local\Programs\PrismLauncher\prismlauncher.exe",
     [string]$JavaHome = "C:\Program Files\Java\jdk-25.0.2",
     [string]$GTPersistenceRuntimeSourceRoot = "",
-    [string[]]$GTPersistenceRuntimeSubpaths = @("config\gregtech", "groovy", "scripts"),
+    [string[]]$GTPersistenceRuntimeSubpaths = @("config\gregtech", "config\AppliedEnergistics2", "groovy", "scripts"),
     [string[]]$GTPersistenceRuntimeExcludeNames = @("persistent_data.dat"),
     [string[]]$AdditionalJarRemovalPatterns = @(),
     [int]$PostStopDelaySeconds = 2,
@@ -172,6 +172,23 @@ function Get-CurseModJarByVersion([string]$ArtifactId, [string]$ModId, [string]$
     return $candidates | Sort-Object Version -Descending | Select-Object -First 1
 }
 
+function Get-MavenRuntimeJar([string]$GroupId, [string]$ArtifactId, [string]$Version, [string]$Label) {
+    $cacheRoot = Join-Path $env:USERPROFILE ".gradle\caches\modules-2\files-2.1"
+    $artifactDir = Join-Path (Join-Path (Join-Path $cacheRoot $GroupId) $ArtifactId) $Version
+    Require-Path $artifactDir "$Label Gradle cache directory"
+
+    $jar = Get-ChildItem -LiteralPath $artifactDir -Recurse -File -Filter "*.jar" |
+        Where-Object { $_.Name -notmatch '(?i)(-sources|-javadoc|-api)' } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if ($null -eq $jar) {
+        throw "No $Label runtime jar found under $artifactDir"
+    }
+
+    return $jar
+}
+
 function Remove-MatchingJars([string]$ModsDir, [string[]]$Regexes) {
     Get-ChildItem -LiteralPath $ModsDir -File -Filter "*.jar" -ErrorAction SilentlyContinue |
         Where-Object {
@@ -296,6 +313,7 @@ $workspace = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $addonProject = $PSScriptRoot
 $commonProject = Join-Path $workspace "gregorius-drugworks-common"
 $gtPersistenceProject = Join-Path $workspace "gtpersistence"
+$addonBuildGradle = Join-Path $addonProject "build.gradle"
 
 $workspaceGradle = Join-Path $workspace "gradlew.bat"
 $addonGradle = Join-Path $addonProject "gradlew.bat"
@@ -359,17 +377,21 @@ try {
 
     $modularUIVersion = Get-DependencyVersionFromGradleFile $gtPersistenceDependencies "com.cleanroommc:modularui:" "ModularUI"
     $modularUIRuntime = Get-CurseModJarByVersion "modularui-624243" "modularui" $modularUIVersion "ModularUI"
+    $jeiVersion = Get-DependencyVersionFromGradleFile $addonBuildGradle "mezz.jei:jei_1.12.2:" "JEI"
+    $jeiRuntime = Get-MavenRuntimeJar "mezz.jei" "jei_1.12.2" $jeiVersion "JEI"
 
     Write-Host "gtpersistence jar:               $($gtPersistenceJar.FullName)" -ForegroundColor Green
     Write-Host "gregorius-drugworks-common jar: $($commonJar.FullName)" -ForegroundColor Green
     Write-Host "gregorius-drugworks-persistence: $($addonJar.FullName)" -ForegroundColor Green
     Write-Host "ModularUI runtime jar:          $($modularUIRuntime.Jar.FullName) (mcmod $($modularUIRuntime.VersionText))" -ForegroundColor Green
+    Write-Host "JEI runtime jar:                $($jeiRuntime.FullName)" -ForegroundColor Green
 
     $jarRemovalPatterns = @(
         '^(?i)(gregtech|gtceu)-.*\.jar$',
         '^(?i)gregoriusdrugworkspersistence-.*\.jar$',
         '^(?i)gregorius-drugworks-common-.*\.jar$',
         '^(?i)modularui-.*\.jar$',
+        '^(?i)(had-enough-items|jei_1\.12\.2)-.*\.jar$',
         '^(?i)!?mixinbooter-.*\.jar$'
     ) + $AdditionalJarRemovalPatterns
 
@@ -383,11 +405,13 @@ try {
     $copiedCommon = Copy-And-Verify $commonJar.FullName $modsDir
     $copiedAddon = Copy-And-Verify $addonJar.FullName $modsDir
     $copiedModularUI = Copy-And-Verify $modularUIRuntime.Jar.FullName $modsDir
+    $copiedJei = Copy-And-Verify $jeiRuntime.FullName $modsDir
 
     Write-Host "Copied gtpersistence jar:               $copiedGtPersistence" -ForegroundColor Green
     Write-Host "Copied gregorius-drugworks-common jar: $copiedCommon" -ForegroundColor Green
     Write-Host "Copied gregorius-drugworks-persistence: $copiedAddon" -ForegroundColor Green
     Write-Host "Copied ModularUI runtime jar:          $copiedModularUI" -ForegroundColor Green
+    Write-Host "Copied JEI runtime jar:                $copiedJei" -ForegroundColor Green
 
     if (-not $SkipRuntimeSync) {
         Step "Syncing gtpersistence runtime content into Prism"
@@ -405,6 +429,12 @@ try {
         $verifiedCommon = Assert-SingleDeployedJar $modsDir '^(?i)gregorius-drugworks-common-.*\.jar$' "gregorius-drugworks-common" $commonJar.FullName
         $verifiedAddon = Assert-SingleDeployedJar $modsDir '^(?i)gregoriusdrugworkspersistence-.*\.jar$' "gregorius-drugworks-persistence" $addonJar.FullName
         $verifiedModularUI = Assert-SingleDeployedJar $modsDir '^(?i)modularui-.*\.jar$' "ModularUI" $modularUIRuntime.Jar.FullName
+        $verifiedJei = Assert-SingleDeployedJar $modsDir '^(?i)jei_1\.12\.2-.*\.jar$' "JEI" $jeiRuntime.FullName
+        $remainingHei = @(Get-ChildItem -LiteralPath $modsDir -File -Filter "*.jar" -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match '^(?i)had-enough-items-.*\.jar$' })
+        if ($remainingHei.Count -gt 0) {
+            throw "Expected HEI to be removed from $modsDir but found $($remainingHei.Count) jar(s)"
+        }
 
         Write-Host "Verified gtpersistence jar:               $($verifiedGt.Path)" -ForegroundColor Green
         Write-Host "gtpersistence SHA-256:                    $($verifiedGt.Hash)" -ForegroundColor DarkGreen
@@ -414,6 +444,8 @@ try {
         Write-Host "gregorius-drugworks-persistence SHA-256:  $($verifiedAddon.Hash)" -ForegroundColor DarkGreen
         Write-Host "Verified ModularUI runtime jar:          $($verifiedModularUI.Path)" -ForegroundColor Green
         Write-Host "ModularUI SHA-256:                       $($verifiedModularUI.Hash)" -ForegroundColor DarkGreen
+        Write-Host "Verified JEI runtime jar:                $($verifiedJei.Path)" -ForegroundColor Green
+        Write-Host "JEI SHA-256:                             $($verifiedJei.Hash)" -ForegroundColor DarkGreen
     }
 
     if (-not $SkipPrismLaunch) {

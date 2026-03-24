@@ -21,6 +21,9 @@ apply from: 'gradle/scripts/helpers.gradle'
 def cleanroomCompileJar = fileTree("${System.properties['user.home']}/.gradle/caches/modules-2/files-2.1/com.cleanroommc/cleanroom/0.5.4-alpha") {
     include '**/cleanroom-0.5.4-alpha.jar'
 }.singleFile
+def modularUiCompileJar = fileTree("${System.properties['user.home']}/.gradle/caches/modules-2/files-2.1/com.cleanroommc/modularui/3.0.6") {
+    include '**/modularui-3.0.6-dev.jar'
+}.singleFile
 def localCraftTweakerJar = file("C:/Users/azaza/Downloads/CraftTweaker2-1.12-4.1.20.711.jar")
 if (!localCraftTweakerJar.exists()) {
     throw new GradleException("Local CraftTweaker jar not found at ${localCraftTweakerJar}")
@@ -53,7 +56,29 @@ def resolveLatestLocalJar = { File libsDir, String label ->
     return resolved
 }
 
+def resolveLatestLocalDevJar = { File libsDir, String label ->
+    if (!libsDir.exists()) {
+        logger.lifecycle("Local ${label} libs directory not found: ${libsDir}")
+        return null
+    }
+
+    def jars = fileTree(libsDir) {
+        include '*-dev.jar'
+    }.files.findAll { it.isFile() }
+
+    if (jars.isEmpty()) {
+        logger.lifecycle("No local ${label} dev jar found in ${libsDir}")
+        return null
+    }
+
+    def resolved = jars.max { it.lastModified() }
+    logger.lifecycle("Using local ${label} dev jar: ${resolved}")
+    return resolved
+}
+
 def localCommonJar = resolveLatestLocalJar(new File(workspaceRoot, "gregorius-drugworks-common/build/libs"), "gregorius-drugworks-common")
+def localGTPersistenceRuntimeJar = resolveLatestLocalJar(new File(workspaceRoot, "gtpersistence/build/libs"), "gtpersistence")
+def localGTPersistenceCompileJar = resolveLatestLocalDevJar(new File(workspaceRoot, "gtpersistence/build/libs"), "gtpersistence")
 def localGTPersistenceVersion = localGTPersistenceProperties.getProperty("modVersion", "2.8.10-beta").trim()
 project.ext.set("gregtech_dependency_floor", localGTPersistenceVersion)
 
@@ -200,15 +225,28 @@ dependencies {
     }
 
     logger.lifecycle("Using gregtech dependency version aligned to local gtpersistence: ${localGTPersistenceVersion}")
-    compileOnly("gregtech:gregtech:${localGTPersistenceVersion}")
-    runtimeOnly("gregtech:gregtech:${localGTPersistenceVersion}")
+    if (localGTPersistenceCompileJar != null) {
+        compileOnly(files(localGTPersistenceCompileJar))
+    } else {
+        logger.lifecycle("Falling back to published gregtech compile dependency because no local dev jar is available")
+        compileOnly("gregtech:gregtech:${localGTPersistenceVersion}")
+    }
+    if (localGTPersistenceRuntimeJar != null) {
+        runtimeOnly(files(localGTPersistenceRuntimeJar))
+    } else {
+        logger.lifecycle("Falling back to published gregtech runtime dependency because no local runtime jar is available")
+        runtimeOnly("gregtech:gregtech:${localGTPersistenceVersion}")
+    }
     compileOnly(rfg.deobf("curse.maven:groovyscript-687577:7760348")) {
         transitive = false
     }
     compileOnly(files(cleanroomCompileJar))
+    compileOnly(files(modularUiCompileJar))
     compileOnly("org.apache.commons:commons-lang3:3.17.0")
     compileOnly("org.jspecify:jspecify:1.0.0")
-    compileOnly(rfg.deobf("curse.maven:had-enough-items-557549:7515497"))
+    compileOnly("org.jetbrains:annotations:24.1.0")
+    compileOnly("mezz.jei:jei_1.12.2:4.16.1.302")
+    runtimeOnly("mezz.jei:jei_1.12.2:4.16.1.302")
     compileOnly(project.files(localCraftTweakerJar))
     runtimeOnly(project.files(localCraftTweakerJar))
     if (localCommonJar != null) {

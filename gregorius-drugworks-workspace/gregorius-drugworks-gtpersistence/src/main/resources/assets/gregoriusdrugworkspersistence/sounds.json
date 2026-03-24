@@ -12,7 +12,7 @@
     "subtitle": "Snorting... [Gregorius Drugworks]",
     "sounds": [
       {
-        "name": "minecraft:entity.horse.breathe",
+        "name": "gregoriusdrugworkspersistence:inhalation_inhale",
         "stream": false
       }
     ]

@@ -1,14 +1,10 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
-import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityChemicalPlant;
 import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityBlotterPrinter;
-import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityDistillationUnit;
-import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityPyrolysisChamber;
 import gregtech.api.GregTechAPI;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.block.machines.MachineItemBlock;
-import gregtech.common.metatileentities.MetaTileEntities;
 import net.minecraft.util.ResourceLocation;
 
 public final class GregoriusDrugworksMetaTileEntities {
@@ -32,13 +28,10 @@ public final class GregoriusDrugworksMetaTileEntities {
         ensureRegistry();
         MachineItemBlock.addCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
 
-        CHEMICAL_PLANT = MetaTileEntities.registerMetaTileEntity(11000,
-                new MetaTileEntityChemicalPlant(id("chemical_plant")));
-        DISTILLATION_UNIT = MetaTileEntities.registerMetaTileEntity(11001,
-                new MetaTileEntityDistillationUnit(id("distillation_unit")));
-        PYROLYSIS_CHAMBER = MetaTileEntities.registerMetaTileEntity(11002,
-                new MetaTileEntityPyrolysisChamber(id("pyrolysis_chamber")));
-        BLOTTER_PRINTER = MetaTileEntities.registerMetaTileEntity(11003,
+        CHEMICAL_PLANT = gregtech.common.metatileentities.MetaTileEntities.CHEMICAL_PLANT;
+        DISTILLATION_UNIT = gregtech.common.metatileentities.MetaTileEntities.DISTILLATION_UNIT;
+        PYROLYSIS_CHAMBER = gregtech.common.metatileentities.MetaTileEntities.PYROLYSIS_CHAMBER;
+        BLOTTER_PRINTER = gregtech.common.metatileentities.MetaTileEntities.registerMetaTileEntity(11003,
                 new MetaTileEntityBlotterPrinter(id("blotter_printer")));
     }
 
