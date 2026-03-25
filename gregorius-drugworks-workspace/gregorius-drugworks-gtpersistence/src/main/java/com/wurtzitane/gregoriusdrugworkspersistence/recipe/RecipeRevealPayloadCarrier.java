@@ -22,7 +22,7 @@ public final class RecipeRevealPayloadCarrier implements IRecipe {
 
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {
-        return findCarrier(inv) != null;
+        return !findCarrier(inv).isEmpty();
     }
 
     @Override

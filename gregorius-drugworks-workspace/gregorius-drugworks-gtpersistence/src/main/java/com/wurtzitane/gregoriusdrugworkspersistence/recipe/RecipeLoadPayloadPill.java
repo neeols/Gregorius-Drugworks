@@ -32,46 +32,12 @@ public final class RecipeLoadPayloadPill implements IRecipe {
 
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {
-        return findMatch(inv) != null;
+        return !createResult(findMatch(inv)).isEmpty();
     }
 
     @Override
     public ItemStack getCraftingResult(InventoryCrafting inv) {
-        Match match = findMatch(inv);
-        if (match == null) {
-            return ItemStack.EMPTY;
-        }
-
-        boolean revealed = resolveResultRevealed(match.pill, match.revealed);
-
-        if (match.action == MatchAction.RECOLOR_EXISTING) {
-            ItemStack result = match.pill.copy();
-            result.setCount(1);
-            GregoriusDrugworksPayloadPills.setColors(result, match.leftColorId, match.rightColorId);
-            GregoriusDrugworksPayloadPills.setRevealed(result, revealed);
-            return result;
-        }
-
-        if (match.action == MatchAction.COLOR_SHELL) {
-            ItemStack shell = createShellResult(match.pill);
-            GregoriusDrugworksPayloadPills.setColors(shell, match.leftColorId, match.rightColorId);
-            GregoriusDrugworksPayloadPills.setRevealed(shell, revealed);
-            return shell;
-        }
-
-        ItemStack loaded = PayloadLoadingService.createLoadedResult(
-                new ItemStack(GregoriusDrugworksMetaItems.PILL),
-                match.entry.getPayloadId(),
-                1,
-                PayloadFoodLacingRegistry.createFoodPayloadData(match.entry.getModeId(), match.revealed)
-        );
-        if (loaded.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-
-        GregoriusDrugworksPayloadPills.setColors(loaded, match.leftColorId, match.rightColorId);
-        GregoriusDrugworksPayloadPills.setRevealed(loaded, revealed);
-        return loaded;
+        return createResult(findMatch(inv));
     }
 
     @Override
@@ -88,7 +54,10 @@ public final class RecipeLoadPayloadPill implements IRecipe {
     public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
         NonNullList<ItemStack> remaining = NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
         Match match = findMatch(inv);
-        if (match != null && match.additiveSlot >= 0 && match.entry != null) {
+        if (match != null
+                && match.additiveSlot >= 0
+                && match.entry != null
+                && !createResult(match).isEmpty()) {
             remaining.set(match.additiveSlot, match.entry.getRemainder());
         }
         return remaining;
@@ -337,6 +306,48 @@ public final class RecipeLoadPayloadPill implements IRecipe {
 
     private boolean resolveResultRevealed(ItemStack sourcePill, boolean explicitReveal) {
         return explicitReveal || GregoriusDrugworksPayloadPills.isRevealed(sourcePill);
+    }
+
+    private ItemStack createResult(@Nullable Match match) {
+        if (match == null) {
+            return ItemStack.EMPTY;
+        }
+
+        boolean revealed = resolveResultRevealed(match.pill, match.revealed);
+
+        if (match.action == MatchAction.RECOLOR_EXISTING) {
+            ItemStack result = match.pill.copy();
+            result.setCount(1);
+            GregoriusDrugworksPayloadPills.setColors(result, match.leftColorId, match.rightColorId);
+            GregoriusDrugworksPayloadPills.setRevealed(result, revealed);
+            return result;
+        }
+
+        if (match.action == MatchAction.COLOR_SHELL) {
+            ItemStack shell = createShellResult(match.pill);
+            GregoriusDrugworksPayloadPills.setColors(shell, match.leftColorId, match.rightColorId);
+            GregoriusDrugworksPayloadPills.setRevealed(shell, revealed);
+            return shell;
+        }
+
+        if (match.entry == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack shell = createShellResult(match.pill);
+        ItemStack loaded = PayloadLoadingService.createLoadedResult(
+                shell,
+                match.entry.getPayloadId(),
+                1,
+                PayloadFoodLacingRegistry.createFoodPayloadData(match.entry.getModeId(), match.revealed)
+        );
+        if (loaded.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        GregoriusDrugworksPayloadPills.setColors(loaded, match.leftColorId, match.rightColorId);
+        GregoriusDrugworksPayloadPills.setRevealed(loaded, revealed);
+        return loaded;
     }
 
     private static final class Match {

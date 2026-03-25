@@ -51,3 +51,4 @@ banned-ips.json
 _backup_gtpersistence_*/
 _tmp_*.txt
 _tmp_*/
+output/

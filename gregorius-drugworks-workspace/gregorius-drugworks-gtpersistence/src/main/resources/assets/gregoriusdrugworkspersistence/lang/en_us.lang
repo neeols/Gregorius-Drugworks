@@ -1,4 +1,6 @@
 itemGroup.gregoriusdrugworkspersistence.main=Gregorius Drugworks
+itemGroup.gregoriusdrugworkspersistence.industrial=Gregorius Drugworks Industrial
+itemGroup.gregoriusdrugworkspersistence.medical=Gregorius Drugworks Medical
 itemGroup.gregoriusdrugworkspersistence.materials=Gregorius Drugworks Materials
 gregoriusdrugworkspersistence.veins.ore.fluorite=Fluorite Vein
 
@@ -26,6 +28,7 @@ item.gregoriusdrugworkspersistence.glucagon_injector.name=Glucagon Ampoule
 item.gregoriusdrugworkspersistence.digoxin_fab.name=Digoxin-Fab Ampoule
 item.gregoriusdrugworkspersistence.plunger.name=Plunger
 item.gregoriusdrugworkspersistence.needle.name=Needle
+item.gregoriusdrugworkspersistence.montmorillonite_clay.name=Montmorillonite Clay
 item.gregoriusdrugworkspersistence.pvc_glove.name=Polyvinyl Chloride (PVC) Glove
 item.gregoriusdrugworkspersistence.shape_glove.name=Mold (Glove)
 item.gregoriusdrugworkspersistence.crystalmeth.name=Crystal Meth

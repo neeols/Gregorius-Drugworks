@@ -6,10 +6,13 @@ import com.wurtzitane.gregoriusdrugworkspersistence.recipe.GregoriusDrugworksUni
 import gregtech.api.recipes.FluidCellInput;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.material.Material;
-import gregtech.api.unification.ore.OrePrefix;
-import gregtech.api.unification.material.properties.PropertyKey;
 import gregtech.api.creativetab.BaseCreativeTab;
+import gregtech.api.unification.material.properties.PropertyKey;
+import gregtech.api.unification.ore.OrePrefix;
+import gregtech.api.metatileentity.MetaTileEntity;
+import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 
@@ -53,6 +56,8 @@ public final class GregoriusDrugworksCreativeTabs {
     }
 
     public static CreativeTabs MAIN;
+    public static CreativeTabs INDUSTRIAL;
+    public static CreativeTabs MEDICAL;
     public static CreativeTabs MATERIALS;
     private static List<ItemStack> materialStacksCache;
 
@@ -62,20 +67,36 @@ public final class GregoriusDrugworksCreativeTabs {
         }
         materialStacksCache = null;
 
-        MAIN = new CreativeTabs("gregoriusdrugworkspersistence.main") {
-            @Nonnull
+        MAIN = new BaseCreativeTab(Tags.MOD_ID + ".main",
+                GregoriusDrugworksCreativeTabs::createMainIcon, false) {
             @Override
-            public ItemStack createIcon() {
-                if (GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE != null) {
-                    return new ItemStack(GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE);
-                }
-                if (GregoriusDrugworksItems.CARBON_NANOTUBES != null) {
-                    return new ItemStack(GregoriusDrugworksItems.CARBON_NANOTUBES);
-                }
-                if (GregoriusDrugworksBlocks.CARBONIZED_REACTOR_CASING != null) {
-                    return new ItemStack(GregoriusDrugworksBlocks.CARBONIZED_REACTOR_CASING);
-                }
-                return ItemStack.EMPTY;
+            public void displayAllRelevantItems(@Nonnull NonNullList<ItemStack> items) {
+                Map<String, ItemStack> orderedStacks = new LinkedHashMap<>();
+                addOverviewStacks(orderedStacks);
+                addIndustrialStacks(orderedStacks);
+                addMedicalStacks(orderedStacks);
+                addRemainingRegisteredContent(orderedStacks);
+                items.addAll(orderedStacks.values());
+            }
+        };
+
+        INDUSTRIAL = new BaseCreativeTab(Tags.MOD_ID + ".industrial",
+                GregoriusDrugworksCreativeTabs::createIndustrialIcon, false) {
+            @Override
+            public void displayAllRelevantItems(@Nonnull NonNullList<ItemStack> items) {
+                Map<String, ItemStack> orderedStacks = new LinkedHashMap<>();
+                addIndustrialStacks(orderedStacks);
+                items.addAll(orderedStacks.values());
+            }
+        };
+
+        MEDICAL = new BaseCreativeTab(Tags.MOD_ID + ".medical",
+                GregoriusDrugworksCreativeTabs::createMedicalIcon, false) {
+            @Override
+            public void displayAllRelevantItems(@Nonnull NonNullList<ItemStack> items) {
+                Map<String, ItemStack> orderedStacks = new LinkedHashMap<>();
+                addMedicalStacks(orderedStacks);
+                items.addAll(orderedStacks.values());
             }
         };
 
@@ -90,6 +111,36 @@ public final class GregoriusDrugworksCreativeTabs {
         };
     }
 
+    private static ItemStack createMainIcon() {
+        if (GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE != null) {
+            return new ItemStack(GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE);
+        }
+        return createIndustrialIcon();
+    }
+
+    private static ItemStack createIndustrialIcon() {
+        if (GregoriusDrugworksMetaTileEntities.CHEMICAL_PLANT != null) {
+            return GregoriusDrugworksMetaTileEntities.CHEMICAL_PLANT.getStackForm();
+        }
+        if (GregoriusDrugworksBlocks.CARBONIZED_REACTOR_CASING != null) {
+            return new ItemStack(GregoriusDrugworksBlocks.CARBONIZED_REACTOR_CASING);
+        }
+        if (GregoriusDrugworksItems.CARBON_NANOTUBES != null) {
+            return new ItemStack(GregoriusDrugworksItems.CARBON_NANOTUBES);
+        }
+        return ItemStack.EMPTY;
+    }
+
+    private static ItemStack createMedicalIcon() {
+        if (GregoriusDrugworksMetaItems.NALOXONE_AUTOINJECTOR != null) {
+            return new ItemStack(GregoriusDrugworksMetaItems.NALOXONE_AUTOINJECTOR);
+        }
+        if (GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE != null) {
+            return new ItemStack(GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE);
+        }
+        return ItemStack.EMPTY;
+    }
+
     private static ItemStack createMaterialsIcon() {
         if (GregoriusDrugworksMaterials.SalvinorinA != null) {
             ItemStack dust = GregoriusDrugworksUnificationHelper.get(OrePrefix.dust,
@@ -102,6 +153,131 @@ public final class GregoriusDrugworksCreativeTabs {
             return new ItemStack(GregoriusDrugworksItems.CARBON_NANOTUBES);
         }
         return ItemStack.EMPTY;
+    }
+
+    private static void addOverviewStacks(Map<String, ItemStack> orderedStacks) {
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.CHEMICAL_PLANT);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.DISTILLATION_UNIT);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.PYROLYSIS_CHAMBER);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.BLOTTER_PRINTER);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T1);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.FLUOROPOLYMER_FRACTIONATION_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.THERMOCRACK_MATRIX_CASING);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.CARBON_NANOTUBES);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.HEATPROOF_ALLOY_MESH);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.FINE_STAINLESS_MESH);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.CERAMIC_FILTER);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.NALOXONE_AUTOINJECTOR);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.FLUMAZENIL_AMPOULE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.ATROPINE_2PAM_AUTOINJECTOR);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.PILL);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.SAMPLE_VAPE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.CRYSTALMETH);
+    }
+
+    private static void addIndustrialStacks(Map<String, ItemStack> orderedStacks) {
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.CHEMICAL_PLANT);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.DISTILLATION_UNIT);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.PYROLYSIS_CHAMBER);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.BLOTTER_PRINTER);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T1);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T2);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T3);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T4);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T5);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T6);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T7);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T1);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T2);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T3);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T4);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T5);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T6);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T7);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.FLUOROPOLYMER_FRACTIONATION_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.POLYETHERIMIDE_THERMAL_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.MOLECULAR_MEMBRANE_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.POLYSILOXANE_VAPOR_CONTROL_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.CARBONIZED_REACTOR_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.OBSIDIAN_FORGED_THERMAL_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.THERMOCRACK_MATRIX_CASING);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.METHBLOCK);
+        addBlockStack(orderedStacks, GregoriusDrugworksBlocks.COMPRESSEDMETHBLOCK);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.CARBON_NANOTUBES);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.HEATPROOF_ALLOY_MESH);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.FINE_STAINLESS_MESH);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.CERAMIC_FILTER);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.BLOTTER_PAPER_MOLD);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.BLOTTER_PAPER);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.SINGLE_TAB);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.USED_PAPER_FILTER);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.USED_VAPE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.EMPTY_CAPSULE_PILL);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.MONTMORILLONITE_CLAY);
+    }
+
+    private static void addMedicalStacks(Map<String, ItemStack> orderedStacks) {
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.EMPTY_GLASS_AMPOULE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.EMPTY_CAPSULE_PILL);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.PLUNGER);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.NEEDLE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.PVC_GLOVE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.SHAPE_GLOVE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.NALOXONE_AUTOINJECTOR);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.FLUMAZENIL_AMPOULE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.ATROPINE_2PAM_AUTOINJECTOR);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.NAC_INFUSION);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.FOMEPIZOLE_VIAL);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.SALVINORIN_A_VIAL);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.HYDROXOCOBALAMIN_KIT);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.VITAMIN_K_AMPOULE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.PROTAMINE_VIAL);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.GLUCAGON_INJECTOR);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.DIGOXIN_FAB);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.KAPPA_RESET_AMPOULE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.PILL);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.SAMPLE_VAPE);
+        addItemStack(orderedStacks, GregoriusDrugworksMetaItems.CRYSTALMETH);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.BLOTTER_PAPER);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.SINGLE_TAB);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.USED_PAPER_FILTER);
+        addItemStack(orderedStacks, GregoriusDrugworksItems.USED_VAPE);
+    }
+
+    private static void addRemainingRegisteredContent(Map<String, ItemStack> orderedStacks) {
+        for (Item item : GregoriusDrugworksItems.getRegisteredItems()) {
+            addUniqueStack(orderedStacks, new ItemStack(item));
+        }
+        for (Item item : GregoriusDrugworksMetaItems.getMetaItems()) {
+            addUniqueStack(orderedStacks, new ItemStack(item));
+        }
+        for (Block block : GregoriusDrugworksBlocks.getBlocks()) {
+            addUniqueStack(orderedStacks, new ItemStack(block));
+        }
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.CHEMICAL_PLANT);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.DISTILLATION_UNIT);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.PYROLYSIS_CHAMBER);
+        addMachineStack(orderedStacks, GregoriusDrugworksMetaTileEntities.BLOTTER_PRINTER);
+    }
+
+    private static void addItemStack(Map<String, ItemStack> orderedStacks, Item item) {
+        if (item != null) {
+            addUniqueStack(orderedStacks, new ItemStack(item));
+        }
+    }
+
+    private static void addBlockStack(Map<String, ItemStack> orderedStacks, Block block) {
+        if (block != null) {
+            addUniqueStack(orderedStacks, new ItemStack(block));
+        }
+    }
+
+    private static void addMachineStack(Map<String, ItemStack> orderedStacks, MetaTileEntity machine) {
+        if (machine != null) {
+            addUniqueStack(orderedStacks, machine.getStackForm());
+        }
     }
 
     private static List<ItemStack> getMaterialStacks() {

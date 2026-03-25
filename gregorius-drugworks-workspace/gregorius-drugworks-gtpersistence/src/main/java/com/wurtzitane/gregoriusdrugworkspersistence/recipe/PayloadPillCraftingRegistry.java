@@ -157,9 +157,13 @@ public final class PayloadPillCraftingRegistry {
         }
 
         public Builder additive(OrePrefix prefix, Material material) {
+            final String oreDictName = prefix.name() + material.toCamelCaseString();
             this.matcher = candidate -> {
                 if (candidate.isEmpty()) {
                     return false;
+                }
+                if (OreDictUnifier.hasOreDictionary(candidate, oreDictName)) {
+                    return true;
                 }
                 ItemStack template = OreDictUnifier.get(prefix, material, 1);
                 return !template.isEmpty() && ItemStack.areItemsEqual(candidate, template);

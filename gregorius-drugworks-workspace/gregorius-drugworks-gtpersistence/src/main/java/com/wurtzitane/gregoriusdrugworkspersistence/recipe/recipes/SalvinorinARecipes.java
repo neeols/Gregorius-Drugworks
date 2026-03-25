@@ -2470,7 +2470,7 @@ public final class SalvinorinARecipes {
         builder.EUt(VA[LV]);
         builder.buildAndRegister();
 
-        ModHandler.addShapedRecipe("empty_capsule_pill_craft", new ItemStack(GregoriusDrugworksMetaItems.EMPTY_CAPSULE_PILL, 2), "PP ", "   ", "   ",
+        ModHandler.addShapedRecipe("empty_capsule_pill_craft", new ItemStack(GregoriusDrugworksMetaItems.EMPTY_CAPSULE_PILL, 2), "PP",
                 'P', Items.PAPER);
 
         // medical_applicator
