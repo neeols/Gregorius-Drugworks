@@ -28,6 +28,10 @@ kubejs/exported/
 # EMI / JEI caches
 emi/
 jei/
+!gregorius-drugworks-workspace/gtpersistence/src/main/java/com/wurtzitane/gregoriusdrugworkspersistence/integration/jei/
+!gregorius-drugworks-workspace/gtpersistence/src/main/java/com/wurtzitane/gregoriusdrugworkspersistence/integration/jei/**
+
+gregorius-drugworks-workspace/output/*
 
 # World saves
 saves/
@@ -40,3 +44,11 @@ ops.json
 whitelist.json
 banned-players.json
 banned-ips.json
+
+# Codex temp files
+.codex*/
+.codex_tmp_gt/*.java
+_backup_gtpersistence_*/
+_tmp_*.txt
+_tmp_*/
+output/

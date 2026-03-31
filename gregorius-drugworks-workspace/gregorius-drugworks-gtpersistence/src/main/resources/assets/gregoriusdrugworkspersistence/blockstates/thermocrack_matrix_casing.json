@@ -1,0 +1,11 @@
+{
+  "forge_marker": 1,
+  "variants": {
+    "active=false,variant=normal": {
+      "model": "gregoriusdrugworkspersistence:thermocrack_matrix_casing"
+    },
+    "active=true,variant=normal": {
+      "model": "gregoriusdrugworkspersistence:thermocrack_matrix_casing_active"
+    }
+  }
+}
