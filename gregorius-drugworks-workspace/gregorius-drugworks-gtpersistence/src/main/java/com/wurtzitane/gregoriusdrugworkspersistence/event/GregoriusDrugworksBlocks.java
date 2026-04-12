@@ -61,36 +61,32 @@ public final class GregoriusDrugworksBlocks {
     public static void preInit() {
         BLOCKS.clear();
         ITEM_BLOCKS.clear();
-        gregtech.common.blocks.GregoriusDrugworksBlocks.init();
 
-        CHEMPLANT_PIPE_CASING_T1 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T1;
-        CHEMPLANT_PIPE_CASING_T2 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T2;
-        CHEMPLANT_PIPE_CASING_T3 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T3;
-        CHEMPLANT_PIPE_CASING_T4 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T4;
-        CHEMPLANT_PIPE_CASING_T5 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T5;
-        CHEMPLANT_PIPE_CASING_T6 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T6;
-        CHEMPLANT_PIPE_CASING_T7 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_PIPE_CASING_T7;
+        CHEMPLANT_PIPE_CASING_T1 = createMetalBlock("chemplant_pipe_casing_t1", 5.0F, 6.0F);
+        CHEMPLANT_PIPE_CASING_T2 = createMetalBlock("chemplant_pipe_casing_t2", 5.0F, 6.0F);
+        CHEMPLANT_PIPE_CASING_T3 = createMetalBlock("chemplant_pipe_casing_t3", 5.0F, 6.0F);
+        CHEMPLANT_PIPE_CASING_T4 = createMetalBlock("chemplant_pipe_casing_t4", 5.0F, 6.0F);
+        CHEMPLANT_PIPE_CASING_T5 = createMetalBlock("chemplant_pipe_casing_t5", 5.0F, 6.0F);
+        CHEMPLANT_PIPE_CASING_T6 = createMetalBlock("chemplant_pipe_casing_t6", 5.0F, 6.0F);
+        CHEMPLANT_PIPE_CASING_T7 = createMetalBlock("chemplant_pipe_casing_t7", 5.0F, 6.0F);
 
-        CHEMPLANT_MACHINE_CASING_T1 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T1;
-        CHEMPLANT_MACHINE_CASING_T2 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T2;
-        CHEMPLANT_MACHINE_CASING_T3 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T3;
-        CHEMPLANT_MACHINE_CASING_T4 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T4;
-        CHEMPLANT_MACHINE_CASING_T5 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T5;
-        CHEMPLANT_MACHINE_CASING_T6 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T6;
-        CHEMPLANT_MACHINE_CASING_T7 = gregtech.common.blocks.GregoriusDrugworksBlocks.CHEMPLANT_MACHINE_CASING_T7;
+        CHEMPLANT_MACHINE_CASING_T1 = createMetalBlock("chemplant_machine_casing_t1", 5.0F, 6.0F);
+        CHEMPLANT_MACHINE_CASING_T2 = createMetalBlock("chemplant_machine_casing_t2", 5.0F, 6.0F);
+        CHEMPLANT_MACHINE_CASING_T3 = createMetalBlock("chemplant_machine_casing_t3", 5.0F, 6.0F);
+        CHEMPLANT_MACHINE_CASING_T4 = createMetalBlock("chemplant_machine_casing_t4", 5.0F, 6.0F);
+        CHEMPLANT_MACHINE_CASING_T5 = createMetalBlock("chemplant_machine_casing_t5", 5.0F, 6.0F);
+        CHEMPLANT_MACHINE_CASING_T6 = createMetalBlock("chemplant_machine_casing_t6", 5.0F, 6.0F);
+        CHEMPLANT_MACHINE_CASING_T7 = createMetalBlock("chemplant_machine_casing_t7", 5.0F, 6.0F);
 
-        FLUOROPOLYMER_FRACTIONATION_CASING =
-                gregtech.common.blocks.GregoriusDrugworksBlocks.FLUOROPOLYMER_FRACTIONATION_CASING;
-        POLYETHERIMIDE_THERMAL_CASING =
-                gregtech.common.blocks.GregoriusDrugworksBlocks.POLYETHERIMIDE_THERMAL_CASING;
-        MOLECULAR_MEMBRANE_CASING = gregtech.common.blocks.GregoriusDrugworksBlocks.MOLECULAR_MEMBRANE_CASING;
-        POLYSILOXANE_VAPOR_CONTROL_CASING =
-                gregtech.common.blocks.GregoriusDrugworksBlocks.POLYSILOXANE_VAPOR_CONTROL_CASING;
+        FLUOROPOLYMER_FRACTIONATION_CASING = createMetalBlock("fluoropolymer_fractionation_casing", 5.0F, 8.0F);
+        POLYETHERIMIDE_THERMAL_CASING = createMetalBlock("polyetherimide_thermal_casing", 5.0F, 8.0F);
+        MOLECULAR_MEMBRANE_CASING = createActiveMetalBlock("molecular_membrane_casing", 4.0F, 7.0F);
+        POLYSILOXANE_VAPOR_CONTROL_CASING = createMetalBlock("polysiloxane_vapor_control_casing", 5.0F, 8.0F);
 
-        CARBONIZED_REACTOR_CASING = gregtech.common.blocks.GregoriusDrugworksBlocks.CARBONIZED_REACTOR_CASING;
-        OBSIDIAN_FORGED_THERMAL_CASING =
-                gregtech.common.blocks.GregoriusDrugworksBlocks.OBSIDIAN_FORGED_THERMAL_CASING;
-        THERMOCRACK_MATRIX_CASING = gregtech.common.blocks.GregoriusDrugworksBlocks.THERMOCRACK_MATRIX_CASING;
+        CARBONIZED_REACTOR_CASING = createMetalBlock("carbonized_reactor_casing", 6.0F, 10.0F);
+        OBSIDIAN_FORGED_THERMAL_CASING = createActiveBlock("obsidian_forged_thermal_casing", Material.ROCK, 8.0F, 20.0F,
+                SoundType.STONE);
+        THERMOCRACK_MATRIX_CASING = createActiveMetalBlock("thermocrack_matrix_casing", 7.0F, 15.0F);
         METHBLOCK = createMetalBlock("methblock", 5.0F, 6.0F);
         COMPRESSEDMETHBLOCK = createMetalBlock("compressedmethblock", 5.0F, 6.0F);
     }

@@ -1,10 +1,14 @@
 package com.wurtzitane.gregoriusdrugworkspersistence.event;
 
 import com.wurtzitane.gregoriusdrugworkspersistence.Tags;
+import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityChemicalPlant;
 import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityBlotterPrinter;
+import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityDistillationUnit;
+import com.wurtzitane.gregoriusdrugworkspersistence.machine.MetaTileEntityPyrolysisChamber;
 import gregtech.api.GregTechAPI;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.block.machines.MachineItemBlock;
+import gregtech.common.metatileentities.MetaTileEntities;
 import net.minecraft.util.ResourceLocation;
 
 public final class GregoriusDrugworksMetaTileEntities {
@@ -25,20 +29,17 @@ public final class GregoriusDrugworksMetaTileEntities {
         }
         bootstrapped = true;
 
-        GregoriusDrugworksCreativeTabs.preInit();
         ensureRegistry();
         MachineItemBlock.addCreativeTab(GregoriusDrugworksCreativeTabs.MAIN);
-        MachineItemBlock.addCreativeTab(GregoriusDrugworksCreativeTabs.INDUSTRIAL);
 
-        CHEMICAL_PLANT = gregtech.common.metatileentities.MetaTileEntities.CHEMICAL_PLANT;
-        DISTILLATION_UNIT = gregtech.common.metatileentities.MetaTileEntities.DISTILLATION_UNIT;
-        PYROLYSIS_CHAMBER = gregtech.common.metatileentities.MetaTileEntities.PYROLYSIS_CHAMBER;
-        addAddonCreativeTabs(CHEMICAL_PLANT);
-        addAddonCreativeTabs(DISTILLATION_UNIT);
-        addAddonCreativeTabs(PYROLYSIS_CHAMBER);
-        BLOTTER_PRINTER = gregtech.common.metatileentities.MetaTileEntities.registerMetaTileEntity(11003,
+        CHEMICAL_PLANT = MetaTileEntities.registerMetaTileEntity(11000,
+                new MetaTileEntityChemicalPlant(id("chemical_plant")));
+        DISTILLATION_UNIT = MetaTileEntities.registerMetaTileEntity(11001,
+                new MetaTileEntityDistillationUnit(id("distillation_unit")));
+        PYROLYSIS_CHAMBER = MetaTileEntities.registerMetaTileEntity(11002,
+                new MetaTileEntityPyrolysisChamber(id("pyrolysis_chamber")));
+        BLOTTER_PRINTER = MetaTileEntities.registerMetaTileEntity(11003,
                 new MetaTileEntityBlotterPrinter(id("blotter_printer")));
-        addAddonCreativeTabs(BLOTTER_PRINTER);
     }
 
     private static ResourceLocation id(String path) {
@@ -51,13 +52,5 @@ public final class GregoriusDrugworksMetaTileEntities {
         } catch (IllegalArgumentException ignored) {
             GregTechAPI.mteManager.createRegistry(Tags.MOD_ID);
         }
-    }
-
-    private static void addAddonCreativeTabs(MetaTileEntity metaTileEntity) {
-        if (metaTileEntity == null) {
-            return;
-        }
-        metaTileEntity.addAdditionalCreativeTabs(GregoriusDrugworksCreativeTabs.MAIN);
-        metaTileEntity.addAdditionalCreativeTabs(GregoriusDrugworksCreativeTabs.INDUSTRIAL);
     }
 }
